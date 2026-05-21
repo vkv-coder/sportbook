@@ -177,6 +177,7 @@
     <button class="tab"        id="tab-walkin"   onclick="showTab('walkin')">🚶 Walk-ins</button>
     <button class="tab"        id="tab-checkin"  onclick="showTab('checkin')">✅ Check-in</button>
     <button class="tab"        id="tab-earnings" onclick="showTab('earnings')">💰 Earnings</button>
+    <button class="tab"        id="tab-forfeited" onclick="showTab('forfeited')">🚫 Forfeited</button>
   </div>
 
   <!-- TODAY -->
@@ -289,6 +290,17 @@
   </div>
 </div>
 
+  <!-- FORFEITED -->
+  <div class="screen" id="screen-forfeited">
+    <div class="notice notice-warn">
+      Forfeited slots — player did not arrive. Payment retained. Slot was released to others.
+    </div>
+    <div class="sec-label">Forfeited bookings</div>
+    <div id="forfeited-list"><div class="loader"><div class="spinner"></div></div></div>
+  </div>
+
+</div>
+
 <!-- NO-SHOW MODAL -->
 <div class="modal-bg hidden" id="noshow-modal">
   <div class="modal-sheet">
@@ -307,6 +319,7 @@
 
 <script>
 const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
+const NOTIFY_URL  = 'https://script.google.com/macros/s/AKfycbxKTIf3Uw2G9G5dddgBMwxSYMeYU9F-FUQ51pZ7RawdSWltyFMY3YSA6qjDTVXbDgWqOw/exec';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -384,6 +397,7 @@ function showTab(t) {
   if (t === 'walkin')   loadWalkIns();
   if (t === 'checkin')  { loadCheckins(); }
   if (t === 'earnings') loadEarnings();
+  if (t === 'forfeited') loadForfeited();
 }
 
 function loadAll() {
@@ -505,12 +519,42 @@ function openNoShow(bookingId, slotId, name, time, sport) {
 async function confirmNoShow() {
   if (!noShowData) return;
   document.getElementById('noshow-modal').classList.add('hidden');
+
   await sb.from('sz_slots').update({ status: 'noshow' }).eq('id', noShowData.slotId);
+
   if (noShowData.bookingId) {
     await sb.from('sz_bookings').update({ booking_status: 'noshow' }).eq('id', noShowData.bookingId);
     await sb.from('sz_noshow_log').insert({ booking_id: noShowData.bookingId, slot_id: noShowData.slotId, zone_id: ownerZone.id });
+
+    // Fetch booking + user details for notification
+    const { data: bk } = await sb.from('sz_bookings')
+      .select('amount, qr_code, sz_slots(slot_date,start_time,sport,sz_courts(name)), sz_users(name,phone,email)')
+      .eq('id', noShowData.bookingId).single();
+
+    if (bk) {
+      const sl   = bk.sz_slots;
+      const user = bk.sz_users;
+      const time = fmtTime(sl.start_time?.slice(0,5));
+      // Send notification via Apps Script
+      fetch(NOTIFY_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          type:      'noshow',
+          userName:  user?.name  || 'Player',
+          userPhone: user?.phone || '',
+          userEmail: user?.email || '',
+          sport:     cap(sl.sport),
+          zoneName:  ownerZone.name,
+          date:      sl.slot_date,
+          time:      time,
+          amount:    bk.amount,
+          qrCode:    bk.qr_code
+        })
+      }).catch(e => console.log('Notify error:', e));
+    }
   }
-  alert('✅ Slot released! Check walk-in queue — offer slot to first person waiting.');
+
+  alert('✅ Slot released! Notification sent to player. Check walk-in queue.');
   noShowData = null;
   loadAll();
   loadSlotBoard();
@@ -680,6 +724,47 @@ function setupRealtime() {
     .on('postgres_changes',{event:'*',schema:'public',table:'sz_slots'},()=>{loadSlotBoard();})
     .on('postgres_changes',{event:'*',schema:'public',table:'sz_walkin_queue'},()=>{loadWalkIns();})
     .subscribe();
+}
+
+async function loadForfeited() {
+  const { data } = await sb.from('sz_bookings')
+    .select('amount, created_at, qr_code, sz_slots!inner(slot_date,start_time,sport,zone_id,sz_courts(name)), sz_users(name,phone,email)')
+    .eq('sz_slots.zone_id', ownerZone.id)
+    .eq('booking_status', 'noshow')
+    .order('created_at', { ascending: false });
+
+  const el = document.getElementById('forfeited-list');
+  if (!data?.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">✅</div><p>No forfeited slots yet!</p></div>';
+    return;
+  }
+
+  const total = data.reduce((s,b) => s + Number(b.amount), 0);
+  el.innerHTML = `
+    <div class="card" style="display:flex;justify-content:space-between;margin-bottom:14px">
+      <div><div style="font-size:13px;color:var(--muted)">Total forfeited</div>
+           <div style="font-size:22px;font-weight:700;color:var(--red)">₹${total}</div></div>
+      <div><div style="font-size:13px;color:var(--muted)">Count</div>
+           <div style="font-size:22px;font-weight:700">${data.length}</div></div>
+    </div>` +
+  data.map(b => {
+    const sl   = b.sz_slots;
+    const user = b.sz_users;
+    return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div style="font-size:15px;font-weight:600">${user?.name || '—'}</div>
+          <div style="font-size:12px;color:var(--muted)">
+            ${cap(sl.sport)} · ${sl.sz_courts?.name || '—'} · ${sl.slot_date} · ${fmtTime(sl.start_time?.slice(0,5))}<br>
+            📱 ${user?.phone || '—'} · ${user?.email || 'no email'}
+          </div>
+        </div>
+        <span class="badge badge-danger">₹${b.amount} forfeited</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted)">QR: ${b.qr_code} · Notified: email${user?.email ? ' ✓' : ' ✗'}</div>
+    </div>`;
+  }).join('');
 }
 
 function cap(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }
