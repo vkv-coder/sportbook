@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<!-- v2 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0f6e56">
+<meta name="theme-color" content="#0047AB">
 <meta name="description" content="SportBook — Book sports courts in Vadodara instantly">
 <title>SportBook — Book Your Court</title>
 <link rel="manifest" href="manifest.json">
@@ -16,9 +15,9 @@
 
 <style>
   :root {
-    --green:     #0f6e56;
-    --green-lt:  #e1f5ee;
-    --green-dk:  #085041;
+    --green:     #0047AB;
+    --green-lt:  #e8f0fe;
+    --green-dk:  #003080;
     --amber:     #ba7517;
     --amber-lt:  #faeeda;
     --red:       #a32d2d;
@@ -648,7 +647,7 @@ async function initiatePayment() {
     name:        'SportBook',
     description: `${cap(selectedSlot.sport)} · ${selectedZone.name} · ${selectedDate}`,
     prefill: { name, contact: phone, email },
-    theme:       { color: '#0f6e56' },
+    theme:       { color: '#0047AB' },
     modal: {
       ondismiss: () => resetPayBtn()
     },
