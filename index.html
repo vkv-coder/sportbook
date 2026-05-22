@@ -347,23 +347,18 @@ async function ownerLogin() {
   document.getElementById('ownerLoginBtn').disabled = true;
   document.getElementById('ownerLoginBtn').textContent = 'Logging in...';
 
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) {
-    setErr('o-err1', error.message || 'Login failed. Check credentials.');
-    document.getElementById('ownerLoginBtn').disabled = false;
-    document.getElementById('ownerLoginBtn').textContent = 'Login to Dashboard →';
-    return;
-  }
+  const { data } = await sb.from('sz_owners').select('*').eq('email', email).eq('password', pass).maybeSingle();
 
-  // Check if owner is approved
-  const { data: owner } = await sb.from('sz_owners').select('id,is_approved,venue_name').eq('auth_id', data.user.id).single();
-  if (!owner) { setErr('o-err1','Owner account not found.'); return; }
-  if (!owner.is_approved) {
-    setErr('o-err1','Your account is pending approval. We\'ll notify you within 24 hrs.');
-    document.getElementById('ownerLoginBtn').disabled = false;
-    document.getElementById('ownerLoginBtn').textContent = 'Login to Dashboard →';
-    return;
-  }
+  document.getElementById('ownerLoginBtn').disabled = false;
+  document.getElementById('ownerLoginBtn').textContent = 'Login to Dashboard →';
+
+  if (!data) { setErr('o-err1','Invalid email or password'); return; }
+  if (!data.is_approved) { setErr('o-err1','Account pending approval'); return; }
+
+  localStorage.setItem('owner_zone_id', data.zone_id);
+  localStorage.setItem('owner_venue_name', data.venue_name);
+  closeModal('ownerModal');
+  window.location.href = 'owner/index.html';
 
   closeModal('ownerModal');
   window.location.href = 'owner/index.html';
