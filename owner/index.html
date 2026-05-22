@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SportBook — Owner Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --blue:#1A6BFF;--blue-dark:#1254CC;
@@ -20,44 +20,48 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;}
 nav{background:var(--white);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 var(--border);position:sticky;top:0;z-index:50;}
 .logo{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--green);}
 .logo span{color:var(--text);}
-.venue-badge{font-size:12px;font-weight:600;color:var(--muted);background:var(--bg);padding:4px 10px;border-radius:20px;}
-main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
-/* TABS */
-.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;scrollbar-width:none;}
+.venue-badge{font-size:12px;font-weight:600;color:var(--muted);background:var(--bg);padding:4px 10px;border-radius:20px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+main{padding:16px;max-width:520px;margin:0 auto;padding-bottom:90px;}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
 .tab{flex-shrink:0;padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .tab.active{background:var(--green);border-color:var(--green);color:white;}
-/* SCREENS */
 .screen{display:none;}
 .screen.active{display:block;}
-/* CARDS */
 .card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
 .sec-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;margin-bottom:12px;background:white;color:var(--text);}
+.form-input:focus{border-color:var(--green);}
+select.form-input{cursor:pointer;}
+.form-row{display:flex;gap:10px;}
+.form-row .form-input{flex:1;margin-bottom:0;}
+.form-row .wrap{flex:1;}
+.save-btn{background:var(--green);color:white;border:none;padding:14px 24px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;width:100%;margin-top:4px;transition:all 0.2s;}
+.save-btn:hover{background:var(--green-dark);}
+.save-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.btn{padding:8px 14px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+.btn-red{background:#FEE2E2;color:#991B1B;}
+.btn-green{background:var(--green);color:white;}
+.btn-blue{background:var(--blue);color:white;}
+.btn-orange{background:#FEF3C7;color:#92400E;}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.stat-card{background:white;border-radius:var(--radius);padding:16px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--text);}
+.stat-label{font-size:12px;color:var(--muted);margin-top:2px;}
 /* BOOKING ROW */
-.booking-row{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+.booking-row{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
 .booking-row:last-child{border-bottom:none;}
 .b-name{font-size:14px;font-weight:600;color:var(--text);}
 .b-detail{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4;}
 .b-qr{font-size:10px;font-weight:700;color:var(--blue);margin-top:4px;letter-spacing:0.5px;}
-/* BADGES */
 .badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;}
 .badge-confirmed{background:#D1FAE5;color:#065F46;}
 .badge-checkedin{background:#DBEAFE;color:#1E40AF;}
 .badge-noshow{background:#FEE2E2;color:#991B1B;}
 .badge-walkin{background:#FEF3C7;color:#92400E;}
-.badge-pending{background:#F3F4F6;color:#6B7280;}
-/* BTNS */
-.btn{padding:8px 14px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
-.btn-red{background:#FEE2E2;color:#991B1B;}
-.btn-blue{background:var(--blue);color:white;}
-.btn-green{background:var(--green);color:white;}
-.btn-full{width:100%;padding:14px;font-size:15px;border-radius:12px;}
-/* STATS GRID */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
-.stat-card{background:white;border-radius:var(--radius);padding:16px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
-.stat-val{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--text);}
-.stat-label{font-size:12px;color:var(--muted);margin-top:2px;}
-/* SLOT GRID */
+/* SLOTS */
 .slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
 .slot-item{padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:white;text-align:center;font-size:12px;}
 .slot-item.booked{background:#FEF3C7;border-color:#F59E0B;}
@@ -66,46 +70,48 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
 .slot-item.noshow{background:#FEE2E2;border-color:#EF4444;}
 .slot-time{font-weight:700;font-size:13px;}
 .slot-player{font-size:10px;color:var(--muted);margin-top:2px;}
-/* FORM */
-.form-section{margin-bottom:24px;}
-.form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;display:block;}
-.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;margin-bottom:10px;}
-.form-input:focus{border-color:var(--green);}
-.form-row{display:flex;gap:10px;}
-.form-row .form-input{flex:1;margin-bottom:0;}
-.checkbox-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+/* DAY CHIPS */
+.checkbox-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
 .day-chip{padding:8px 4px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.2s;}
 .day-chip.selected{background:var(--red);border-color:var(--red);color:white;}
-.sport-check{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:6px;font-size:13px;}
+/* SPORT CHECKS */
+.sport-check{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:8px;font-size:13px;transition:all 0.2s;}
 .sport-check.selected{background:rgba(0,184,122,0.08);border-color:var(--green);}
+.sport-check .checkmark{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
+.sport-check.selected .checkmark{background:var(--green);border-color:var(--green);color:white;font-size:11px;}
 /* NOTICE */
 .notice{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;font-size:13px;color:#1E40AF;margin-bottom:16px;line-height:1.5;}
 .notice-warn{background:#FFFBEB;border-color:#FDE68A;color:#92400E;}
-.notice-red{background:#FEF2F2;border-color:#FECACA;color:#991B1B;}
+.notice-success{background:#F0FDF4;border-color:#86EFAC;color:#166534;}
 /* WALKIN */
 .walkin-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
 .walkin-item:last-child{border-bottom:none;}
 .queue-num{width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 /* EMPTY */
-.empty{text-align:center;padding:40px 20px;color:var(--muted);}
-.empty-icon{font-size:40px;margin-bottom:10px;}
-/* LOADER */
-.loader{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
+.empty{text-align:center;padding:32px 20px;color:var(--muted);}
+.empty-icon{font-size:36px;margin-bottom:8px;}
+.loader{text-align:center;padding:24px;color:var(--muted);font-size:13px;}
+/* COURT LIST */
+.court-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.court-item:last-child{border-bottom:none;}
+.court-tag{display:inline-block;background:rgba(26,107,255,0.08);color:var(--blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-right:6px;}
+/* HOLIDAY */
+.holiday-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.holiday-item:last-child{border-bottom:none;}
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);display:flex;z-index:50;}
 .bnav-btn{flex:1;padding:10px 4px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;}
 .bnav-btn.active{color:var(--green);}
 .bnav-icon{font-size:18px;}
-/* COURT TAG */
-.court-tag{display:inline-block;background:rgba(26,107,255,0.08);color:var(--blue);font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-right:4px;}
-/* SAVE BTN */
-.save-btn{background:var(--green);color:white;border:none;padding:14px 24px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;}
+.divider-line{height:1px;background:var(--border);margin:12px 0;}
+.map-preview{background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;color:#166534;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#111;color:white;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
 </style>
 </head>
 <body>
-
 <nav>
-  <div class="logo">Sport<span>Book</span> <span style="color:var(--green);font-size:14px;">Owner</span></div>
+  <div class="logo">Sport<span>Book</span> <span style="color:var(--green);font-size:13px;">Owner</span></div>
   <div class="venue-badge" id="venueBadge">Loading...</div>
 </nav>
 
@@ -116,13 +122,12 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
     <button class="tab" onclick="showTab('walkin')">🚶 Walk-in</button>
     <button class="tab" onclick="showTab('checkin')">✅ Check-in</button>
     <button class="tab" onclick="showTab('earnings')">💰 Earnings</button>
-    <button class="tab" onclick="showTab('forfeited')">🚫 Forfeited</button>
     <button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
   </div>
 
   <!-- TODAY -->
   <div class="screen active" id="screen-today">
-    <div class="stats-grid" id="todayStats">
+    <div class="stats-grid">
       <div class="stat-card"><div class="stat-val" id="stat-bookings">—</div><div class="stat-label">Today's Bookings</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-revenue">—</div><div class="stat-label">Today's Revenue</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-checkin">—</div><div class="stat-label">Checked In</div></div>
@@ -134,18 +139,21 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
 
   <!-- SLOTS BOARD -->
   <div class="screen" id="screen-slots">
-    <div class="notice">Live slot board for today. Green = checked in · Yellow = booked · Red = no-show · Grey = open</div>
+    <div class="notice">Live slot board for today. 🟡 Booked · 🟢 Checked in · 🔴 No-show · ⬜ Open</div>
     <div id="slotBoard"><div class="loader">Loading...</div></div>
-    <button class="btn btn-red btn-full" style="margin-top:8px;" onclick="triggerNoShow()">🚫 Mark No-Shows (Past Slots)</button>
+    <button class="save-btn" style="background:var(--red);margin-top:8px;" onclick="triggerNoShow()">🚫 Mark No-Shows (Past Slots)</button>
   </div>
 
   <!-- WALK-IN -->
   <div class="screen" id="screen-walkin">
-    <div class="notice">Add walk-in players to the queue. They get the next available slot.</div>
+    <div class="notice">Add walk-in players — they get the next available slot.</div>
     <div class="card">
-      <div class="form-label">Add Walk-in Player</div>
-      <input class="form-input" id="wiName" placeholder="Player name">
-      <input class="form-input" id="wiPhone" placeholder="Mobile number" maxlength="10" inputmode="numeric">
+      <div class="sec-title">Add Walk-in</div>
+      <label class="form-label">Player Name</label>
+      <input class="form-input" id="wiName" placeholder="Rajesh Patel">
+      <label class="form-label">Mobile Number</label>
+      <input class="form-input" id="wiPhone" placeholder="98765 43210" maxlength="10" inputmode="numeric">
+      <label class="form-label">Sport</label>
       <select class="form-input" id="wiSport"></select>
       <button class="save-btn" onclick="addWalkIn()">Add to Queue →</button>
     </div>
@@ -155,11 +163,11 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
 
   <!-- CHECK-IN -->
   <div class="screen" id="screen-checkin">
-    <div class="notice">Enter the booking QR code shown by the player to check them in.</div>
+    <div class="notice">Enter the QR code shown by the player to check them in.</div>
     <div class="card">
-      <div class="form-label">Scan / Enter QR Code</div>
-      <input class="form-input" id="qrInput" placeholder="SB-XXXXXXXXXX-XXXXX" style="letter-spacing:1px;font-weight:700;">
-      <button class="save-btn" onclick="doCheckIn()">Check In Player ✓</button>
+      <label class="form-label">Booking QR Code</label>
+      <input class="form-input" id="qrInput" placeholder="SB-XXXXXXXXXX-XXXXX" style="letter-spacing:1px;font-weight:700;text-transform:uppercase;">
+      <button class="save-btn" onclick="doCheckIn()">✅ Check In Player</button>
     </div>
     <div class="sec-title" style="margin-top:8px;">Today's Check-ins</div>
     <div class="card" id="checkinList"><div class="loader">Loading...</div></div>
@@ -177,20 +185,8 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
     <div class="card" id="earningsList"><div class="loader">Loading...</div></div>
   </div>
 
-  <!-- FORFEITED -->
-  <div class="screen" id="screen-forfeited">
-    <div class="notice notice-warn">Forfeited slots — player did not arrive. Payment retained by SportBook.</div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-val" id="forf-count">—</div><div class="stat-label">Total No-shows</div></div>
-      <div class="stat-card"><div class="stat-val" id="forf-amt">—</div><div class="stat-label">Amount Forfeited</div></div>
-    </div>
-    <div class="sec-title">Forfeited Bookings</div>
-    <div class="card" id="forfeitedList"><div class="loader">Loading...</div></div>
-  </div>
-
   <!-- SETTINGS -->
   <div class="screen" id="screen-settings">
-    <div class="notice">These settings control how your venue appears and operates on SportBook.</div>
 
     <!-- Venue Info -->
     <div class="card">
@@ -199,29 +195,50 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
       <input class="form-input" id="s-vname" placeholder="Smash Arena">
       <label class="form-label">Area / Address</label>
       <input class="form-input" id="s-area" placeholder="Fatehgunj, Vadodara">
+      <label class="form-label">City</label>
+      <input class="form-input" id="s-city" placeholder="Vadodara">
       <label class="form-label">Contact Number</label>
       <input class="form-input" id="s-phone" placeholder="98765 43210" maxlength="10" inputmode="numeric">
+      <label class="form-label">Google Maps Link</label>
+      <input class="form-input" id="s-maps" placeholder="Paste your Google Maps share link here">
+      <div id="mapsPreview" style="display:none;">
+        <a class="map-preview" id="mapsLink" target="_blank">📍 <span id="mapsLinkText">View on Google Maps</span> →</a>
+      </div>
     </div>
 
     <!-- Sports -->
     <div class="card">
       <div class="sec-title">🏸 Sports Offered</div>
-      <div id="sportsCheckList">
-        <div class="sport-check" data-sport="Badminton" onclick="toggleSport(this)">🏸 Badminton</div>
-        <div class="sport-check" data-sport="Tennis" onclick="toggleSport(this)">🎾 Tennis</div>
-        <div class="sport-check" data-sport="Pickleball" onclick="toggleSport(this)">🏓 Pickleball</div>
-        <div class="sport-check" data-sport="Squash" onclick="toggleSport(this)">🟡 Squash</div>
-        <div class="sport-check" data-sport="Swimming" onclick="toggleSport(this)">🏊 Swimming</div>
+      <div class="sport-check" data-sport="Badminton" onclick="toggleSport(this)">
+        <div class="checkmark">✓</div>🏸 Badminton
+      </div>
+      <div class="sport-check" data-sport="Tennis" onclick="toggleSport(this)">
+        <div class="checkmark">✓</div>🎾 Tennis
+      </div>
+      <div class="sport-check" data-sport="Pickleball" onclick="toggleSport(this)">
+        <div class="checkmark">✓</div>🏓 Pickleball
+      </div>
+      <div class="sport-check" data-sport="Squash" onclick="toggleSport(this)">
+        <div class="checkmark">✓</div>🟡 Squash
+      </div>
+      <div class="sport-check" data-sport="Swimming" onclick="toggleSport(this)">
+        <div class="checkmark">✓</div>🏊 Swimming
       </div>
     </div>
 
     <!-- Timings -->
     <div class="card">
       <div class="sec-title">🕐 Timings & Slots</div>
-      <label class="form-label">Opening Time</label>
-      <input class="form-input" type="time" id="s-open" value="06:00">
-      <label class="form-label">Closing Time</label>
-      <input class="form-input" type="time" id="s-close" value="22:00">
+      <div class="form-row">
+        <div class="wrap">
+          <label class="form-label">Opening Time</label>
+          <input class="form-input" type="time" id="s-open" value="06:00">
+        </div>
+        <div class="wrap">
+          <label class="form-label">Closing Time</label>
+          <input class="form-input" type="time" id="s-close" value="22:00">
+        </div>
+      </div>
       <label class="form-label">Slot Duration</label>
       <select class="form-input" id="s-duration">
         <option value="30">30 minutes</option>
@@ -229,44 +246,57 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
         <option value="60" selected>60 minutes</option>
         <option value="90">90 minutes</option>
       </select>
-      <label class="form-label">Grace Period (no-show after)</label>
+      <label class="form-label">No-show Grace Period</label>
       <select class="form-input" id="s-grace">
-        <option value="10">10 minutes</option>
-        <option value="15" selected>15 minutes</option>
-        <option value="20">20 minutes</option>
-        <option value="30">30 minutes</option>
+        <option value="10">10 minutes after slot start</option>
+        <option value="15" selected>15 minutes after slot start</option>
+        <option value="20">20 minutes after slot start</option>
+        <option value="30">30 minutes after slot start</option>
       </select>
     </div>
 
     <!-- Pricing -->
     <div class="card">
       <div class="sec-title">💰 Pricing</div>
-      <label class="form-label">Peak Hours Rate (₹ per slot)</label>
-      <input class="form-input" type="number" id="s-peak-price" placeholder="200">
-      <label class="form-label">Peak Hours (e.g. 06:00–09:00, 17:00–22:00)</label>
+      <label class="form-label">Peak Hours (e.g. 06:00-09:00, 17:00-22:00)</label>
       <input class="form-input" id="s-peak-hours" placeholder="06:00-09:00, 17:00-22:00">
-      <label class="form-label">Off-Peak Rate (₹ per slot)</label>
-      <input class="form-input" type="number" id="s-offpeak-price" placeholder="150">
+      <div class="form-row">
+        <div class="wrap">
+          <label class="form-label">Peak Rate (₹/slot)</label>
+          <input class="form-input" type="number" id="s-peak-price" placeholder="200">
+        </div>
+        <div class="wrap">
+          <label class="form-label">Off-Peak Rate (₹/slot)</label>
+          <input class="form-input" type="number" id="s-offpeak-price" placeholder="150">
+        </div>
+      </div>
     </div>
 
-    <!-- Discounts -->
+    <!-- Schemes -->
     <div class="card">
       <div class="sec-title">🎯 Schemes & Discounts</div>
-      <label class="form-label">Early Bird Discount (%)</label>
-      <input class="form-input" type="number" id="s-earlybird" placeholder="10" min="0" max="50">
-      <label class="form-label">Early Bird applies to first N slots of the day</label>
-      <input class="form-input" type="number" id="s-earlybird-slots" placeholder="2" min="1">
-      <label class="form-label">Promo Code (optional)</label>
       <div class="form-row">
-        <input class="form-input" id="s-promo-code" placeholder="SPORT20">
-        <input class="form-input" type="number" id="s-promo-disc" placeholder="20%" min="0" max="100">
+        <div class="wrap">
+          <label class="form-label">Early Bird Discount %</label>
+          <input class="form-input" type="number" id="s-earlybird" placeholder="10" min="0" max="50">
+        </div>
+        <div class="wrap">
+          <label class="form-label">Applies to first N slots</label>
+          <input class="form-input" type="number" id="s-earlybird-slots" placeholder="2" min="1">
+        </div>
       </div>
+      <label class="form-label">Promo Code</label>
+      <div class="form-row">
+        <input class="form-input" id="s-promo-code" placeholder="SPORT20" style="text-transform:uppercase;">
+        <input class="form-input" type="number" id="s-promo-disc" placeholder="20" min="0" max="100" style="max-width:100px;">
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:12px;">Promo code · Discount %</div>
     </div>
 
     <!-- Off Days -->
     <div class="card">
       <div class="sec-title">🚫 Weekly Off Days</div>
-      <div class="checkbox-grid" id="offDayGrid">
+      <div class="checkbox-grid">
         <div class="day-chip" data-day="0" onclick="toggleDay(this)">Sun</div>
         <div class="day-chip" data-day="1" onclick="toggleDay(this)">Mon</div>
         <div class="day-chip" data-day="2" onclick="toggleDay(this)">Tue</div>
@@ -275,6 +305,13 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
         <div class="day-chip" data-day="5" onclick="toggleDay(this)">Fri</div>
         <div class="day-chip" data-day="6" onclick="toggleDay(this)">Sat</div>
       </div>
+      <div class="divider-line"></div>
+      <div class="sec-title" style="font-size:15px;">📅 Holiday / Specific Off Dates</div>
+      <div class="form-row" style="margin-bottom:12px;">
+        <input class="form-input" type="date" id="holidayDate" style="margin-bottom:0;">
+        <button class="btn btn-red" onclick="addHoliday()" style="padding:11px 16px;border-radius:10px;">+ Add</button>
+      </div>
+      <div id="holidayList"></div>
     </div>
 
     <!-- Courts -->
@@ -282,14 +319,32 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
       <div class="sec-title">🎾 Courts</div>
       <div id="courtsList" style="margin-bottom:12px;"></div>
       <div class="form-row">
-        <input class="form-input" id="newCourtName" placeholder="Court name e.g. Court 1">
-        <select class="form-input" id="newCourtSport"></select>
+        <input class="form-input" id="newCourtName" placeholder="Court 1" style="margin-bottom:0;">
+        <select class="form-input" id="newCourtSport" style="margin-bottom:0;"></select>
       </div>
-      <button class="btn btn-green" onclick="addCourt()" style="width:100%;padding:10px;">+ Add Court</button>
+      <button class="btn btn-green" onclick="addCourt()" style="width:100%;padding:11px;margin-top:10px;border-radius:10px;font-size:13px;">+ Add Court</button>
+    </div>
+
+    <!-- Generate Slots -->
+    <div class="card">
+      <div class="sec-title">⚡ Generate Slots</div>
+      <div class="notice notice-warn">After saving settings above, generate slots for the next 30 days. This will create slots based on your timings, pricing and off days.</div>
+      <div class="form-row">
+        <div class="wrap">
+          <label class="form-label">From Date</label>
+          <input class="form-input" type="date" id="genFrom" style="margin-bottom:0;">
+        </div>
+        <div class="wrap">
+          <label class="form-label">To Date</label>
+          <input class="form-input" type="date" id="genTo" style="margin-bottom:0;">
+        </div>
+      </div>
+      <button class="save-btn" style="background:var(--blue);margin-top:12px;" onclick="generateSlots()">⚡ Generate Slots</button>
+      <div id="genStatus" style="margin-top:8px;font-size:13px;color:var(--green);text-align:center;"></div>
     </div>
 
     <button class="save-btn" onclick="saveSettings()">💾 Save All Settings</button>
-    <button class="btn" style="width:100%;margin-top:10px;padding:12px;color:var(--red);background:#FEE2E2;border-radius:12px;" onclick="logout()">Logout</button>
+    <button class="btn" style="width:100%;margin-top:10px;padding:13px;color:var(--red);background:#FEE2E2;border-radius:12px;font-size:14px;" onclick="logout()">Logout</button>
   </div>
 </main>
 
@@ -301,100 +356,127 @@ main{padding:20px;max-width:520px;margin:0 auto;padding-bottom:90px;}
   <button class="bnav-btn" id="bn-settings" onclick="showTab('settings')"><span class="bnav-icon">⚙️</span>Settings</button>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-const SUPABASE_URL = 'https://qijdkmyugjdxbuhgbhcz.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpamRrbXl1Z2pkeGJ1aGdiaGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MzQ0MDQsImV4cCI6MjA2MzQxMDQwNH0.j7OIFQ_Ry3TRxSZBzmMjMzVKSAuPPcVMrMFOk0YRFEM';
+const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const TODAY = new Date().toISOString().split('T')[0];
 let ownerData = null;
-let ownerSettings = {};
+let zoneData = null;
 let selectedSports = [];
 let offDays = [];
 let courts = [];
+let holidays = [];
 
 // ── INIT ─────────────────────────────────────────────────────
 async function init() {
+  // Try Supabase auth first
   const { data: { user } } = await sb.auth.getUser();
-  if (!user) { window.location.href = '../index.html'; return; }
-
-  const { data: owner } = await sb.from('sz_owners').select('*').eq('auth_id', user.id).single();
-  if (!owner || !owner.is_approved) { alert('Account not approved yet.'); window.location.href='../index.html'; return; }
-
-  ownerData = owner;
-  document.getElementById('venueBadge').textContent = owner.venue_name;
-
-  // Also check legacy login (for existing hardcoded owners)
-  loadToday();
-  loadSettings();
-}
-
-async function legacyCheck() {
-  // Fallback for existing hardcoded owners from old system
-  const saved = localStorage.getItem('owner_zone');
-  if (saved) {
-    ownerData = { zone_id: parseInt(saved), venue_name: localStorage.getItem('owner_venue') || 'Venue' };
-    document.getElementById('venueBadge').textContent = ownerData.venue_name;
-    loadToday();
-    return true;
+  
+  // Fallback to localStorage for existing owners
+  const savedZone = localStorage.getItem('owner_zone_id');
+  const savedVenue = localStorage.getItem('owner_venue_name');
+  
+  if (user) {
+    const { data: owner } = await sb.from('sz_owners').select('*').eq('auth_id', user.id).single();
+    if (owner && owner.is_approved) {
+      ownerData = owner;
+      await loadZoneByOwner(owner);
+    } else {
+      alert('Account not approved yet.');
+      window.location.href = '../index.html';
+      return;
+    }
+  } else if (savedZone) {
+    // Legacy login
+    zoneData = { id: savedZone, name: savedVenue };
+    ownerData = { zone_id: savedZone };
+    document.getElementById('venueBadge').textContent = savedVenue || 'Venue';
+  } else {
+    window.location.href = '../index.html';
+    return;
   }
-  return false;
+
+  setupDefaultDates();
+  loadToday();
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const legacy = await legacyCheck();
-  if (!legacy) await init();
-});
+async function loadZoneByOwner(owner) {
+  const { data: zone } = await sb.from('sz_zones').select('*').eq('id', owner.zone_id).single();
+  if (zone) {
+    zoneData = zone;
+    document.getElementById('venueBadge').textContent = zone.name;
+  }
+}
 
-function getZoneId() { return ownerData?.zone_id || ownerData?.id; }
+function getZoneId() {
+  return zoneData?.id || ownerData?.zone_id || localStorage.getItem('owner_zone_id');
+}
+
+function setupDefaultDates() {
+  const today = new Date();
+  const future = new Date();
+  future.setDate(today.getDate() + 30);
+  document.getElementById('genFrom').value = TODAY;
+  document.getElementById('genTo').value = future.toISOString().split('T')[0];
+}
+
+document.addEventListener('DOMContentLoaded', init);
 
 // ── TABS ─────────────────────────────────────────────────────
 function showTab(t) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('screen-'+t).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab,.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + t).classList.add('active');
   document.querySelector(`.tab[onclick="showTab('${t}')"]`)?.classList.add('active');
-  const bn = document.getElementById('bn-'+t);
-  if(bn) bn.classList.add('active');
-  if(t==='today')     loadToday();
-  if(t==='slots')     loadSlotBoard();
-  if(t==='walkin')    loadWalkIn();
-  if(t==='checkin')   loadCheckins();
-  if(t==='earnings')  loadEarnings();
-  if(t==='forfeited') loadForfeited();
-  if(t==='settings')  loadSettings();
+  const bn = document.getElementById('bn-' + t);
+  if (bn) bn.classList.add('active');
+  window.scrollTo(0, 0);
+  if (t === 'today')    loadToday();
+  if (t === 'slots')    loadSlotBoard();
+  if (t === 'walkin')   loadWalkIn();
+  if (t === 'checkin')  loadCheckins();
+  if (t === 'earnings') loadEarnings();
+  if (t === 'settings') loadSettings();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
 }
 
 // ── TODAY ─────────────────────────────────────────────────────
 async function loadToday() {
   const zid = getZoneId();
-  const { data } = await sb.from('sz_bookings').select('*, sz_zones(name)')
-    .eq('zone_id', zid).eq('slot_date', TODAY).order('start_time');
+  if (!zid) return;
+  const { data: bookings } = await sb.from('sz_bookings').select('*').eq('zone_id', zid).eq('slot_date', TODAY).order('start_time');
+  const list = bookings || [];
+  const revenue = list.filter(b => ['confirmed','checkedin'].includes(b.status)).reduce((s,b) => s + Number(b.amount), 0);
+  const checkins = list.filter(b => b.status === 'checkedin').length;
+  const { count: openCount } = await sb.from('sz_slots').select('*', {count:'exact',head:true}).eq('zone_id', zid).eq('slot_date', TODAY).eq('status', 'open');
 
-  const bookings = data || [];
-  const revenue  = bookings.filter(b=>b.status==='confirmed'||b.status==='checkedin').reduce((s,b)=>s+Number(b.amount),0);
-  const checkins = bookings.filter(b=>b.status==='checkedin').length;
+  document.getElementById('stat-bookings').textContent = list.length;
+  document.getElementById('stat-revenue').textContent = '₹' + revenue;
+  document.getElementById('stat-checkin').textContent = checkins;
+  document.getElementById('stat-open').textContent = openCount || 0;
 
-  const { count: openCount } = await sb.from('sz_slots').select('*',{count:'exact',head:true})
-    .eq('zone_id', zid).eq('slot_date', TODAY).eq('status','open');
-
-  document.getElementById('stat-bookings').textContent = bookings.length;
-  document.getElementById('stat-revenue').textContent  = '₹'+revenue;
-  document.getElementById('stat-checkin').textContent  = checkins;
-  document.getElementById('stat-open').textContent     = openCount||0;
-
-  const list = document.getElementById('todayList');
-  if (!bookings.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📅</div>No bookings yet today</div>'; return; }
-  list.innerHTML = bookings.map(b=>`
+  const el = document.getElementById('todayList');
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>No bookings yet today</div>'; return; }
+  el.innerHTML = list.map(b => `
     <div class="booking-row">
       <div>
         <div class="b-name">${b.player_name}</div>
         <div class="b-detail">🏸 ${b.sport} · 🕐 ${b.start_time?.slice(0,5)}–${b.end_time?.slice(0,5)}</div>
         <div class="b-detail">📱 ${b.player_phone} · ₹${b.amount}</div>
-        <div class="b-qr">${b.qr_token}</div>
+        <div class="b-qr">${b.qr_token || b.qr_code || ''}</div>
       </div>
-      <span class="badge badge-${b.status}">${b.status?.toUpperCase()}</span>
+      <span class="badge badge-${b.status || b.booking_status}">${(b.status || b.booking_status)?.toUpperCase()}</span>
     </div>
   `).join('');
 }
@@ -402,18 +484,20 @@ async function loadToday() {
 // ── SLOT BOARD ────────────────────────────────────────────────
 async function loadSlotBoard() {
   const zid = getZoneId();
-  const { data: slots } = await sb.from('sz_slots').select('*, sz_bookings(player_name,status,qr_token)')
-    .eq('zone_id', zid).eq('slot_date', TODAY).order('start_time');
-
+  const { data: slots } = await sb.from('sz_slots').select('*').eq('zone_id', zid).eq('slot_date', TODAY).order('start_time');
+  const { data: bookings } = await sb.from('sz_bookings').select('*').eq('zone_id', zid).eq('slot_date', TODAY);
   const board = document.getElementById('slotBoard');
-  if (!slots?.length) { board.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No slots for today</div>'; return; }
-
-  board.innerHTML = `<div class="slot-grid">${slots.map(s=>{
-    const bk = s.sz_bookings?.[0];
-    const cls = bk ? (bk.status==='checkedin'?'checkedin':bk.status==='noshow'?'noshow':'booked') : 'open';
+  if (!slots?.length) { board.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No slots for today.<br>Go to Settings → Generate Slots!</div>'; return; }
+  
+  const bkMap = {};
+  (bookings||[]).forEach(b => { bkMap[b.slot_id] = b; });
+  
+  board.innerHTML = `<div class="slot-grid">${slots.map(s => {
+    const bk = bkMap[s.id];
+    const cls = bk ? (bk.status === 'checkedin' ? 'checkedin' : bk.status === 'noshow' ? 'noshow' : 'booked') : 'open';
     return `<div class="slot-item ${cls}">
       <div class="slot-time">${s.start_time?.slice(0,5)}</div>
-      <div class="slot-player">${bk?.player_name||'Open'}</div>
+      <div class="slot-player">${bk?.player_name || (s.status === 'open' ? '₹'+s.price : 'Open')}</div>
     </div>`;
   }).join('')}</div>`;
 }
@@ -422,36 +506,33 @@ async function triggerNoShow() {
   if (!confirm('Mark all past unattended slots as no-show?')) return;
   const now = new Date();
   const zid = getZoneId();
-  const { data: slots } = await sb.from('sz_slots').select('id,start_time,sz_bookings(id,status)')
-    .eq('zone_id', zid).eq('slot_date', TODAY).eq('status','booked');
-
+  const { data: slots } = await sb.from('sz_slots').select('id,start_time').eq('zone_id', zid).eq('slot_date', TODAY).eq('status', 'booked');
   let count = 0;
   for (const slot of (slots||[])) {
     const [h,m] = (slot.start_time||'00:00').split(':').map(Number);
-    const slotTime = new Date(); slotTime.setHours(h,m+15,0);
+    const slotTime = new Date();
+    slotTime.setHours(h, m + 15, 0);
     if (now > slotTime) {
-      await sb.from('sz_slots').update({status:'open'}).eq('id',slot.id);
-      const bk = slot.sz_bookings?.[0];
-      if (bk) await sb.from('sz_bookings').update({status:'noshow'}).eq('id',bk.id);
+      await sb.from('sz_slots').update({status:'open'}).eq('id', slot.id);
+      const { data: bk } = await sb.from('sz_bookings').select('id').eq('slot_id', slot.id).maybeSingle();
+      if (bk) await sb.from('sz_bookings').update({status:'noshow'}).eq('id', bk.id);
       count++;
     }
   }
-  alert(`${count} slot(s) marked as no-show`);
+  toast(`${count} slot(s) marked as no-show`);
   loadSlotBoard();
 }
 
 // ── WALK-IN ───────────────────────────────────────────────────
 async function loadWalkIn() {
   const zid = getZoneId();
-  // Populate sport dropdown
-  const { data: zone } = await sb.from('sz_zones').select('sports').eq('id',zid).single();
-  const sports = zone?.sports || ['Badminton'];
-  document.getElementById('wiSport').innerHTML = sports.map(s=>`<option>${s}</option>`).join('');
-
-  const { data } = await sb.from('sz_walkin_queue').select('*').eq('zone_id',zid).eq('status','waiting').order('created_at');
+  if (zoneData?.sports) {
+    document.getElementById('wiSport').innerHTML = zoneData.sports.map(s => `<option>${s}</option>`).join('');
+  }
+  const { data } = await sb.from('sz_walkin_queue').select('*').eq('zone_id', zid).eq('status', 'waiting').order('created_at');
   const list = document.getElementById('walkinList');
-  if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">🚶</div>No walk-ins in queue</div>'; return; }
-  list.innerHTML = data.map((w,i)=>`
+  if (!data?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">🚶</div>Queue is empty</div>'; return; }
+  list.innerHTML = data.map((w,i) => `
     <div class="walkin-item">
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="queue-num">${i+1}</div>
@@ -460,49 +541,47 @@ async function loadWalkIn() {
           <div style="font-size:12px;color:var(--muted);">📱 ${w.player_phone} · 🏸 ${w.sport}</div>
         </div>
       </div>
-      <button class="btn btn-green" onclick="assignWalkIn(${w.id})">Assign Slot</button>
+      <button class="btn btn-green" onclick="assignWalkIn('${w.id}')">Assign</button>
     </div>
   `).join('');
 }
 
 async function addWalkIn() {
-  const name  = document.getElementById('wiName').value.trim();
+  const name = document.getElementById('wiName').value.trim();
   const phone = document.getElementById('wiPhone').value.trim();
   const sport = document.getElementById('wiSport').value;
-  if (!name||phone.length<10) { alert('Enter name and 10-digit mobile'); return; }
-  await sb.from('sz_walkin_queue').insert({ zone_id:getZoneId(), player_name:name, player_phone:phone, sport, status:'waiting' });
-  document.getElementById('wiName').value='';
-  document.getElementById('wiPhone').value='';
+  if (!name || phone.length < 10) { toast('Enter name and 10-digit mobile'); return; }
+  await sb.from('sz_walkin_queue').insert({ zone_id: getZoneId(), player_name: name, player_phone: phone, sport, status: 'waiting' });
+  document.getElementById('wiName').value = '';
+  document.getElementById('wiPhone').value = '';
+  toast('Walk-in added to queue!');
   loadWalkIn();
 }
 
 async function assignWalkIn(id) {
-  await sb.from('sz_walkin_queue').update({status:'assigned'}).eq('id',id);
-  alert('Walk-in assigned! Give them their slot details.');
+  await sb.from('sz_walkin_queue').update({status:'assigned'}).eq('id', id);
+  toast('Walk-in assigned!');
   loadWalkIn();
 }
 
 // ── CHECK-IN ──────────────────────────────────────────────────
 async function doCheckIn() {
   const qr = document.getElementById('qrInput').value.trim().toUpperCase();
-  if (!qr) { alert('Enter QR code'); return; }
-
-  const { data: bk } = await sb.from('sz_bookings').select('*').eq('qr_token',qr).single();
-  if (!bk) { alert('Booking not found!'); return; }
-  if (bk.status==='checkedin') { alert('Already checked in!'); return; }
-  if (bk.status==='noshow')    { alert('This booking was marked no-show.'); return; }
-
-  await sb.from('sz_bookings').update({status:'checkedin'}).eq('id',bk.id);
-  document.getElementById('qrInput').value='';
-  alert(`✅ ${bk.player_name} checked in!\n${bk.sport} · ${bk.start_time?.slice(0,5)}`);
+  if (!qr) { toast('Enter QR code'); return; }
+  const { data: bk } = await sb.from('sz_bookings').select('*').or(`qr_token.eq.${qr},qr_code.eq.${qr}`).maybeSingle();
+  if (!bk) { toast('Booking not found!'); return; }
+  if (bk.status === 'checkedin' || bk.booking_status === 'checkedin') { toast('Already checked in!'); return; }
+  await sb.from('sz_bookings').update({status:'checkedin', booking_status:'checkedin', checked_in_at: new Date().toISOString()}).eq('id', bk.id);
+  document.getElementById('qrInput').value = '';
+  toast(`✅ ${bk.player_name} checked in!`);
   loadCheckins();
 }
 
 async function loadCheckins() {
-  const { data } = await sb.from('sz_bookings').select('*').eq('zone_id',getZoneId()).eq('slot_date',TODAY).eq('status','checkedin');
+  const { data } = await sb.from('sz_bookings').select('*').eq('zone_id', getZoneId()).eq('slot_date', TODAY).or('status.eq.checkedin,booking_status.eq.checkedin');
   const list = document.getElementById('checkinList');
-  if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">✅</div>No check-ins yet today</div>'; return; }
-  list.innerHTML = data.map(b=>`
+  if (!data?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>No check-ins yet today</div>'; return; }
+  list.innerHTML = data.map(b => `
     <div class="booking-row">
       <div>
         <div class="b-name">${b.player_name}</div>
@@ -516,26 +595,22 @@ async function loadCheckins() {
 // ── EARNINGS ──────────────────────────────────────────────────
 async function loadEarnings() {
   const zid = getZoneId();
-  const weekStart = new Date(); weekStart.setDate(weekStart.getDate()-7);
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate() - 7);
   const monthStart = new Date(); monthStart.setDate(1);
-
-  const { data: all } = await sb.from('sz_bookings').select('amount,status,slot_date,player_name,sport,start_time')
-    .eq('zone_id',zid).in('status',['confirmed','checkedin','noshow']).order('slot_date',{ascending:false});
-
-  const toRs = arr => '₹'+(arr||[]).reduce((s,b)=>s+Number(b.amount),0);
-  const todayB  = (all||[]).filter(b=>b.slot_date===TODAY);
-  const weekB   = (all||[]).filter(b=>new Date(b.slot_date)>=weekStart);
-  const monthB  = (all||[]).filter(b=>new Date(b.slot_date)>=monthStart);
-  const noshowB = (all||[]).filter(b=>b.status==='noshow');
-
+  const { data: all } = await sb.from('sz_bookings').select('amount,status,booking_status,slot_date,player_name,sport,start_time').eq('zone_id', zid).order('slot_date', {ascending:false});
+  const toRs = arr => '₹' + (arr||[]).reduce((s,b) => s + Number(b.amount), 0);
+  const getStatus = b => b.status || b.booking_status;
+  const todayB  = (all||[]).filter(b => b.slot_date === TODAY);
+  const weekB   = (all||[]).filter(b => new Date(b.slot_date) >= weekStart);
+  const monthB  = (all||[]).filter(b => new Date(b.slot_date) >= monthStart);
+  const noshowB = (all||[]).filter(b => getStatus(b) === 'noshow');
   document.getElementById('earn-today').textContent  = toRs(todayB);
   document.getElementById('earn-week').textContent   = toRs(weekB);
   document.getElementById('earn-month').textContent  = toRs(monthB);
   document.getElementById('earn-noshow').textContent = noshowB.length;
-
   const list = document.getElementById('earningsList');
-  if (!all?.length) { list.innerHTML='<div class="empty">No transactions yet</div>'; return; }
-  list.innerHTML = (all||[]).slice(0,20).map(b=>`
+  if (!all?.length) { list.innerHTML = '<div class="empty">No transactions yet</div>'; return; }
+  list.innerHTML = (all||[]).slice(0,20).map(b => `
     <div class="booking-row">
       <div>
         <div class="b-name">${b.player_name}</div>
@@ -543,32 +618,7 @@ async function loadEarnings() {
       </div>
       <div style="text-align:right;">
         <div style="font-weight:700;color:var(--green);">₹${b.amount}</div>
-        <span class="badge badge-${b.status}" style="margin-top:4px;">${b.status}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── FORFEITED ─────────────────────────────────────────────────
-async function loadForfeited() {
-  const { data } = await sb.from('sz_bookings').select('*').eq('zone_id',getZoneId()).eq('status','noshow').order('slot_date',{ascending:false});
-  const total = (data||[]).reduce((s,b)=>s+Number(b.amount),0);
-  document.getElementById('forf-count').textContent = data?.length||0;
-  document.getElementById('forf-amt').textContent   = '₹'+total;
-
-  const list = document.getElementById('forfeitedList');
-  if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">✅</div>No forfeited slots yet!</div>'; return; }
-  list.innerHTML = data.map(b=>`
-    <div class="booking-row">
-      <div>
-        <div class="b-name">${b.player_name}</div>
-        <div class="b-detail">📱 ${b.player_phone} · 🏸 ${b.sport}</div>
-        <div class="b-detail">📅 ${b.slot_date} · 🕐 ${b.start_time?.slice(0,5)}</div>
-        <div class="b-qr">${b.qr_token}</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-weight:700;color:var(--red);">₹${b.amount}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px;">Forfeited</div>
+        <span class="badge badge-${getStatus(b)}" style="margin-top:4px;">${getStatus(b)}</span>
       </div>
     </div>
   `).join('');
@@ -577,122 +627,289 @@ async function loadForfeited() {
 // ── SETTINGS ─────────────────────────────────────────────────
 async function loadSettings() {
   const zid = getZoneId();
-  const { data: zone } = await sb.from('sz_zones').select('*').eq('id',zid).single();
+  const { data: zone } = await sb.from('sz_zones').select('*').eq('id', zid).single();
   if (!zone) return;
+  zoneData = zone;
 
-  ownerSettings = zone;
-  document.getElementById('s-vname').value  = zone.name||'';
-  document.getElementById('s-area').value   = zone.area||'';
-  document.getElementById('s-phone').value  = zone.phone||'';
-  document.getElementById('s-open').value   = zone.open_time?.slice(0,5)||'06:00';
-  document.getElementById('s-close').value  = zone.close_time?.slice(0,5)||'22:00';
-  document.getElementById('s-peak-price').value    = zone.peak_price||'';
-  document.getElementById('s-peak-hours').value    = zone.peak_hours||'';
-  document.getElementById('s-offpeak-price').value = zone.offpeak_price||'';
-  document.getElementById('s-earlybird').value      = zone.earlybird_pct||'';
-  document.getElementById('s-earlybird-slots').value= zone.earlybird_slots||'';
-  document.getElementById('s-promo-code').value    = zone.promo_code||'';
-  document.getElementById('s-promo-disc').value    = zone.promo_disc||'';
+  document.getElementById('s-vname').value  = zone.name || '';
+  document.getElementById('s-area').value   = zone.address || '';
+  document.getElementById('s-city').value   = zone.city || '';
+  document.getElementById('s-phone').value  = zone.phone || '';
+  document.getElementById('s-maps').value   = zone.maps_url || '';
+  document.getElementById('s-open').value   = zone.open_time?.slice(0,5) || '06:00';
+  document.getElementById('s-close').value  = zone.close_time?.slice(0,5) || '22:00';
+  document.getElementById('s-peak-hours').value    = zone.peak_hours || '';
+  document.getElementById('s-peak-price').value    = zone.peak_price || '';
+  document.getElementById('s-offpeak-price').value = zone.offpeak_price || '';
+  document.getElementById('s-earlybird').value      = zone.earlybird_pct || '';
+  document.getElementById('s-earlybird-slots').value= zone.earlybird_slots || '';
+  document.getElementById('s-promo-code').value    = zone.promo_code || '';
+  document.getElementById('s-promo-disc').value    = zone.promo_disc || '';
+  document.getElementById('s-duration').value = zone.slot_duration || 60;
+  document.getElementById('s-grace').value    = zone.grace_minutes || 15;
 
-  // Duration
-  const dur = document.getElementById('s-duration');
-  dur.value = zone.slot_duration||60;
-
-  // Grace
-  const grace = document.getElementById('s-grace');
-  grace.value = zone.grace_minutes||15;
+  // Maps preview
+  if (zone.maps_url) showMapsPreview(zone.maps_url);
 
   // Sports
-  selectedSports = zone.sports||[];
-  document.querySelectorAll('.sport-check').forEach(el=>{
+  selectedSports = zone.sports || [];
+  document.querySelectorAll('.sport-check').forEach(el => {
     el.classList.toggle('selected', selectedSports.includes(el.dataset.sport));
   });
 
   // Off days
-  offDays = zone.off_days||[];
-  document.querySelectorAll('.day-chip').forEach(el=>{
+  offDays = zone.off_days || [];
+  document.querySelectorAll('.day-chip').forEach(el => {
     el.classList.toggle('selected', offDays.includes(parseInt(el.dataset.day)));
   });
 
+  // Holidays
+  holidays = zone.holidays || [];
+  renderHolidays();
+
   // Courts
-  const { data: courtsData } = await sb.from('sz_courts').select('*').eq('zone_id',zid).eq('is_active',true);
-  courts = courtsData||[];
+  const { data: courtsData } = await sb.from('sz_courts').select('*').eq('zone_id', zid).eq('is_active', true);
+  courts = courtsData || [];
   renderCourts();
-
-  // Sport dropdown for new court
-  const sel = document.getElementById('newCourtSport');
-  sel.innerHTML = selectedSports.map(s=>`<option>${s}</option>`).join('');
+  updateCourtSportDropdown();
 }
 
-function renderCourts() {
-  document.getElementById('courtsList').innerHTML = courts.length
-    ? courts.map(c=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
-        <div><span class="court-tag">${c.sport}</span>${c.name}</div>
-        <button class="btn btn-red" onclick="removeCourt(${c.id})">Remove</button>
-      </div>`).join('')
-    : '<div style="color:var(--muted);font-size:13px;">No courts added yet</div>';
+function showMapsPreview(url) {
+  if (url) {
+    document.getElementById('mapsPreview').style.display = 'block';
+    document.getElementById('mapsLink').href = url;
+  } else {
+    document.getElementById('mapsPreview').style.display = 'none';
+  }
 }
 
-async function addCourt() {
-  const name  = document.getElementById('newCourtName').value.trim();
-  const sport = document.getElementById('newCourtSport').value;
-  if (!name) { alert('Enter court name'); return; }
-  const { data } = await sb.from('sz_courts').insert({ zone_id:getZoneId(), name, sport, is_active:true }).select().single();
-  if (data) { courts.push(data); renderCourts(); document.getElementById('newCourtName').value=''; }
-}
-
-async function removeCourt(id) {
-  if (!confirm('Remove this court?')) return;
-  await sb.from('sz_courts').update({is_active:false}).eq('id',id);
-  courts = courts.filter(c=>c.id!==id);
-  renderCourts();
-}
+document.getElementById('s-maps').addEventListener('input', function() {
+  showMapsPreview(this.value.trim());
+});
 
 function toggleSport(el) {
   const s = el.dataset.sport;
   el.classList.toggle('selected');
-  if (el.classList.contains('selected')) selectedSports.push(s);
-  else selectedSports = selectedSports.filter(x=>x!==s);
-  document.getElementById('newCourtSport').innerHTML = selectedSports.map(sp=>`<option>${sp}</option>`).join('');
+  if (el.classList.contains('selected')) { if (!selectedSports.includes(s)) selectedSports.push(s); }
+  else selectedSports = selectedSports.filter(x => x !== s);
+  updateCourtSportDropdown();
+}
+
+function updateCourtSportDropdown() {
+  document.getElementById('newCourtSport').innerHTML = selectedSports.map(s => `<option>${s}</option>`).join('');
 }
 
 function toggleDay(el) {
   const d = parseInt(el.dataset.day);
   el.classList.toggle('selected');
-  if (el.classList.contains('selected')) offDays.push(d);
-  else offDays = offDays.filter(x=>x!==d);
+  if (el.classList.contains('selected')) { if (!offDays.includes(d)) offDays.push(d); }
+  else offDays = offDays.filter(x => x !== d);
+}
+
+function addHoliday() {
+  const date = document.getElementById('holidayDate').value;
+  if (!date) { toast('Select a date'); return; }
+  if (holidays.includes(date)) { toast('Already added'); return; }
+  holidays.push(date);
+  holidays.sort();
+  renderHolidays();
+  document.getElementById('holidayDate').value = '';
+}
+
+function removeHoliday(date) {
+  holidays = holidays.filter(d => d !== date);
+  renderHolidays();
+}
+
+function renderHolidays() {
+  const el = document.getElementById('holidayList');
+  if (!holidays.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);">No holidays added</div>'; return; }
+  el.innerHTML = holidays.map(d => `
+    <div class="holiday-item">
+      <span style="font-size:13px;font-weight:600;">📅 ${d}</span>
+      <button class="btn btn-red" onclick="removeHoliday('${d}')">Remove</button>
+    </div>
+  `).join('');
+}
+
+function renderCourts() {
+  const el = document.getElementById('courtsList');
+  if (!courts.length) { el.innerHTML = '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">No courts added yet</div>'; return; }
+  el.innerHTML = courts.map(c => `
+    <div class="court-item">
+      <div><span class="court-tag">${c.sport}</span>${c.name}</div>
+      <button class="btn btn-red" onclick="removeCourt('${c.id}')">Remove</button>
+    </div>
+  `).join('');
+}
+
+async function addCourt() {
+  const name  = document.getElementById('newCourtName').value.trim();
+  const sport = document.getElementById('newCourtSport').value;
+  if (!name) { toast('Enter court name'); return; }
+  if (!sport) { toast('Select a sport first'); return; }
+  const { data } = await sb.from('sz_courts').insert({ zone_id: getZoneId(), name, sport, is_active: true }).select().single();
+  if (data) { courts.push(data); renderCourts(); document.getElementById('newCourtName').value = ''; toast('Court added!'); }
+}
+
+async function removeCourt(id) {
+  if (!confirm('Remove this court?')) return;
+  await sb.from('sz_courts').update({is_active: false}).eq('id', id);
+  courts = courts.filter(c => c.id !== id);
+  renderCourts();
+  toast('Court removed');
 }
 
 async function saveSettings() {
   const updates = {
-    name:             document.getElementById('s-vname').value.trim(),
-    area:             document.getElementById('s-area').value.trim(),
-    phone:            document.getElementById('s-phone').value.trim(),
-    open_time:        document.getElementById('s-open').value,
-    close_time:       document.getElementById('s-close').value,
-    slot_duration:    parseInt(document.getElementById('s-duration').value),
-    grace_minutes:    parseInt(document.getElementById('s-grace').value),
-    peak_price:       parseInt(document.getElementById('s-peak-price').value)||null,
-    peak_hours:       document.getElementById('s-peak-hours').value.trim(),
-    offpeak_price:    parseInt(document.getElementById('s-offpeak-price').value)||null,
-    earlybird_pct:    parseInt(document.getElementById('s-earlybird').value)||null,
-    earlybird_slots:  parseInt(document.getElementById('s-earlybird-slots').value)||null,
-    promo_code:       document.getElementById('s-promo-code').value.trim()||null,
-    promo_disc:       parseInt(document.getElementById('s-promo-disc').value)||null,
-    sports:           selectedSports,
-    off_days:         offDays,
+    name:            document.getElementById('s-vname').value.trim(),
+    address:         document.getElementById('s-area').value.trim(),
+    city:            document.getElementById('s-city').value.trim(),
+    phone:           document.getElementById('s-phone').value.trim(),
+    maps_url:        document.getElementById('s-maps').value.trim() || null,
+    open_time:       document.getElementById('s-open').value,
+    close_time:      document.getElementById('s-close').value,
+    slot_duration:   parseInt(document.getElementById('s-duration').value),
+    grace_minutes:   parseInt(document.getElementById('s-grace').value),
+    peak_hours:      document.getElementById('s-peak-hours').value.trim() || null,
+    peak_price:      parseInt(document.getElementById('s-peak-price').value) || null,
+    offpeak_price:   parseInt(document.getElementById('s-offpeak-price').value) || null,
+    earlybird_pct:   parseInt(document.getElementById('s-earlybird').value) || null,
+    earlybird_slots: parseInt(document.getElementById('s-earlybird-slots').value) || null,
+    promo_code:      document.getElementById('s-promo-code').value.trim().toUpperCase() || null,
+    promo_disc:      parseInt(document.getElementById('s-promo-disc').value) || null,
+    sports:          selectedSports,
+    off_days:        offDays,
+    holidays:        holidays,
   };
 
   const { error } = await sb.from('sz_zones').update(updates).eq('id', getZoneId());
-  if (error) { alert('Error saving: '+error.message); return; }
-  alert('✅ Settings saved successfully!');
+  if (error) { toast('Error saving: ' + error.message); return; }
+  zoneData = { ...zoneData, ...updates };
+  toast('✅ Settings saved successfully!');
+}
+
+// ── GENERATE SLOTS ────────────────────────────────────────────
+async function generateSlots() {
+  const fromDate = document.getElementById('genFrom').value;
+  const toDate   = document.getElementById('genTo').value;
+  if (!fromDate || !toDate) { toast('Select date range'); return; }
+
+  const zone = zoneData;
+  if (!zone) { toast('Save settings first'); return; }
+  if (!courts.length) { toast('Add at least one court first'); return; }
+
+  const btn = document.querySelector('#screen-settings .save-btn[onclick="generateSlots()"]');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  document.getElementById('genStatus').textContent = '';
+
+  const openH = parseInt(zone.open_time?.split(':')[0] || 6);
+  const openM = parseInt(zone.open_time?.split(':')[1] || 0);
+  const closeH = parseInt(zone.close_time?.split(':')[0] || 22);
+  const closeM = parseInt(zone.close_time?.split(':')[1] || 0);
+  const duration = zone.slot_duration || 60;
+  const peakPrice = zone.peak_price || 200;
+  const offpeakPrice = zone.offpeak_price || peakPrice;
+  const peakHours = parsePeakHours(zone.peak_hours || '');
+  const offDaysSet = new Set(zone.off_days || []);
+  const holidaySet = new Set(zone.holidays || []);
+
+  let totalSlots = 0;
+  let skipped = 0;
+  const slotsToInsert = [];
+
+  // Loop dates
+  let current = new Date(fromDate);
+  const end = new Date(toDate);
+  while (current <= end) {
+    const dateStr = current.toISOString().split('T')[0];
+    const dayOfWeek = current.getDay();
+
+    // Skip off days and holidays
+    if (offDaysSet.has(dayOfWeek) || holidaySet.has(dateStr)) {
+      current.setDate(current.getDate() + 1);
+      skipped++;
+      continue;
+    }
+
+    // Check existing slots for this date
+    const { data: existing } = await sb.from('sz_slots').select('id').eq('zone_id', zone.id).eq('slot_date', dateStr);
+    if (existing?.length > 0) {
+      current.setDate(current.getDate() + 1);
+      skipped++;
+      continue;
+    }
+
+    // Generate slots for each court
+    for (const court of courts) {
+      let slotStart = openH * 60 + openM;
+      const closeTotal = closeH * 60 + closeM;
+
+      while (slotStart + duration <= closeTotal) {
+        const startH = Math.floor(slotStart / 60);
+        const startM = slotStart % 60;
+        const endTotal = slotStart + duration;
+        const endH = Math.floor(endTotal / 60);
+        const endM = endTotal % 60;
+
+        const startStr = `${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')}:00`;
+        const endStr   = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}:00`;
+
+        const isPeak = isInPeakHours(slotStart, peakHours);
+        const price = isPeak ? peakPrice : offpeakPrice;
+
+        slotsToInsert.push({
+          zone_id: zone.id,
+          court_id: court.id,
+          sport: court.sport,
+          slot_date: dateStr,
+          start_time: startStr,
+          end_time: endStr,
+          price: price,
+          status: 'open'
+        });
+        totalSlots++;
+        slotStart += duration;
+      }
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  // Insert in batches of 50
+  let inserted = 0;
+  for (let i = 0; i < slotsToInsert.length; i += 50) {
+    const batch = slotsToInsert.slice(i, i + 50);
+    const { error } = await sb.from('sz_slots').insert(batch);
+    if (!error) inserted += batch.length;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Generate Slots';
+  document.getElementById('genStatus').textContent = `✅ Generated ${inserted} slots! (${skipped} days skipped)`;
+  toast(`✅ ${inserted} slots generated!`);
+}
+
+function parsePeakHours(str) {
+  if (!str) return [];
+  return str.split(',').map(range => {
+    const [start, end] = range.trim().split('-');
+    if (!start || !end) return null;
+    const [sh, sm] = start.trim().split(':').map(Number);
+    const [eh, em] = end.trim().split(':').map(Number);
+    return { start: sh * 60 + (sm||0), end: eh * 60 + (em||0) };
+  }).filter(Boolean);
+}
+
+function isInPeakHours(minutesSinceMidnight, peakRanges) {
+  return peakRanges.some(r => minutesSinceMidnight >= r.start && minutesSinceMidnight < r.end);
 }
 
 function logout() {
   sb.auth.signOut();
-  localStorage.removeItem('owner_zone');
-  localStorage.removeItem('owner_venue');
-  window.location.href='../index.html';
+  localStorage.removeItem('owner_zone_id');
+  localStorage.removeItem('owner_venue_name');
+  window.location.href = '../index.html';
 }
 </script>
 </body>
