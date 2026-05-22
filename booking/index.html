@@ -325,7 +325,7 @@ function renderZones() {
     <div class="zone-card" onclick="selectZone(${z.id})">
       <div class="zone-name">${z.name}</div>
       <div class="zone-meta">
-        <span>📍 ${z.area}, ${z.city}</span>
+        <span>📍 ${z.area||z.city||""}</span>
         <span>🕐 ${z.open_time?.slice(0,5)}–${z.close_time?.slice(0,5)}</span>
       </div>
       <div class="zone-sports">${(z.sports||[]).map(s=>`<span class="sport-tag">${s}</span>`).join('')}</div>
@@ -334,7 +334,7 @@ function renderZones() {
 }
 
 async function selectZone(zoneId) {
-  state.selectedZone = state.zones.find(z => z.id === zoneId);
+  state.selectedZone = state.zones.find(z => String(z.id) === String(zoneId));
   state.selectedSlot = null;
   state.selectedCourt = null;
   document.getElementById('slotZoneName').textContent = state.selectedZone.name;
