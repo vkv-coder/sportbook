@@ -290,7 +290,7 @@ async function checkPlayerPhone() {
   setErr('p-err1','');
   playerPhone = phone;
  const { data, error } = await sb.from('sz_users').select('id,name,pin').eq('phone', phone).maybeSingle();
-alert('DEBUG: data=' + JSON.stringify(data) + ' error=' + JSON.stringify(error));
+
   if (data && data.pin) {
     document.getElementById('p-pin-sub').textContent = `Welcome back ${data.name}! Enter your 4-digit PIN`;
     goStep('p-step2','p-step1');
