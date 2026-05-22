@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportBook — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+:root{--blue:#1A6BFF;--green:#00B87A;--red:#EF4444;--bg:#F4F6FB;--white:#fff;--text:#111827;--muted:#6B7280;--border:#E5E7EB;--radius:14px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;}
+nav{background:#111;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:white;}
+.logo span{color:var(--green);}
+main{padding:24px;max-width:700px;margin:0 auto;}
+
+/* LOGIN */
+.login-card{background:white;border-radius:var(--radius);padding:32px;margin-top:60px;box-shadow:0 2px 16px rgba(0,0,0,0.08);max-width:360px;margin-left:auto;margin-right:auto;}
+.login-title{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center;}
+.form-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:12px;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--blue);}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;color:white;}
+.btn-blue{background:var(--blue);}
+.btn-green{background:var(--green);}
+.btn-red{background:var(--red);}
+.err{color:var(--red);font-size:13px;text-align:center;margin-top:8px;}
+
+/* DASHBOARD */
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;}
+.stats-row{display:flex;gap:12px;margin-bottom:24px;}
+.stat-card{background:white;border-radius:var(--radius);padding:16px 20px;flex:1;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--text);}
+.stat-label{font-size:12px;color:var(--muted);}
+
+/* OWNER CARDS */
+.owner-card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.owner-info .name{font-size:16px;font-weight:700;color:var(--text);}
+.owner-info .venue{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--blue);margin-bottom:4px;}
+.owner-info .detail{font-size:12px;color:var(--muted);line-height:1.6;}
+.owner-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.action-btn{padding:8px 16px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.approve-btn{background:#D1FAE5;color:#065F46;}
+.approve-btn:hover{background:var(--green);color:white;}
+.reject-btn{background:#FEE2E2;color:#991B1B;}
+.reject-btn:hover{background:var(--red);color:white;}
+.approved-badge{background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.pending-badge{background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-bottom:20px;}
+.tab{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;}
+.tab.active{background:var(--blue);border-color:var(--blue);color:white;}
+.screen{display:none;}.screen.active{display:block;}
+
+/* ADD OWNER FORM */
+.form-card{background:white;border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.form-row{display:flex;gap:10px;margin-bottom:12px;}
+.form-row input,.form-row select{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
+.form-row input:focus,.form-row select:focus{border-color:var(--green);}
+.form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;}
+.notice{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;font-size:13px;color:#1E40AF;margin-bottom:16px;line-height:1.5;}
+
+.empty{text-align:center;padding:40px;color:var(--muted);}
+.loader{text-align:center;padding:30px;color:var(--muted);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:white;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Sport<span>Book</span> Admin</div>
+  <div id="navRight" style="color:#9CA3AF;font-size:13px;"></div>
+</nav>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-title">🔐 Admin Login</div>
+    <input class="form-input" type="password" id="adminPin" placeholder="Enter admin PIN">
+    <button class="btn btn-blue" onclick="adminLogin()">Login →</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none;">
+  <main>
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Owners</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
+      <div class="stat-card"><div class="stat-val" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('pending')">⏳ Pending Approval</button>
+      <button class="tab" onclick="showTab('approved')">✅ Approved Owners</button>
+      <button class="tab" onclick="showTab('add')">➕ Add Owner</button>
+    </div>
+
+    <!-- PENDING -->
+    <div class="screen active" id="screen-pending">
+      <div id="pendingOwners"><div class="loader">Loading...</div></div>
+    </div>
+
+    <!-- APPROVED -->
+    <div class="screen" id="screen-approved">
+      <div id="approvedOwners"><div class="loader">Loading...</div></div>
+    </div>
+
+    <!-- ADD OWNER -->
+    <div class="screen" id="screen-add">
+      <div class="notice">Add a new owner directly — they can login immediately without registering.</div>
+      <div class="form-card">
+        <div class="form-label">Owner Name</div>
+        <div class="form-row"><input id="add-name" placeholder="Rajesh Patel"></div>
+        <div class="form-label">Venue Name</div>
+        <div class="form-row"><input id="add-venue" placeholder="Smash Arena"></div>
+        <div class="form-label">City / Area</div>
+        <div class="form-row"><input id="add-city" placeholder="Fatehgunj, Vadodara"></div>
+        <div class="form-label">Mobile Number</div>
+        <div class="form-row"><input id="add-phone" placeholder="98765 43210" maxlength="10" inputmode="numeric"></div>
+        <div class="form-label">Email Address</div>
+        <div class="form-row"><input id="add-email" type="email" placeholder="owner@email.com"></div>
+        <div class="form-label">Password (they'll use this to login)</div>
+        <div class="form-row"><input id="add-pass" placeholder="Min 6 characters"></div>
+        <button class="btn btn-green" onclick="addOwner()">➕ Add Owner & Create Venue</button>
+        <div class="err" id="addErr" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const ADMIN_PIN = 'sportbook@admin2026';
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+function adminLogin() {
+  const pin = document.getElementById('adminPin').value;
+  if (pin !== ADMIN_PIN) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('navRight').textContent = 'Admin: Vijay Vora';
+  loadAll();
+}
+
+document.getElementById('adminPin').addEventListener('keypress', e => { if(e.key==='Enter') adminLogin(); });
+
+function showTab(t) {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`.tab[onclick="showTab('${t}')"]`).classList.add('active');
+  document.getElementById('screen-'+t).classList.add('active');
+}
+
+async function loadAll() {
+  const { data } = await sb.from('sz_owners').select('*').order('created_at', {ascending:false});
+  const all = data || [];
+  const pending  = all.filter(o => !o.is_approved);
+  const approved = all.filter(o => o.is_approved);
+
+  document.getElementById('stat-total').textContent    = all.length;
+  document.getElementById('stat-approved').textContent = approved.length;
+  document.getElementById('stat-pending').textContent  = pending.length;
+
+  renderOwners(pending,  'pendingOwners',  false);
+  renderOwners(approved, 'approvedOwners', true);
+}
+
+function renderOwners(list, elId, isApproved) {
+  const el = document.getElementById(elId);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty">${isApproved ? '✅ No approved owners yet' : '🎉 No pending approvals!'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(o => `
+    <div class="owner-card" id="ocard-${o.id}">
+      <div class="owner-info">
+        <div class="venue">${o.venue_name||'—'}</div>
+        <div class="name">👤 ${o.owner_name||'—'}</div>
+        <div class="detail">
+          📱 ${o.phone||'—'} · 📧 ${o.email||'—'}<br>
+          📍 ${o.city||'—'}<br>
+          🕐 Registered: ${new Date(o.created_at).toLocaleDateString('en-IN')}
+          ${o.zone_id?`<br>🏟️ Zone: ${o.zone_id.slice(0,8)}...`:'<br>🏟️ No zone yet'}
+        </div>
+      </div>
+      <div class="owner-actions">
+        ${isApproved
+          ? `<span class="approved-badge">✅ Approved</span>
+             <button class="action-btn reject-btn" onclick="revokeOwner('${o.id}')">Revoke</button>`
+          : `<button class="action-btn approve-btn" onclick="approveOwner('${o.id}','${o.venue_name}','${o.email}')">✅ Approve</button>
+             <button class="action-btn reject-btn" onclick="deleteOwner('${o.id}')">❌ Reject</button>`
+        }
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approveOwner(id, venue, email) {
+  const { error } = await sb.from('sz_owners').update({is_approved:true}).eq('id', id);
+  if (error) { toast('Error: '+error.message); return; }
+  toast(`✅ ${venue} approved! They can now login.`);
+  loadAll();
+}
+
+async function revokeOwner(id) {
+  if (!confirm('Revoke access for this owner?')) return;
+  await sb.from('sz_owners').update({is_approved:false}).eq('id', id);
+  toast('Access revoked');
+  loadAll();
+}
+
+async function deleteOwner(id) {
+  if (!confirm('Reject and delete this owner registration?')) return;
+  await sb.from('sz_owners').delete().eq('id', id);
+  toast('Owner rejected and removed');
+  loadAll();
+}
+
+async function addOwner() {
+  const name  = document.getElementById('add-name').value.trim();
+  const venue = document.getElementById('add-venue').value.trim();
+  const city  = document.getElementById('add-city').value.trim();
+  const phone = document.getElementById('add-phone').value.trim();
+  const email = document.getElementById('add-email').value.trim();
+  const pass  = document.getElementById('add-pass').value.trim();
+
+  if (!name||!venue||!city||!phone||!email||!pass) {
+    document.getElementById('addErr').textContent = 'Please fill all fields';
+    return;
+  }
+  if (phone.length !== 10) { document.getElementById('addErr').textContent = 'Enter valid 10-digit mobile'; return; }
+  if (pass.length < 6)     { document.getElementById('addErr').textContent = 'Password min 6 characters'; return; }
+  document.getElementById('addErr').textContent = '';
+
+  // Create zone first
+  const { data: zone, error: zErr } = await sb.from('sz_zones').insert({
+    name: venue, city: city.split(',').pop().trim(),
+    address: city, sports: [], is_active: true,
+    open_time: '06:00:00', close_time: '22:00:00',
+    slot_duration: 60, grace_minutes: 15
+  }).select().single();
+
+  if (zErr) { document.getElementById('addErr').textContent = 'Error creating venue: '+zErr.message; return; }
+
+  // Create owner
+  const { error: oErr } = await sb.from('sz_owners').insert({
+    owner_name: name, venue_name: venue,
+    city, phone, email, password: pass,
+    zone_id: zone.id, is_approved: true
+  });
+
+  if (oErr) { document.getElementById('addErr').textContent = 'Error creating owner: '+oErr.message; return; }
+
+  toast(`✅ ${venue} added! Owner can login with ${email}`);
+
+  // Clear form
+  ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+
+  loadAll();
+  showTab('approved');
+}
+</script>
+</body>
+</html>
