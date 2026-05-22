@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportBook — Find & Book Courts</title>
+<link rel="manifest" href="../manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --blue: #1A6BFF; --blue-dark: #1254CC;
+  --green: #00B87A; --green-dark: #009962;
+  --red: #EF4444; --orange: #F59E0B;
+  --bg: #F4F6FB; --white: #fff;
+  --text: #111827; --muted: #6B7280;
+  --border: #E5E7EB; --radius: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); min-height:100vh; }
+
+/* NAV */
+nav { background:var(--white); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 0 var(--border); position:sticky; top:0; z-index:50; }
+.logo { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:var(--blue); cursor:pointer; }
+.logo span { color:var(--text); }
+.nav-tabs { display:flex; gap:4px; }
+.nav-tab { padding:7px 14px; border-radius:20px; border:none; background:none; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.2s; }
+.nav-tab.active { background:var(--blue); color:white; }
+
+/* PAGES */
+.page { display:none; padding:20px; max-width:480px; margin:0 auto; }
+.page.active { display:block; }
+
+/* SECTION TITLE */
+.sec-title { font-family:'Rajdhani',sans-serif; font-size:20px; font-weight:700; color:var(--text); margin-bottom:14px; }
+
+/* SPORT FILTER */
+.sport-filters { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none; }
+.sport-filters::-webkit-scrollbar { display:none; }
+.sport-chip { padding:7px 16px; border-radius:20px; border:1.5px solid var(--border); background:white; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0; }
+.sport-chip.active { background:var(--blue); border-color:var(--blue); color:white; }
+
+/* ZONE CARD */
+.zone-card { background:white; border-radius:var(--radius); padding:18px; margin-bottom:12px; box-shadow:0 1px 8px rgba(0,0,0,0.06); cursor:pointer; border:2px solid transparent; transition:all 0.2s; }
+.zone-card:hover { border-color:var(--blue); transform:translateY(-1px); }
+.zone-name { font-family:'Rajdhani',sans-serif; font-size:18px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.zone-meta { font-size:12px; color:var(--muted); margin-bottom:8px; display:flex; gap:12px; }
+.zone-sports { display:flex; gap:6px; flex-wrap:wrap; }
+.sport-tag { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(26,107,255,0.08); color:var(--blue); }
+
+/* DATE ROW */
+.date-row { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; scrollbar-width:none; }
+.date-row::-webkit-scrollbar { display:none; }
+.date-chip { flex-shrink:0; padding:8px 14px; border-radius:12px; border:1.5px solid var(--border); background:white; text-align:center; cursor:pointer; transition:all 0.2s; min-width:56px; }
+.date-chip.active { background:var(--blue); border-color:var(--blue); color:white; }
+.date-chip .day { font-size:11px; font-weight:600; opacity:0.7; }
+.date-chip .date { font-size:16px; font-weight:700; }
+.date-chip.active .day { opacity:0.85; }
+
+/* SLOT GRID */
+.slot-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
+.slot-btn { padding:12px 8px; border-radius:12px; border:1.5px solid var(--border); background:white; text-align:center; cursor:pointer; transition:all 0.2s; }
+.slot-btn.open:hover { border-color:var(--blue); background:rgba(26,107,255,0.05); }
+.slot-btn.booked { background:#F9FAFB; border-color:var(--border); opacity:0.5; cursor:not-allowed; }
+.slot-btn.selected { background:var(--blue); border-color:var(--blue); color:white; }
+.slot-time { font-size:13px; font-weight:700; }
+.slot-price { font-size:11px; margin-top:2px; color:var(--green); }
+.slot-btn.selected .slot-price { color:rgba(255,255,255,0.8); }
+.slot-btn.booked .slot-time { color:var(--muted); }
+.slot-status { font-size:10px; color:var(--muted); margin-top:2px; }
+
+/* COURT SELECT */
+.court-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.court-chip { padding:7px 14px; border-radius:10px; border:1.5px solid var(--border); background:white; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.2s; }
+.court-chip.active { background:var(--blue); border-color:var(--blue); color:white; }
+
+/* BOOKING FORM */
+.form-card { background:white; border-radius:var(--radius); padding:20px; margin-bottom:16px; box-shadow:0 1px 8px rgba(0,0,0,0.06); }
+.form-row { margin-bottom:14px; }
+.form-row label { display:block; font-size:13px; font-weight:600; color:var(--text); margin-bottom:6px; }
+.form-row input { width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:15px; outline:none; transition:border-color 0.2s; }
+.form-row input:focus { border-color:var(--blue); }
+
+/* SUMMARY BOX */
+.summary-box { background:rgba(26,107,255,0.05); border:1.5px solid rgba(26,107,255,0.15); border-radius:12px; padding:16px; margin-bottom:16px; }
+.summary-row { display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; }
+.summary-row:last-child { margin-bottom:0; font-weight:700; font-size:15px; border-top:1px solid rgba(26,107,255,0.15); padding-top:8px; margin-top:4px; }
+.summary-label { color:var(--muted); }
+.summary-val { color:var(--text); font-weight:600; }
+
+/* BUTTONS */
+.btn { width:100%; padding:15px; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+.btn-blue { background:var(--blue); color:white; }
+.btn-blue:hover { background:var(--blue-dark); }
+.btn-green { background:var(--green); color:white; }
+.btn-outline { background:white; border:1.5px solid var(--border); color:var(--text); }
+.btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+/* BACK BTN */
+.back-link { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; margin-bottom:16px; border:none; background:none; font-family:'DM Sans',sans-serif; }
+
+/* BOOKING CARD */
+.booking-card { background:white; border-radius:var(--radius); padding:18px; margin-bottom:12px; box-shadow:0 1px 8px rgba(0,0,0,0.06); }
+.booking-status { display:inline-block; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:8px; }
+.status-confirmed { background:#D1FAE5; color:#065F46; }
+.status-noshow { background:#FEE2E2; color:#991B1B; }
+.status-checkedin { background:#DBEAFE; color:#1E40AF; }
+.booking-venue { font-family:'Rajdhani',sans-serif; font-size:17px; font-weight:700; color:var(--text); }
+.booking-detail { font-size:13px; color:var(--muted); margin-top:4px; }
+.booking-qr { font-size:11px; font-weight:700; color:var(--blue); margin-top:8px; letter-spacing:1px; }
+
+/* SUCCESS */
+.success-screen { text-align:center; padding:32px 20px; }
+.success-icon { font-size:64px; margin-bottom:16px; display:block; }
+.success-title { font-family:'Rajdhani',sans-serif; font-size:28px; font-weight:700; color:var(--text); margin-bottom:8px; }
+.success-sub { font-size:14px; color:var(--muted); margin-bottom:24px; }
+.qr-box { background:white; border-radius:var(--radius); padding:20px; margin-bottom:20px; box-shadow:0 1px 8px rgba(0,0,0,0.06); }
+.qr-code { font-family:'Rajdhani',sans-serif; font-size:22px; font-weight:700; color:var(--blue); letter-spacing:2px; word-break:break-all; }
+
+/* EMPTY */
+.empty { text-align:center; padding:48px 20px; color:var(--muted); }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+
+/* LOADER */
+.loader { text-align:center; padding:32px; color:var(--muted); font-size:14px; }
+
+/* TOAST */
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#111; color:white; padding:12px 24px; border-radius:24px; font-size:14px; font-weight:600; z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+
+/* BOTTOM NAV */
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid var(--border); display:flex; z-index:50; }
+.bnav-btn { flex:1; padding:12px 8px; border:none; background:none; font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600; color:var(--muted); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:color 0.2s; }
+.bnav-btn.active { color:var(--blue); }
+.bnav-icon { font-size:20px; }
+
+main { padding-bottom:80px; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo" onclick="showPage('discover')">Sport<span>Book</span></div>
+  <div style="font-size:12px;color:var(--muted)" id="userGreet"></div>
+</nav>
+
+<main>
+<!-- DISCOVER PAGE -->
+<div class="page active" id="page-discover">
+  <div style="margin-bottom:16px;">
+    <div class="sec-title">🏟️ Game Zones Near You</div>
+    <div class="sport-filters" id="sportFilters">
+      <div class="sport-chip active" onclick="filterSport('all',this)">All</div>
+      <div class="sport-chip" onclick="filterSport('Badminton',this)">🏸 Badminton</div>
+      <div class="sport-chip" onclick="filterSport('Tennis',this)">🎾 Tennis</div>
+      <div class="sport-chip" onclick="filterSport('Pickleball',this)">🏓 Pickleball</div>
+      <div class="sport-chip" onclick="filterSport('Squash',this)">🟡 Squash</div>
+      <div class="sport-chip" onclick="filterSport('Swimming',this)">🏊 Swimming</div>
+    </div>
+  </div>
+  <div id="zoneList"><div class="loader">Loading venues...</div></div>
+</div>
+
+<!-- SLOTS PAGE -->
+<div class="page" id="page-slots">
+  <button class="back-link" onclick="showPage('discover')">← Back</button>
+  <div class="sec-title" id="slotZoneName">Slots</div>
+  <div class="date-row" id="dateRow"></div>
+  <div class="sport-filters" id="slotSportFilter"></div>
+  <div class="sec-title" style="font-size:15px;margin-bottom:10px;">Select Court</div>
+  <div class="court-row" id="courtRow"></div>
+  <div class="sec-title" style="font-size:15px;margin-bottom:10px;">Available Slots</div>
+  <div class="slot-grid" id="slotGrid"><div class="loader">Loading slots...</div></div>
+  <button class="btn btn-blue" id="proceedBtn" onclick="showPage('book')" disabled>Select a slot to continue</button>
+</div>
+
+<!-- BOOKING PAGE -->
+<div class="page" id="page-book">
+  <button class="back-link" onclick="showPage('slots')">← Back</button>
+  <div class="sec-title">Confirm Booking</div>
+  <div class="summary-box" id="bookingSummary"></div>
+  <div class="form-card">
+    <div class="form-row">
+      <label>Your Name</label>
+      <input type="text" id="userName" placeholder="Rajesh Patel">
+    </div>
+    <div class="form-row">
+      <label>Mobile Number</label>
+      <input type="tel" id="userPhone" placeholder="98765 43210" maxlength="10" inputmode="numeric">
+    </div>
+  </div>
+  <button class="btn btn-blue" onclick="initiatePayment()">Pay & Confirm →</button>
+</div>
+
+<!-- SUCCESS PAGE -->
+<div class="page" id="page-success">
+  <div class="success-screen">
+    <span class="success-icon">🎉</span>
+    <div class="success-title">Booking Confirmed!</div>
+    <div class="success-sub">Your slot is secured. Show QR at the venue.</div>
+    <div class="qr-box">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">YOUR BOOKING ID</div>
+      <div class="qr-code" id="successQR">SB-XXXXXXXX</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;" id="successArrive"></div>
+    </div>
+    <div class="summary-box" id="successSummary"></div>
+    <button class="btn btn-outline" onclick="showPage('mybookings')" style="margin-bottom:10px">View My Bookings</button>
+    <button class="btn btn-blue" onclick="showPage('discover')">Book Another Court</button>
+  </div>
+</div>
+
+<!-- MY BOOKINGS PAGE -->
+<div class="page" id="page-mybookings">
+  <div class="sec-title">📋 My Bookings</div>
+  <div id="bookingsList"><div class="loader">Loading...</div></div>
+</div>
+</main>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav-btn active" id="bnav-discover" onclick="showPage('discover')">
+    <span class="bnav-icon">🔍</span>Discover
+  </button>
+  <button class="bnav-btn" id="bnav-mybookings" onclick="showPage('mybookings')">
+    <span class="bnav-icon">📋</span>My Bookings
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const SUPABASE_URL = 'https://qijdkmyugjdxbuhgbhcz.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpamRrbXl1Z2pkeGJ1aGdiaGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MzQ0MDQsImV4cCI6MjA2MzQxMDQwNH0.j7OIFQ_Ry3TRxSZBzmMjMzVKSAuPPcVMrMFOk0YRFEM';
+const RZP_KEY     = 'rzp_live_SWaW0o2vM1Irpq';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ───────────────────────────────────────────────────
+let state = {
+  zones: [], filteredZones: [],
+  selectedZone: null, selectedSport: 'all',
+  selectedDate: null, selectedCourt: null, selectedSlot: null,
+  userPhone: '', userName: '',
+  currentBooking: null
+};
+
+// ── INIT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setupDates();
+  loadZones();
+  loadUserFromStorage();
+});
+
+function loadUserFromStorage() {
+  const phone = localStorage.getItem('sb_phone');
+  const name  = localStorage.getItem('sb_name');
+  if (phone) {
+    state.userPhone = phone;
+    state.userName  = name || '';
+    document.getElementById('userGreet').textContent = `Hi ${name || phone}`;
+    document.getElementById('userPhone').value = phone;
+    document.getElementById('userName').value  = name || '';
+  }
+}
+
+// ── PAGE NAV ────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nb = document.getElementById('bnav-' + name);
+  if (nb) nb.classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'mybookings') loadMyBookings();
+}
+
+// ── DATES ───────────────────────────────────────────────────
+function setupDates() {
+  const row = document.getElementById('dateRow');
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    const chip = document.createElement('div');
+    chip.className = 'date-chip' + (i === 0 ? ' active' : '');
+    chip.innerHTML = `<div class="day">${i===0?'Today':days[d.getDay()]}</div><div class="date">${d.getDate()}</div>`;
+    const iso = d.toISOString().split('T')[0];
+    if (i === 0) state.selectedDate = iso;
+    chip.onclick = () => {
+      document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.selectedDate = iso;
+      state.selectedSlot = null;
+      updateProceedBtn();
+      loadSlots();
+    };
+    row.appendChild(chip);
+  }
+}
+
+// ── ZONES ───────────────────────────────────────────────────
+async function loadZones() {
+  const { data, error } = await sb.from('sz_zones').select('*').eq('is_active', true);
+  if (error) { document.getElementById('zoneList').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Could not load venues</div>'; return; }
+  state.zones = data || [];
+  renderZones();
+}
+
+function filterSport(sport, el) {
+  document.querySelectorAll('#sportFilters .sport-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.selectedSport = sport;
+  renderZones();
+}
+
+function renderZones() {
+  const list = document.getElementById('zoneList');
+  let zones = state.zones;
+  if (state.selectedSport !== 'all') {
+    zones = zones.filter(z => z.sports && z.sports.includes(state.selectedSport));
+  }
+  if (!zones.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">🏟️</div>No venues found</div>'; return; }
+  list.innerHTML = zones.map(z => `
+    <div class="zone-card" onclick="selectZone(${z.id})">
+      <div class="zone-name">${z.name}</div>
+      <div class="zone-meta">
+        <span>📍 ${z.area}, ${z.city}</span>
+        <span>🕐 ${z.open_time?.slice(0,5)}–${z.close_time?.slice(0,5)}</span>
+      </div>
+      <div class="zone-sports">${(z.sports||[]).map(s=>`<span class="sport-tag">${s}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+async function selectZone(zoneId) {
+  state.selectedZone = state.zones.find(z => z.id === zoneId);
+  state.selectedSlot = null;
+  state.selectedCourt = null;
+  document.getElementById('slotZoneName').textContent = state.selectedZone.name;
+
+  // Sport filter for this zone
+  const sf = document.getElementById('slotSportFilter');
+  const sports = state.selectedZone.sports || [];
+  sf.innerHTML = sports.map((s,i) => `<div class="sport-chip${i===0?' active':''}" onclick="selectSlotSport('${s}',this)">${s}</div>`).join('');
+  if (sports[0]) state.selectedSport = sports[0];
+
+  showPage('slots');
+  await loadCourts();
+  await loadSlots();
+}
+
+function selectSlotSport(sport, el) {
+  document.querySelectorAll('#slotSportFilter .sport-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.selectedSport = sport;
+  state.selectedSlot = null;
+  state.selectedCourt = null;
+  updateProceedBtn();
+  loadCourts();
+  loadSlots();
+}
+
+// ── COURTS ──────────────────────────────────────────────────
+async function loadCourts() {
+  const { data } = await sb.from('sz_courts')
+    .select('*')
+    .eq('zone_id', state.selectedZone.id)
+    .eq('sport', state.selectedSport)
+    .eq('is_active', true);
+  const row = document.getElementById('courtRow');
+  if (!data || !data.length) { row.innerHTML = ''; return; }
+  row.innerHTML = data.map((c,i) => `
+    <div class="court-chip${i===0?' active':''}" onclick="selectCourt(${c.id},this)">${c.name}</div>
+  `).join('');
+  if (data[0]) { state.selectedCourt = data[0].id; loadSlots(); }
+}
+
+function selectCourt(id, el) {
+  document.querySelectorAll('.court-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  state.selectedCourt = id;
+  state.selectedSlot = null;
+  updateProceedBtn();
+  loadSlots();
+}
+
+// ── SLOTS ───────────────────────────────────────────────────
+async function loadSlots() {
+  const grid = document.getElementById('slotGrid');
+  grid.innerHTML = '<div class="loader">Loading slots...</div>';
+  if (!state.selectedZone || !state.selectedDate) return;
+
+  let query = sb.from('sz_slots').select('*')
+    .eq('zone_id', state.selectedZone.id)
+    .eq('slot_date', state.selectedDate)
+    .order('start_time');
+
+  if (state.selectedCourt) query = query.eq('court_id', state.selectedCourt);
+  if (state.selectedSport !== 'all') query = query.eq('sport', state.selectedSport);
+
+  const { data, error } = await query;
+  if (error || !data?.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">😔</div>No slots available for this date</div>';
+    return;
+  }
+
+  grid.innerHTML = data.map(slot => {
+    const isBooked = ['booked','noshow','walkin'].includes(slot.status);
+    const isSelected = state.selectedSlot?.id === slot.id;
+    const cls = isBooked ? 'booked' : isSelected ? 'selected' : 'open';
+    return `
+      <div class="slot-btn ${cls}" onclick="${isBooked ? '' : `selectSlot(${slot.id})`}" data-id="${slot.id}">
+        <div class="slot-time">${slot.start_time?.slice(0,5)}</div>
+        <div class="slot-price">${isBooked ? '' : '₹'+slot.price}</div>
+        <div class="slot-status">${isBooked ? 'Booked' : ''}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Store slot data for lookup
+  window._slots = data;
+}
+
+function selectSlot(id) {
+  const slot = window._slots?.find(s => s.id === id);
+  if (!slot) return;
+  state.selectedSlot = slot;
+  // Re-render slots to show selection
+  document.querySelectorAll('.slot-btn').forEach(btn => {
+    btn.classList.remove('selected');
+    if (!btn.classList.contains('booked')) btn.classList.add('open');
+  });
+  const el = document.querySelector(`.slot-btn[data-id="${id}"]`);
+  if (el) { el.classList.remove('open'); el.classList.add('selected'); }
+  updateProceedBtn();
+}
+
+function updateProceedBtn() {
+  const btn = document.getElementById('proceedBtn');
+  if (state.selectedSlot) {
+    btn.disabled = false;
+    btn.textContent = `Book ${state.selectedSlot.start_time?.slice(0,5)} slot — ₹${state.selectedSlot.price} →`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'Select a slot to continue';
+  }
+}
+
+// ── BOOKING SUMMARY ─────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const nb = document.getElementById('bnav-' + name);
+  if (nb) nb.classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'mybookings') loadMyBookings();
+  if (name === 'book') renderBookingSummary();
+}
+
+function renderBookingSummary() {
+  const slot = state.selectedSlot;
+  const zone = state.selectedZone;
+  if (!slot || !zone) return;
+  document.getElementById('bookingSummary').innerHTML = `
+    <div class="summary-row"><span class="summary-label">Venue</span><span class="summary-val">${zone.name}</span></div>
+    <div class="summary-row"><span class="summary-label">Sport</span><span class="summary-val">${slot.sport}</span></div>
+    <div class="summary-row"><span class="summary-label">Date</span><span class="summary-val">${state.selectedDate}</span></div>
+    <div class="summary-row"><span class="summary-label">Time</span><span class="summary-val">${slot.start_time?.slice(0,5)} – ${slot.end_time?.slice(0,5)}</span></div>
+    <div class="summary-row"><span class="summary-label">Total</span><span class="summary-val" style="color:var(--blue)">₹${slot.price}</span></div>
+  `;
+}
+
+// ── PAYMENT ─────────────────────────────────────────────────
+async function initiatePayment() {
+  const name  = document.getElementById('userName').value.trim();
+  const phone = document.getElementById('userPhone').value.trim();
+  if (!name)            { toast('Enter your name'); return; }
+  if (phone.length < 10){ toast('Enter valid 10-digit number'); return; }
+
+  state.userName  = name;
+  state.userPhone = phone;
+  localStorage.setItem('sb_name',  name);
+  localStorage.setItem('sb_phone', phone);
+  document.getElementById('userGreet').textContent = `Hi ${name}`;
+
+  const slot = state.selectedSlot;
+  const options = {
+    key: RZP_KEY,
+    amount: slot.price * 100,
+    currency: 'INR',
+    name: 'SportBook',
+    description: `${slot.sport} · ${slot.start_time?.slice(0,5)} · ${state.selectedZone.name}`,
+    prefill: { name, contact: phone },
+    theme: { color: '#1A6BFF' },
+    handler: async (response) => {
+      await confirmBooking(response.razorpay_payment_id);
+    },
+    modal: { ondismiss: () => toast('Payment cancelled') }
+  };
+  new Razorpay(options).open();
+}
+
+async function confirmBooking(paymentId) {
+  const slot = state.selectedSlot;
+  const qrToken = 'SB-' + Date.now() + '-' + Math.random().toString(36).substr(2,5).toUpperCase();
+
+  // Save booking
+  const { data: booking, error } = await sb.from('sz_bookings').insert({
+    slot_id: slot.id,
+    zone_id: state.selectedZone.id,
+    player_name: state.userName,
+    player_phone: state.userPhone,
+    sport: slot.sport,
+    slot_date: state.selectedDate,
+    start_time: slot.start_time,
+    end_time: slot.end_time,
+    amount: slot.price,
+    payment_id: paymentId,
+    qr_token: qrToken,
+    status: 'confirmed'
+  }).select().single();
+
+  if (error) { toast('Booking saved but error logging. Contact support.'); console.error(error); }
+
+  // Update slot status
+  await sb.from('sz_slots').update({ status: 'booked' }).eq('id', slot.id);
+
+  // Show success
+  state.currentBooking = booking || { qr_token: qrToken };
+  showSuccess(qrToken);
+}
+
+function showSuccess(qrToken) {
+  const slot = state.selectedSlot;
+  const zone = state.selectedZone;
+
+  document.getElementById('successQR').textContent = qrToken;
+
+  // Arrive by (5 min before)
+  const [h, m] = (slot.start_time || '00:00').split(':').map(Number);
+  const arrive = new Date(); arrive.setHours(h, m - 5, 0);
+  document.getElementById('successArrive').textContent =
+    `Arrive by ${arrive.getHours().toString().padStart(2,'0')}:${arrive.getMinutes().toString().padStart(2,'0')}`;
+
+  document.getElementById('successSummary').innerHTML = `
+    <div class="summary-row"><span class="summary-label">Venue</span><span class="summary-val">${zone.name}</span></div>
+    <div class="summary-row"><span class="summary-label">Date & Time</span><span class="summary-val">${state.selectedDate} · ${slot.start_time?.slice(0,5)}</span></div>
+    <div class="summary-row"><span class="summary-label">Sport</span><span class="summary-val">${slot.sport}</span></div>
+    <div class="summary-row"><span class="summary-label">Paid</span><span class="summary-val" style="color:var(--green)">₹${slot.price} ✓</span></div>
+  `;
+
+  showPage('success');
+  state.selectedSlot = null;
+  state.selectedCourt = null;
+}
+
+// ── MY BOOKINGS ─────────────────────────────────────────────
+async function loadMyBookings() {
+  const list = document.getElementById('bookingsList');
+  const phone = state.userPhone || localStorage.getItem('sb_phone');
+  if (!phone) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📱</div>Book a court first to see your bookings here</div>';
+    return;
+  }
+  list.innerHTML = '<div class="loader">Loading...</div>';
+  const { data } = await sb.from('sz_bookings')
+    .select('*, sz_zones(name,area)')
+    .eq('player_phone', phone)
+    .order('created_at', { ascending: false });
+
+  if (!data?.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🏸</div>No bookings yet. Go book a court!</div>';
+    return;
+  }
+  list.innerHTML = data.map(b => `
+    <div class="booking-card">
+      <div class="booking-status status-${b.status}">${b.status?.toUpperCase()}</div>
+      <div class="booking-venue">${b.sz_zones?.name || 'Venue'}</div>
+      <div class="booking-detail">📍 ${b.sz_zones?.area || ''} · 🏸 ${b.sport}</div>
+      <div class="booking-detail">📅 ${b.slot_date} · 🕐 ${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</div>
+      <div class="booking-detail">💰 ₹${b.amount} paid</div>
+      <div class="booking-qr">${b.qr_token}</div>
+    </div>
+  `).join('');
+}
+
+// ── TOAST ───────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
