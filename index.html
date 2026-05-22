@@ -289,21 +289,14 @@ async function checkPlayerPhone() {
   if (phone.length !== 10) { setErr('p-err1','Enter valid 10-digit mobile number'); return; }
   setErr('p-err1','');
   playerPhone = phone;
-
-  // Check if user exists in Supabase
-  const { data } = await sb.from('sz_users').select('id,name').eq('phone', phone).single();
-  if (data) {
-    // Existing user → enter PIN
+  const { data } = await sb.from('sz_users').select('id,name,pin').eq('phone', phone).maybeSingle();
+  if (data && data.pin) {
     document.getElementById('p-pin-sub').textContent = `Welcome back ${data.name}! Enter your 4-digit PIN`;
     goStep('p-step2','p-step1');
-    setTimeout(()=>document.querySelector('#p-step2 .pin-row input').focus(),100);
   } else {
-    // New user → register
     goStep('p-step3','p-step1');
-    setTimeout(()=>document.getElementById('playerName').focus(),100);
   }
 }
-
 async function verifyPlayerPIN() {
   const pin = getPIN('p-step2');
   if (pin.length < 4) { setErr('p-err2','Enter 4-digit PIN'); return; }
