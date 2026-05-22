@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SportBook — Book Your Court</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --blue:#1A6BFF; --blue-dark:#1254CC;
@@ -289,8 +289,7 @@ async function checkPlayerPhone() {
   if (phone.length !== 10) { setErr('p-err1','Enter valid 10-digit mobile number'); return; }
   setErr('p-err1','');
   playerPhone = phone;
- const { data, error } = await sb.from('sz_users').select('id,name,pin').eq('phone', phone).maybeSingle();
-
+  const { data } = await sb.from('sz_users').select('id,name,pin').eq('phone', phone).maybeSingle();
   if (data && data.pin) {
     document.getElementById('p-pin-sub').textContent = `Welcome back ${data.name}! Enter your 4-digit PIN`;
     goStep('p-step2','p-step1');
