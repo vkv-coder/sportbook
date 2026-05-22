@@ -411,7 +411,7 @@ async function loadSlots() {
     const isSelected = state.selectedSlot?.id === slot.id;
     const cls = isBooked ? 'booked' : isSelected ? 'selected' : 'open';
     return `
-      <div class="slot-btn ${cls}" onclick="${isBooked ? '' : `selectSlot(${slot.id})`}" data-id="${slot.id}">
+      <div class="slot-btn ${cls}" onclick="${isBooked ? '' : `selectSlot('${slot.id}')`}" data-id="${slot.id}">
         <div class="slot-time">${slot.start_time?.slice(0,5)}</div>
         <div class="slot-price">${isBooked ? '' : '₹'+slot.price}</div>
         <div class="slot-status">${isBooked ? 'Booked' : ''}</div>
