@@ -322,7 +322,7 @@ function renderZones() {
   }
   if (!zones.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">🏟️</div>No venues found</div>'; return; }
   list.innerHTML = zones.map(z => `
-    <div class="zone-card" onclick="selectZone('${z.id}')">
+    <div class="zone-card" onclick="selectZone(this)" data-id="${z.id}">
       <div class="zone-name">${z.name}</div>
       <div class="zone-meta">
         <span>📍 ${z.address||z.city||""}</span>
@@ -333,7 +333,8 @@ function renderZones() {
   `).join('');
 }
 
-async function selectZone(zoneId) {
+async function selectZone(el) {
+  const zoneId = el.dataset.id;
   state.selectedZone = state.zones.find(z => String(z.id) === String(zoneId)); if(!state.selectedZone){console.error("Zone not found:",zoneId,state.zones.map(z=>z.id)); return;}
   state.selectedSlot = null;
   state.selectedCourt = null;
