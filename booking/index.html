@@ -325,7 +325,7 @@ function renderZones() {
     <div class="zone-card" onclick="selectZone(${z.id})">
       <div class="zone-name">${z.name}</div>
       <div class="zone-meta">
-        <span>📍 ${z.area||z.city||""}</span>
+        <span>📍 ${z.address||z.city||""}</span>
         <span>🕐 ${z.open_time?.slice(0,5)}–${z.close_time?.slice(0,5)}</span>
       </div>
       <div class="zone-sports">${(z.sports||[]).map(s=>`<span class="sport-tag">${s}</span>`).join('')}</div>
@@ -334,7 +334,7 @@ function renderZones() {
 }
 
 async function selectZone(zoneId) {
-  state.selectedZone = state.zones.find(z => String(z.id) === String(zoneId));
+  state.selectedZone = state.zones.find(z => String(z.id) === String(zoneId)); if(!state.selectedZone){console.error("Zone not found:",zoneId,state.zones.map(z=>z.id)); return;}
   state.selectedSlot = null;
   state.selectedCourt = null;
   document.getElementById('slotZoneName').textContent = state.selectedZone.name;
@@ -578,7 +578,7 @@ async function loadMyBookings() {
     <div class="booking-card">
       <div class="booking-status status-${b.status}">${b.status?.toUpperCase()}</div>
       <div class="booking-venue">${b.sz_zones?.name || 'Venue'}</div>
-      <div class="booking-detail">📍 ${b.sz_zones?.area || ''} · 🏸 ${b.sport}</div>
+      <div class="booking-detail">📍 ${b.sz_zones?.address || ''} · 🏸 ${b.sport}</div>
       <div class="booking-detail">📅 ${b.slot_date} · 🕐 ${b.start_time?.slice(0,5)} – ${b.end_time?.slice(0,5)}</div>
       <div class="booking-detail">💰 ₹${b.amount} paid</div>
       <div class="booking-qr">${b.qr_token}</div>
