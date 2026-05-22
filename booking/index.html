@@ -372,7 +372,7 @@ async function loadCourts() {
   const row = document.getElementById('courtRow');
   if (!data || !data.length) { row.innerHTML = ''; return; }
   row.innerHTML = data.map((c,i) => `
-    <div class="court-chip${i===0?' active':''}" onclick="selectCourt(${c.id},this)">${c.name}</div>
+    <div class="court-chip${i===0?' active':''}" onclick="selectCourt('${c.id}',this)"
   `).join('');
   if (data[0]) { state.selectedCourt = data[0].id; loadSlots(); }
 }
