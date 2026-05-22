@@ -322,7 +322,7 @@ function renderZones() {
   }
   if (!zones.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">🏟️</div>No venues found</div>'; return; }
   list.innerHTML = zones.map(z => `
-    <div class="zone-card" onclick="selectZone(${z.id})">
+    <div class="zone-card" onclick="selectZone('${z.id}')">
       <div class="zone-name">${z.name}</div>
       <div class="zone-meta">
         <span>📍 ${z.address||z.city||""}</span>
