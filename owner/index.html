@@ -144,6 +144,7 @@ select.form-input{cursor:pointer;}
     <button class="tab" onclick="showTab('walkin')">🚶 Walk-in</button>
     <button class="tab" onclick="showTab('checkin')">✅ Check-in</button>
     <button class="tab" onclick="showTab('earnings')">💰 Earnings</button>
+    <button class="tab" onclick="showTab('profile')">👤 Profile</button>
     <button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
   </div>
 
@@ -235,8 +236,8 @@ select.form-input{cursor:pointer;}
     <div class="card" id="earningsList"><div class="loader">Loading...</div></div>
   </div>
 
-  <!-- SETTINGS -->
-  <div class="screen" id="screen-settings">
+  <!-- PROFILE -->
+  <div class="screen" id="screen-profile">
 
     <!-- Venue Info -->
     <div class="card">
@@ -280,7 +281,22 @@ select.form-input{cursor:pointer;}
       </div>
     </div>
 
-    <!-- SPORTS ON/OFF -->
+    <!-- Terms & Conditions -->
+    <div class="card">
+      <div class="sec-title">📋 Terms & Conditions</div>
+      <div class="notice" style="margin-bottom:12px;">Shown to players at booking. Edit as needed.</div>
+      <textarea class="form-input" id="s-tnc" placeholder="Enter your terms and conditions..."></textarea>
+    </div>
+
+    <!-- Save Profile -->
+    <button class="save-btn" onclick="saveProfile()">💾 Save Profile</button>
+    <button class="btn" style="width:100%;margin-top:10px;padding:13px;color:var(--red);background:#FEE2E2;border-radius:12px;font-size:14px;" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="screen-settings">
+
+    <!-- Sports ON/OFF -->
     <div class="card">
       <div class="sec-title">🏸 Sports Offered</div>
       <div class="notice" style="margin-bottom:12px;">Toggle ON/OFF anytime — saves instantly!</div>
@@ -294,7 +310,7 @@ select.form-input{cursor:pointer;}
     <!-- Sport-wise Config -->
     <div class="card">
       <div class="sec-title">⚙️ Sport-wise Configuration</div>
-      <div class="notice notice-warn">Set timings, pricing & features separately for each sport.</div>
+      <div class="notice notice-warn">Set timings, pricing & features per sport.</div>
       <div class="sport-config-tab" id="sportConfigTabs"></div>
       <div id="sportConfigPanels"></div>
     </div>
@@ -331,17 +347,10 @@ select.form-input{cursor:pointer;}
       <button class="btn btn-green" onclick="addCourt()" style="width:100%;padding:11px;margin-top:10px;border-radius:10px;font-size:13px;">+ Add Court</button>
     </div>
 
-    <!-- Terms & Conditions -->
-    <div class="card">
-      <div class="sec-title">📋 Terms & Conditions</div>
-      <div class="notice" style="margin-bottom:12px;">Shown to players at booking. Edit as needed.</div>
-      <textarea class="form-input" id="s-tnc" placeholder="Enter your terms and conditions..."></textarea>
-    </div>
-
-    <!-- Save All Settings -->
-    <button class="save-btn" onclick="saveSettings()">💾 Save All Settings</button>
-    <button class="btn" style="width:100%;margin-top:10px;padding:13px;color:var(--red);background:#FEE2E2;border-radius:12px;font-size:14px;" onclick="logout()">Logout</button>
+    <!-- Save Settings -->
+    <button class="save-btn" onclick="saveSettings()">💾 Save Settings</button>
   </div>
+
 </main>
 
 <div class="bottom-nav">
@@ -349,6 +358,7 @@ select.form-input{cursor:pointer;}
   <button class="bnav-btn" id="bn-pending" onclick="showTab('pending')"><span class="bnav-icon">⏳</span>Pending</button>
   <button class="bnav-btn" id="bn-slots" onclick="showTab('slots')"><span class="bnav-icon">🟢</span>Slots</button>
   <button class="bnav-btn" id="bn-checkin" onclick="showTab('checkin')"><span class="bnav-icon">✅</span>Check-in</button>
+  <button class="bnav-btn" id="bn-profile" onclick="showTab('profile')"><span class="bnav-icon">👤</span>Profile</button>
   <button class="bnav-btn" id="bn-settings" onclick="showTab('settings')"><span class="bnav-icon">⚙️</span>Settings</button>
 </div>
 <div class="toast" id="toast"></div>
@@ -455,10 +465,11 @@ function showTab(t) {
   window.scrollTo(0, 0);
   if (t === 'today')    loadToday();
   if (t === 'pending')  loadPending();
-  if (t === 'slots')    loadSlotBoard();
+  if (t === 'slots')    { loadSlotBoard(); loadZoneDataIfNeeded(); }
   if (t === 'walkin')   loadWalkIn();
   if (t === 'checkin')  loadCheckins();
   if (t === 'earnings') loadEarnings();
+  if (t === 'profile')  loadProfile();
   if (t === 'settings') loadSettings();
 }
 
@@ -774,13 +785,29 @@ async function loadEarnings() {
   `).join('');
 }
 
-// ── SETTINGS ───────────────────────────────────────────────────────────────────
-async function loadSettings() {
-  const zid = getZoneId();
-  const { data:zone } = await sb.from('sz_zones').select('*').eq('id', zid).single();
+// ── LOAD ZONE DATA (shared) ────────────────────────────────────────────────────
+async function loadZoneDataIfNeeded() {
+  if (zoneData?.sport_configs !== undefined) return;
+  const { data:zone } = await sb.from('sz_zones').select('*').eq('id', getZoneId()).single();
+  if (!zone) return;
+  zoneData     = zone;
+  sportConfigs = zone.sport_configs || {};
+  const activeSports = zone.sports || [];
+  const allNames     = [...new Set([...activeSports, ...Object.keys(sportConfigs)])];
+  const defaults     = ['Badminton','Tennis','Pickleball','Squash','Swimming'];
+  allSports      = (allNames.length ? allNames : defaults).map(name => ({ name, active: activeSports.includes(name) }));
+  selectedSports = activeSports;
+  offDays        = zone.off_days||[];
+  holidays       = zone.holidays||[];
+  const { data:courtsData } = await sb.from('sz_courts').select('*').eq('zone_id', getZoneId()).eq('is_active', true);
+  courts = courtsData||[];
+}
+
+// ── PROFILE ─────────────────────────────────────────────────────────────────────
+async function loadProfile() {
+  const { data:zone } = await sb.from('sz_zones').select('*').eq('id', getZoneId()).single();
   if (!zone) return;
   zoneData = zone;
-
   document.getElementById('s-vname').value    = zone.name||'';
   document.getElementById('s-area').value     = zone.address||'';
   document.getElementById('s-city').value     = zone.city||'';
@@ -789,9 +816,36 @@ async function loadSettings() {
   document.getElementById('s-upi').value      = zone.upi_id||'';
   document.getElementById('s-refund').value   = zone.refund_hours||24;
   document.getElementById('s-maps').value     = zone.maps_url||'';
-  document.getElementById('s-email').value    = zone.venue_email||'';
   document.getElementById('s-tnc').value      = zone.terms_and_conditions || DEFAULT_TNC;
+  document.getElementById('s-email').value    = zone.venue_email||'';
   if (zone.maps_url) showMapsPreview(zone.maps_url);
+}
+
+async function saveProfile() {
+  const updates = {
+    name:                 document.getElementById('s-vname').value.trim(),
+    address:              document.getElementById('s-area').value.trim(),
+    city:                 document.getElementById('s-city').value.trim(),
+    contact1:             document.getElementById('s-contact1').value.trim()||null,
+    contact2:             document.getElementById('s-contact2').value.trim()||null,
+    upi_id:               document.getElementById('s-upi').value.trim()||null,
+    refund_hours:         parseInt(document.getElementById('s-refund').value)||24,
+    maps_url:             document.getElementById('s-maps').value.trim()||null,
+    venue_email:          document.getElementById('s-email').value.trim()||null,
+    terms_and_conditions: document.getElementById('s-tnc').value.trim()||null,
+  };
+  const { error } = await sb.from('sz_zones').update(updates).eq('id', getZoneId());
+  if (error) { toast('Error: ' + error.message); return; }
+  zoneData = { ...zoneData, ...updates };
+  toast('✅ Profile saved!');
+}
+
+// ── SETTINGS ───────────────────────────────────────────────────────────────────
+async function loadSettings() {
+  const zid = getZoneId();
+  const { data:zone } = await sb.from('sz_zones').select('*').eq('id', zid).single();
+  if (!zone) return;
+  zoneData = zone;
 
   const activeSports = zone.sports || [];
   sportConfigs       = zone.sport_configs || {};
@@ -817,6 +871,7 @@ async function loadSettings() {
   renderCourts();
   updateCourtSportDropdown();
 }
+
 
 function showMapsPreview(url) {
   if (url) { document.getElementById('mapsPreview').style.display='block'; document.getElementById('mapsLink').href=url; }
@@ -1057,22 +1112,12 @@ function collectSportConfigs() {
 async function saveSettings() {
   const configs = collectSportConfigs();
   const updates = {
-    name:                  document.getElementById('s-vname').value.trim(),
-    address:               document.getElementById('s-area').value.trim(),
-    city:                  document.getElementById('s-city').value.trim(),
-    contact1:              document.getElementById('s-contact1').value.trim()||null,
-    contact2:              document.getElementById('s-contact2').value.trim()||null,
-    upi_id:                document.getElementById('s-upi').value.trim()||null,
-    refund_hours:          parseInt(document.getElementById('s-refund').value)||24,
-    maps_url:              document.getElementById('s-maps').value.trim()||null,
-    venue_email:           document.getElementById('s-email').value.trim()||null,
-    terms_and_conditions:  document.getElementById('s-tnc').value.trim()||null,
-    open_time:             '06:00',
-    close_time:            '22:00',
-    sports:                selectedSports,
-    off_days:              offDays,
-    holidays:              holidays,
-    sport_configs:         configs,
+    open_time:    '06:00',
+    close_time:   '22:00',
+    sports:       selectedSports,
+    off_days:     offDays,
+    holidays:     holidays,
+    sport_configs: configs,
   };
   const { error } = await sb.from('sz_zones').update(updates).eq('id', getZoneId());
   if (error) { toast('Error: ' + error.message); return; }
@@ -1088,7 +1133,7 @@ async function generateSlots() {
   if (!fromDate || !toDate) { toast('Select date range'); return; }
   if (!courts.length) { toast('Add at least one court first'); return; }
 
-  const btn = document.querySelector('#screen-settings .save-btn[onclick="generateSlots()"]');
+  const btn = document.querySelector('.save-btn[onclick="generateSlots()"]');
   btn.disabled = true; btn.textContent = 'Generating...';
   document.getElementById('genStatus').textContent = '';
 
