@@ -151,12 +151,17 @@ select.form-input{cursor:pointer;}
 
   <!-- TODAY -->
   <div class="screen active" id="screen-today">
+    <!-- Summary stats -->
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-val" id="stat-bookings">—</div><div class="stat-label">Today's Bookings</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-revenue">—</div><div class="stat-label">Today's Revenue</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-pending">—</div><div class="stat-label">Pending Confirm</div></div>
       <div class="stat-card"><div class="stat-val" id="stat-open">—</div><div class="stat-label">Open Slots</div></div>
     </div>
+    <!-- Per-sport open slots -->
+    <div id="sportOpenSlots" style="margin-bottom:16px;"></div>
+    <!-- Bookings filter + list -->
+    <div class="sport-filter" id="todaySportFilter"></div>
     <div class="sec-title">Today's Bookings</div>
     <div class="card" id="todayList"><div class="loader">Loading...</div></div>
   </div>
@@ -547,26 +552,80 @@ async function addCustomSport() {
 }
 
 // ── TODAY ──────────────────────────────────────────────────────────────────────
+let activeTodaySport = 'All';
+
 async function loadToday() {
   const zid = getZoneId();
   const { data: bookings } = await sb.from('sz_bookings').select('*').eq('zone_id', zid).eq('slot_date', TODAY).order('start_time');
+  const { data: openSlots } = await sb.from('sz_slots').select('sport').eq('zone_id', zid).eq('slot_date', TODAY).eq('status', 'open');
   const list = bookings || [];
+
   const confirmed = list.filter(b => ['confirmed','checkedin'].includes(b.status || b.booking_status));
   const revenue   = confirmed.reduce((s, b) => s + Number(b.amount), 0);
   const pending   = list.filter(b => (b.status || b.booking_status) === 'pending').length;
-  const { count: openCount } = await sb.from('sz_slots').select('*', { count:'exact', head:true }).eq('zone_id', zid).eq('slot_date', TODAY).eq('status', 'open');
+  const totalOpen = openSlots?.length || 0;
+
   document.getElementById('stat-bookings').textContent = list.length;
   document.getElementById('stat-revenue').textContent  = '₹' + revenue;
   document.getElementById('stat-pending').textContent  = pending;
-  document.getElementById('stat-open').textContent     = openCount || 0;
+  document.getElementById('stat-open').textContent     = totalOpen;
+
+  // Per-sport open slots breakdown
+  const openBySport = {};
+  (openSlots||[]).forEach(s => { openBySport[s.sport] = (openBySport[s.sport]||0) + 1; });
+  const sportOpenEl = document.getElementById('sportOpenSlots');
+  if (Object.keys(openBySport).length > 1) {
+    sportOpenEl.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+      ${Object.entries(openBySport).map(([sport, cnt]) => `
+        <div style="background:white;border-radius:10px;padding:10px 14px;box-shadow:0 1px 8px rgba(0,0,0,0.06);display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">${emojiFor(sport)}</span>
+          <div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--text);">${cnt}</div>
+            <div style="font-size:11px;color:var(--muted);">${sport} Open</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  } else {
+    sportOpenEl.innerHTML = '';
+  }
+
+  // Sport filter chips for bookings
+  const sports = ['All', ...new Set(list.map(b => b.sport).filter(Boolean))];
+  const filterEl = document.getElementById('todaySportFilter');
+  if (sports.length > 2) {
+    filterEl.innerHTML = sports.map(sp => `
+      <div class="sf-chip ${sp === activeTodaySport ? 'active' : ''}" onclick="setTodaySport('${sp}')">${emojiFor(sp)} ${sp}</div>
+    `).join('');
+  } else {
+    filterEl.innerHTML = '';
+    activeTodaySport = 'All';
+  }
+
+  renderTodayList(list);
+}
+
+function setTodaySport(sport) {
+  activeTodaySport = sport;
+  document.querySelectorAll('#todaySportFilter .sf-chip').forEach(c => {
+    c.classList.toggle('active', c.textContent.trim().includes(sport) && sport !== 'All' ? c.textContent.includes(sport) : c.textContent.trim() === (emojiFor(sport)+' '+sport) || sport === 'All');
+  });
+  // re-render from cached data — just reload
+  loadToday();
+}
+
+function renderTodayList(list) {
+  const filtered = activeTodaySport === 'All' ? list : list.filter(b => b.sport === activeTodaySport);
   const el = document.getElementById('todayList');
-  if (!list.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>No bookings yet today</div>'; return; }
-  el.innerHTML = list.map(b => {
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div>' + (activeTodaySport === 'All' ? 'No bookings yet today' : `No ${activeTodaySport} bookings today`) + '</div>';
+    return;
+  }
+  el.innerHTML = filtered.map(b => {
     const st = b.status || b.booking_status || 'pending';
     return `<div class="booking-row">
       <div>
         <div class="b-name">${b.player_name}</div>
-        <div class="b-detail">🏸 ${b.sport} · 🕐 ${b.start_time?.slice(0,5)}–${b.end_time?.slice(0,5)}</div>
+        <div class="b-detail">${emojiFor(b.sport)} ${b.sport} · 🕐 ${b.start_time?.slice(0,5)}–${b.end_time?.slice(0,5)}</div>
         <div class="b-detail">📱 ${b.player_phone} · ₹${b.amount}</div>
         ${b.utr_number ? `<div class="b-detail">UTR: ${b.utr_number}</div>` : ''}
         <div class="b-qr">${b.qr_token||''}</div>
