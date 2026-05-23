@@ -25,6 +25,7 @@ main{padding:16px;max-width:520px;margin:0 auto;padding-bottom:90px;}
 .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;}
 .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;margin-bottom:12px;background:white;color:var(--text);}
 .form-input:focus{border-color:var(--green);}
+.form-input.filled{border-color:var(--green);background:#F0FDF4;}
 textarea.form-input{resize:vertical;min-height:140px;line-height:1.6;}
 select.form-input{cursor:pointer;}
 .form-row{display:flex;gap:10px;}
@@ -203,7 +204,7 @@ select.form-input{cursor:pointer;}
       <label class="form-label">Player Name</label>
       <input class="form-input" id="wiName" placeholder="Rajesh Patel">
       <label class="form-label">Mobile Number</label>
-      <input class="form-input" id="wiPhone" placeholder="98765 43210" maxlength="10" inputmode="numeric">
+      <input class="form-input" id="wiPhone" placeholder="e.g. 98765 43210" maxlength="10" inputmode="numeric">
       <label class="form-label">Sport</label>
       <select class="form-input" id="wiSport"></select>
       <button class="save-btn" onclick="addWalkIn()">Add to Queue →</button>
@@ -243,28 +244,28 @@ select.form-input{cursor:pointer;}
     <div class="card">
       <div class="sec-title">🏟️ Venue Info</div>
       <label class="form-label">Venue Name</label>
-      <input class="form-input" id="s-vname" placeholder="Smash Arena">
+      <input class="form-input" id="s-vname" placeholder="e.g. Smash Arena">
       <label class="form-label">Full Address</label>
       <textarea class="form-input" id="s-area" placeholder="Plot 12, Ground Floor&#10;Fatehgunj Main Road&#10;Vadodara, Gujarat 390002" style="min-height:80px;"></textarea>
       <label class="form-label">City</label>
-      <input class="form-input" id="s-city" placeholder="Vadodara">
+      <input class="form-input" id="s-city" placeholder="e.g. Vadodara">
       <div class="form-row">
         <div class="wrap">
           <label class="form-label">Contact 1</label>
-          <input class="form-input" id="s-contact1" placeholder="98765 43210" maxlength="10" inputmode="numeric" style="margin-bottom:0;">
+          <input class="form-input" id="s-contact1" placeholder="e.g. 98765 43210" maxlength="10" inputmode="numeric" style="margin-bottom:0;">
         </div>
         <div class="wrap">
           <label class="form-label">Contact 2</label>
-          <input class="form-input" id="s-contact2" placeholder="98765 43211" maxlength="10" inputmode="numeric" style="margin-bottom:0;">
+          <input class="form-input" id="s-contact2" placeholder="e.g. 98765 43211" maxlength="10" inputmode="numeric" style="margin-bottom:0;">
         </div>
       </div>
       <div style="margin-top:12px;">
         <label class="form-label">Venue Email</label>
-        <input class="form-input" id="s-email" type="email" placeholder="venue@email.com" style="margin-bottom:0;">
+        <input class="form-input" id="s-email" type="email" placeholder="e.g. venue@email.com" style="margin-bottom:0;">
       </div>
       <div style="margin-top:12px;">
         <label class="form-label">UPI ID <span style="font-size:11px;font-weight:400;color:var(--muted);">(players will pay here)</span></label>
-        <input class="form-input" id="s-upi" placeholder="yourvenue@okaxis">
+        <input class="form-input" id="s-upi" placeholder="e.g. yourvenue@okaxis">
       </div>
       <label class="form-label">Refund within (hours)</label>
       <select class="form-input" id="s-refund">
@@ -447,6 +448,20 @@ function setupDefaultDates() {
   if (gt) gt.value = future.toISOString().split('T')[0];
 }
 document.addEventListener('DOMContentLoaded', init);
+
+function markFilledFields() {
+  document.querySelectorAll('.form-input').forEach(el => {
+    const val = el.tagName === 'SELECT' ? '' : (el.value || '').trim();
+    if (val && val !== '24') {
+      el.classList.add('filled');
+    } else {
+      el.classList.remove('filled');
+    }
+    el.addEventListener('input', function() {
+      this.classList.toggle('filled', this.value.trim().length > 0);
+    });
+  });
+}
 
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -819,6 +834,7 @@ async function loadProfile() {
   document.getElementById('s-tnc').value      = zone.terms_and_conditions || DEFAULT_TNC;
   document.getElementById('s-email').value    = zone.venue_email||'';
   if (zone.maps_url) showMapsPreview(zone.maps_url);
+  setTimeout(markFilledFields, 100);
 }
 
 async function saveProfile() {
@@ -870,6 +886,7 @@ async function loadSettings() {
   courts = courtsData||[];
   renderCourts();
   updateCourtSportDropdown();
+  setTimeout(markFilledFields, 200);
 }
 
 
@@ -922,10 +939,10 @@ function renderSportConfigTabs() {
         <button class="btn btn-green" onclick="addBreak('${s}')" style="padding:11px 16px;border-radius:10px;">+ Add</button>
       </div>
       <label class="form-label" style="margin-top:12px;">Peak Hours</label>
-      <input class="form-input" id="cfg-peak-${s}" placeholder="06:00-09:00, 17:00-22:00" value="${cfg.peak_hours||''}">
+      <input class="form-input" id="cfg-peak-${s}" placeholder="e.g. 06:00-09:00, 17:00-22:00" value="${cfg.peak_hours||''}">
       <div class="form-row">
-        <div class="wrap"><label class="form-label">Peak Rate (₹)</label><input class="form-input" type="number" id="cfg-pprice-${s}" value="${cfg.peak_price||''}" placeholder="200" style="margin-bottom:0;"></div>
-        <div class="wrap"><label class="form-label">Off-Peak Rate (₹)</label><input class="form-input" type="number" id="cfg-opprice-${s}" value="${cfg.offpeak_price||''}" placeholder="150" style="margin-bottom:0;"></div>
+        <div class="wrap"><label class="form-label">Peak Rate (₹)</label><input class="form-input" type="number" id="cfg-pprice-${s}" value="${cfg.peak_price||''}" placeholder="e.g. 200" style="margin-bottom:0;"></div>
+        <div class="wrap"><label class="form-label">Off-Peak Rate (₹)</label><input class="form-input" type="number" id="cfg-opprice-${s}" value="${cfg.offpeak_price||''}" placeholder="e.g. 150" style="margin-bottom:0;"></div>
       </div>
       <label class="form-label" style="margin-top:12px;">Charges per</label>
       <select class="form-input" id="cfg-chargeper-${s}">
@@ -934,7 +951,7 @@ function renderSportConfigTabs() {
       </select>
       <div id="teamsize-${sid}" style="${cfg.charge_per==='team'?'':'display:none'}">
         <label class="form-label">Team Size</label>
-        <input class="form-input" type="number" id="cfg-teamsize-${s}" value="${cfg.team_size||''}" placeholder="11">
+        <input class="form-input" type="number" id="cfg-teamsize-${s}" value="${cfg.team_size||''}" placeholder="e.g. 11 players">
       </div>
       <div class="toggle-row">
         <span class="toggle-label">Indoor</span>
