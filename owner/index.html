@@ -175,6 +175,23 @@ select.form-input{cursor:pointer;}
       <button class="save-btn" style="background:var(--red);" onclick="triggerNoShow()">🚫 Mark No-Shows</button>
       <button class="save-btn" style="background:#6B7280;" onclick="showReserveModal()">🔒 Reserve Slot</button>
     </div>
+    <!-- Generate Slots panel -->
+    <div style="margin-top:12px;">
+      <button class="btn" style="width:100%;padding:12px;background:#EFF6FF;color:var(--blue);border-radius:10px;font-size:13px;border:1.5px solid #BFDBFE;" onclick="toggleGenPanel()">
+        ⚡ Generate New Slots <span id="genPanelArrow">▼</span>
+      </button>
+      <div id="genPanel" style="display:none;margin-top:10px;">
+        <div class="card" style="margin-bottom:0;">
+          <div class="notice notice-warn" style="margin-bottom:12px;">Make sure venue settings are saved before generating.</div>
+          <div class="form-row">
+            <div class="wrap"><label class="form-label">From Date</label><input class="form-input" type="date" id="genFrom" style="margin-bottom:0;"></div>
+            <div class="wrap"><label class="form-label">To Date</label><input class="form-input" type="date" id="genTo" style="margin-bottom:0;"></div>
+          </div>
+          <button class="save-btn" style="background:var(--blue);margin-top:12px;" onclick="generateSlots()">⚡ Generate Slots</button>
+          <div id="genStatus" style="margin-top:8px;font-size:13px;color:var(--green);text-align:center;"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- WALK-IN -->
@@ -226,8 +243,8 @@ select.form-input{cursor:pointer;}
       <div class="sec-title">🏟️ Venue Info</div>
       <label class="form-label">Venue Name</label>
       <input class="form-input" id="s-vname" placeholder="Smash Arena">
-      <label class="form-label">Area / Address</label>
-      <input class="form-input" id="s-area" placeholder="Fatehgunj, Vadodara">
+      <label class="form-label">Full Address</label>
+      <textarea class="form-input" id="s-area" placeholder="Plot 12, Ground Floor&#10;Fatehgunj Main Road&#10;Vadodara, Gujarat 390002" style="min-height:80px;"></textarea>
       <label class="form-label">City</label>
       <input class="form-input" id="s-city" placeholder="Vadodara">
       <div class="form-row">
@@ -239,6 +256,10 @@ select.form-input{cursor:pointer;}
           <label class="form-label">Contact 2</label>
           <input class="form-input" id="s-contact2" placeholder="98765 43211" maxlength="10" inputmode="numeric" style="margin-bottom:0;">
         </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label class="form-label">Venue Email</label>
+        <input class="form-input" id="s-email" type="email" placeholder="venue@email.com" style="margin-bottom:0;">
       </div>
       <div style="margin-top:12px;">
         <label class="form-label">UPI ID <span style="font-size:11px;font-weight:400;color:var(--muted);">(players will pay here)</span></label>
@@ -319,19 +340,6 @@ select.form-input{cursor:pointer;}
 
     <!-- Save All Settings -->
     <button class="save-btn" onclick="saveSettings()">💾 Save All Settings</button>
-
-    <!-- Generate Slots -->
-    <div class="card" style="margin-top:12px;">
-      <div class="sec-title">⚡ Generate Slots</div>
-      <div class="notice notice-warn">⬆️ Save all settings above first, then generate slots here.</div>
-      <div class="form-row">
-        <div class="wrap"><label class="form-label">From Date</label><input class="form-input" type="date" id="genFrom" style="margin-bottom:0;"></div>
-        <div class="wrap"><label class="form-label">To Date</label><input class="form-input" type="date" id="genTo" style="margin-bottom:0;"></div>
-      </div>
-      <button class="save-btn" style="background:var(--blue);margin-top:12px;" onclick="generateSlots()">⚡ Generate Slots</button>
-      <div id="genStatus" style="margin-top:8px;font-size:13px;color:var(--green);text-align:center;"></div>
-    </div>
-
     <button class="btn" style="width:100%;margin-top:10px;padding:13px;color:var(--red);background:#FEE2E2;border-radius:12px;font-size:14px;" onclick="logout()">Logout</button>
   </div>
 </main>
@@ -423,8 +431,10 @@ function getZoneId() { return zoneData?.id || localStorage.getItem('owner_zone_i
 function setupDefaultDates() {
   const future = new Date();
   future.setDate(future.getDate() + 30);
-  document.getElementById('genFrom').value = TODAY;
-  document.getElementById('genTo').value   = future.toISOString().split('T')[0];
+  const gf = document.getElementById('genFrom');
+  const gt = document.getElementById('genTo');
+  if (gf) gf.value = TODAY;
+  if (gt) gt.value = future.toISOString().split('T')[0];
 }
 document.addEventListener('DOMContentLoaded', init);
 
@@ -779,6 +789,7 @@ async function loadSettings() {
   document.getElementById('s-upi').value      = zone.upi_id||'';
   document.getElementById('s-refund').value   = zone.refund_hours||24;
   document.getElementById('s-maps').value     = zone.maps_url||'';
+  document.getElementById('s-email').value    = zone.venue_email||'';
   document.getElementById('s-tnc').value      = zone.terms_and_conditions || DEFAULT_TNC;
   if (zone.maps_url) showMapsPreview(zone.maps_url);
 
@@ -1054,6 +1065,7 @@ async function saveSettings() {
     upi_id:                document.getElementById('s-upi').value.trim()||null,
     refund_hours:          parseInt(document.getElementById('s-refund').value)||24,
     maps_url:              document.getElementById('s-maps').value.trim()||null,
+    venue_email:           document.getElementById('s-email').value.trim()||null,
     terms_and_conditions:  document.getElementById('s-tnc').value.trim()||null,
     open_time:             '06:00',
     close_time:            '22:00',
@@ -1173,6 +1185,15 @@ function parseBreaks(arr) {
 }
 
 function isInPeakHours(min, ranges) { return ranges.some(r => min>=r.start && min<r.end); }
+
+function toggleGenPanel() {
+  const panel = document.getElementById('genPanel');
+  const arrow = document.getElementById('genPanelArrow');
+  const open  = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  arrow.textContent   = open ? '▲' : '▼';
+  if (open) setupDefaultDates();
+}
 
 function logout() {
   localStorage.removeItem('owner_zone_id');
