@@ -25,6 +25,7 @@ main{padding:16px;max-width:520px;margin:0 auto;padding-bottom:90px;}
 .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;}
 .form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;margin-bottom:12px;background:white;color:var(--text);}
 .form-input:focus{border-color:var(--green);}
+textarea.form-input{resize:vertical;min-height:140px;line-height:1.6;}
 select.form-input{cursor:pointer;}
 .form-row{display:flex;gap:10px;}
 .form-row .wrap{flex:1;}
@@ -51,7 +52,13 @@ select.form-input{cursor:pointer;}
 .badge-noshow{background:#FEE2E2;color:#991B1B;}
 .badge-pending{background:#FEF3C7;color:#92400E;}
 .badge-rejected{background:#FEE2E2;color:#991B1B;}
-.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+/* SLOT SPORT FILTER */
+.sport-filter{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none;padding-bottom:2px;}
+.sport-filter::-webkit-scrollbar{display:none;}
+.sf-chip{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:white;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.sf-chip.active{background:var(--blue);border-color:var(--blue);color:white;}
+.slot-section-title{font-size:13px;font-weight:700;color:var(--muted);margin:10px 0 6px;text-transform:uppercase;letter-spacing:0.5px;}
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
 .slot-item{padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:white;text-align:center;font-size:12px;}
 .slot-item.booked{background:#FEF3C7;border-color:#F59E0B;}
 .slot-item.checkedin{background:#D1FAE5;border-color:#00B87A;}
@@ -88,8 +95,7 @@ select.form-input{cursor:pointer;}
 .toast.show{opacity:1;}
 .divider-line{height:1px;background:var(--border);margin:12px 0;}
 .map-preview{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:var(--green);text-decoration:none;margin-bottom:12px;}
-
-/* SPORT TOGGLE ROW */
+/* SPORT TOGGLE */
 .sport-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
 .sport-toggle-row:last-child{border-bottom:none;}
 .sport-toggle-left{display:flex;align-items:center;gap:10px;}
@@ -97,13 +103,11 @@ select.form-input{cursor:pointer;}
 .sport-toggle-name{font-size:14px;font-weight:600;color:var(--text);}
 .sport-toggle-status{font-size:11px;color:var(--muted);margin-top:1px;}
 .sport-add-row{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
-
 /* TOGGLE SWITCH */
 .toggle{width:44px;height:24px;border-radius:12px;background:var(--border);position:relative;cursor:pointer;transition:background 0.2s;border:none;flex-shrink:0;}
 .toggle.on{background:var(--green);}
 .toggle::after{content:'';width:18px;height:18px;background:white;border-radius:50%;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
 .toggle.on::after{left:23px;}
-
 /* SPORT CONFIG */
 .sport-config-tab{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;scrollbar-width:none;}
 .sport-config-tab::-webkit-scrollbar{display:none;}
@@ -115,8 +119,7 @@ select.form-input{cursor:pointer;}
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
 .toggle-row:last-child{border-bottom:none;}
 .toggle-label{font-size:13px;font-weight:600;color:var(--text);}
-
-/* PENDING ACTIONS */
+/* PENDING */
 .pending-card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);border-left:4px solid var(--orange);}
 .pending-name{font-size:15px;font-weight:700;color:var(--text);}
 .pending-detail{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5;}
@@ -165,6 +168,8 @@ select.form-input{cursor:pointer;}
   <!-- SLOTS -->
   <div class="screen" id="screen-slots">
     <div class="notice">🟡 Pending · 🟢 Confirmed · 🔴 No-show · ⬜ Open · 🔵 Reserved</div>
+    <!-- Sport filter chips -->
+    <div class="sport-filter" id="slotSportFilter"></div>
     <div id="slotBoard"><div class="loader">Loading...</div></div>
     <div style="display:flex;gap:8px;margin-top:8px;">
       <button class="save-btn" style="background:var(--red);" onclick="triggerNoShow()">🚫 Mark No-Shows</button>
@@ -254,14 +259,11 @@ select.form-input{cursor:pointer;}
       </div>
     </div>
 
-    <!-- ── SPORTS ON/OFF ── -->
+    <!-- SPORTS ON/OFF -->
     <div class="card">
       <div class="sec-title">🏸 Sports Offered</div>
       <div class="notice" style="margin-bottom:12px;">Toggle ON/OFF anytime — saves instantly!</div>
-      <div id="sportToggleList">
-        <div class="loader">Loading...</div>
-      </div>
-      <!-- Add custom sport -->
+      <div id="sportToggleList"><div class="loader">Loading...</div></div>
       <div class="sport-add-row">
         <input class="form-input" id="customSport" placeholder="Add new sport..." style="margin-bottom:0;flex:1;">
         <button class="btn btn-green" onclick="addCustomSport()" style="padding:11px 16px;border-radius:10px;white-space:nowrap;">+ Add</button>
@@ -276,7 +278,7 @@ select.form-input{cursor:pointer;}
       <div id="sportConfigPanels"></div>
     </div>
 
-    <!-- General Off Days -->
+    <!-- Off Days -->
     <div class="card">
       <div class="sec-title">🚫 Weekly Off Days</div>
       <div class="checkbox-grid">
@@ -306,6 +308,13 @@ select.form-input{cursor:pointer;}
         <select class="form-input" id="newCourtSport" style="margin-bottom:0;"></select>
       </div>
       <button class="btn btn-green" onclick="addCourt()" style="width:100%;padding:11px;margin-top:10px;border-radius:10px;font-size:13px;">+ Add Court</button>
+    </div>
+
+    <!-- Terms & Conditions -->
+    <div class="card">
+      <div class="sec-title">📋 Terms & Conditions</div>
+      <div class="notice" style="margin-bottom:12px;">Shown to players at booking. Edit as needed.</div>
+      <textarea class="form-input" id="s-tnc" placeholder="Enter your terms and conditions..."></textarea>
     </div>
 
     <!-- Save All Settings -->
@@ -342,21 +351,62 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const TODAY = new Date().toISOString().split('T')[0];
 
-let zoneData     = null;
-let allSports    = [];   // full list: {name, emoji, active}
-let selectedSports = []; // active sports only (for backward compat)
-let offDays      = [];
-let courts       = [];
-let holidays     = [];
-let sportConfigs = {};
+let zoneData       = null;
+let allSports      = [];
+let selectedSports = [];
+let offDays        = [];
+let courts         = [];
+let holidays       = [];
+let sportConfigs   = {};
+let activeSlotSport = 'All'; // for slot board filter
 
-// Sport emoji map
 const SPORT_EMOJI = {
   'Badminton':'🏸','Tennis':'🎾','Pickleball':'🏓','Squash':'🟡',
   'Swimming':'🏊','Cricket':'🏏','Football':'⚽','Basketball':'🏀',
   'Volleyball':'🏐','Table Tennis':'🏓'
 };
-function emojiFor(name){ return SPORT_EMOJI[name]||'🏅'; }
+function emojiFor(n){ return SPORT_EMOJI[n]||'🏅'; }
+
+const DEFAULT_TNC =
+`SPORTBOOK — VENUE BOOKING TERMS & CONDITIONS
+
+1. BOOKINGS & PAYMENT
+   • Bookings are confirmed only after payment and owner approval.
+   • Payment must be made via UPI to the venue's UPI ID.
+   • Share the UTR number after payment for confirmation.
+
+2. CANCELLATION & REFUND POLICY
+   • 100% refund if cancelled more than 24 hours before slot start time.
+   • 50% refund if cancelled between 12–24 hours before slot start time.
+   • No refund for cancellations within 12 hours of slot start time.
+   • Refund will be processed to the UPI ID provided at booking within 48 hours.
+
+3. CHECK-IN
+   • Players must check in at the venue counter before their slot.
+   • Carry your booking QR code / booking ID for check-in.
+   • Slot will be marked as No-Show if player does not arrive within 15 minutes of start time.
+
+4. EQUIPMENT
+   • Equipment availability is as displayed on the venue page.
+   • Rental/sale charges are as per venue policy.
+   • Players are responsible for any damage to rented equipment.
+
+5. VENUE RULES
+   • Proper sports attire and footwear mandatory.
+   • No outside food or beverages unless permitted by venue.
+   • Venue reserves the right to cancel bookings in case of maintenance or unforeseen circumstances.
+   • In such cases, full refund will be provided.
+
+6. CONDUCT
+   • Abusive language or misconduct may result in immediate removal without refund.
+   • Players must vacate the court promptly at the end of their slot.
+
+7. LIABILITY
+   • The venue is not liable for any injury during play.
+   • Players participate at their own risk.
+   • Venue is not responsible for loss of personal belongings.
+
+By confirming your booking, you agree to these terms and conditions.`;
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
@@ -403,16 +453,11 @@ function showTab(t) {
 }
 
 // ── SPORTS TOGGLE ─────────────────────────────────────────────────────────────
-// allSports = [{name, active}] — all sports the venue has ever added
-// selectedSports = names of active ones only
-
 function renderSportToggles() {
   const el = document.getElementById('sportToggleList');
   if (!allSports.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">No sports added yet. Add one below!</div>';
-    updateCourtSportDropdown();
-    renderSportConfigTabs();
-    return;
+    el.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">No sports added yet.</div>';
+    updateCourtSportDropdown(); renderSportConfigTabs(); return;
   }
   el.innerHTML = allSports.map((sp, idx) => `
     <div class="sport-toggle-row" id="str-${idx}">
@@ -423,8 +468,7 @@ function renderSportToggles() {
           <div class="sport-toggle-status" id="sts-${idx}">${sp.active ? '✅ Active' : '⏸️ Inactive'}</div>
         </div>
       </div>
-      <button class="toggle ${sp.active ? 'on' : ''}" id="tog-sport-${idx}"
-        onclick="toggleSportActive(${idx})"></button>
+      <button class="toggle ${sp.active ? 'on' : ''}" id="tog-sport-${idx}" onclick="toggleSportActive(${idx})"></button>
     </div>
   `).join('');
   updateCourtSportDropdown();
@@ -434,24 +478,14 @@ function renderSportToggles() {
 async function toggleSportActive(idx) {
   const sp = allSports[idx];
   sp.active = !sp.active;
-
-  // Update toggle UI immediately
   const tog = document.getElementById(`tog-sport-${idx}`);
   const sts = document.getElementById(`sts-${idx}`);
   tog.classList.toggle('on', sp.active);
   sts.textContent = sp.active ? '✅ Active' : '⏸️ Inactive';
-
-  // Recompute selectedSports
   selectedSports = allSports.filter(s => s.active).map(s => s.name);
-
-  // Save instantly to Supabase
-  const { error } = await sb.from('sz_zones')
-    .update({ sports: selectedSports })
-    .eq('id', getZoneId());
-
+  const { error } = await sb.from('sz_zones').update({ sports: selectedSports }).eq('id', getZoneId());
   if (error) {
     toast('❌ Save failed: ' + error.message);
-    // Revert on error
     sp.active = !sp.active;
     tog.classList.toggle('on', sp.active);
     sts.textContent = sp.active ? '✅ Active' : '⏸️ Inactive';
@@ -466,26 +500,14 @@ async function toggleSportActive(idx) {
 async function addCustomSport() {
   const name = document.getElementById('customSport').value.trim();
   if (!name) { toast('Enter sport name'); return; }
-  if (allSports.find(s => s.name.toLowerCase() === name.toLowerCase())) {
-    toast('Sport already exists'); return;
-  }
-  // Add as active
+  if (allSports.find(s => s.name.toLowerCase() === name.toLowerCase())) { toast('Already exists'); return; }
   allSports.push({ name, active: true });
   selectedSports = allSports.filter(s => s.active).map(s => s.name);
-
-  const { error } = await sb.from('sz_zones')
-    .update({ sports: selectedSports })
-    .eq('id', getZoneId());
-
-  if (error) {
-    toast('❌ Save failed: ' + error.message);
-    allSports.pop();
-    selectedSports = allSports.filter(s => s.active).map(s => s.name);
-  } else {
-    document.getElementById('customSport').value = '';
-    renderSportToggles();
-    toast(`✅ ${name} added & turned ON!`);
-  }
+  const { error } = await sb.from('sz_zones').update({ sports: selectedSports }).eq('id', getZoneId());
+  if (error) { toast('❌ ' + error.message); allSports.pop(); return; }
+  document.getElementById('customSport').value = '';
+  renderSportToggles();
+  toast(`✅ ${name} added!`);
 }
 
 // ── TODAY ──────────────────────────────────────────────────────────────────────
@@ -497,12 +519,10 @@ async function loadToday() {
   const revenue   = confirmed.reduce((s, b) => s + Number(b.amount), 0);
   const pending   = list.filter(b => (b.status || b.booking_status) === 'pending').length;
   const { count: openCount } = await sb.from('sz_slots').select('*', { count:'exact', head:true }).eq('zone_id', zid).eq('slot_date', TODAY).eq('status', 'open');
-
   document.getElementById('stat-bookings').textContent = list.length;
   document.getElementById('stat-revenue').textContent  = '₹' + revenue;
   document.getElementById('stat-pending').textContent  = pending;
   document.getElementById('stat-open').textContent     = openCount || 0;
-
   const el = document.getElementById('todayList');
   if (!list.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>No bookings yet today</div>'; return; }
   el.innerHTML = list.map(b => {
@@ -528,15 +548,12 @@ async function loadPending() {
   el.innerHTML = data.map(b => `
     <div class="pending-card" id="pcard-${b.id}">
       <div class="pending-name">${b.player_name}</div>
-      <div class="pending-detail">
-        🏸 ${b.sport} · 📅 ${b.slot_date} · 🕐 ${b.start_time?.slice(0,5)}<br>
-        📱 ${b.player_phone} · 💰 ₹${b.amount}
-      </div>
+      <div class="pending-detail">🏸 ${b.sport} · 📅 ${b.slot_date} · 🕐 ${b.start_time?.slice(0,5)}<br>📱 ${b.player_phone} · 💰 ₹${b.amount}</div>
       <div class="pending-utr">UTR: ${b.utr_number||'Not provided'}</div>
       ${b.player_upi ? `<div class="pending-detail" style="margin-top:4px;">Refund UPI: ${b.player_upi}</div>` : ''}
       <div class="action-row">
         <button class="btn btn-green" onclick="confirmBooking('${b.id}','${b.slot_id}')">✅ Confirm</button>
-        <button class="btn btn-red"   onclick="showRejectForm('${b.id}')">❌ Reject</button>
+        <button class="btn btn-red" onclick="showRejectForm('${b.id}')">❌ Reject</button>
       </div>
       <div class="reject-form" id="rform-${b.id}">
         <input type="text" placeholder="Reason for rejection..." id="rreason-${b.id}">
@@ -569,24 +586,58 @@ async function rejectBooking(bookingId, slotId) {
   loadToday();
 }
 
-// ── SLOT BOARD ─────────────────────────────────────────────────────────────────
+// ── SLOT BOARD (with sport filter) ────────────────────────────────────────────
 async function loadSlotBoard() {
   const zid = getZoneId();
-  const { data: slots }    = await sb.from('sz_slots').select('*').eq('zone_id', zid).eq('slot_date', TODAY).order('start_time');
+  const { data: slots }    = await sb.from('sz_slots').select('*').eq('zone_id', zid).eq('slot_date', TODAY).order('sport').order('start_time');
   const { data: bookings } = await sb.from('sz_bookings').select('*').eq('zone_id', zid).eq('slot_date', TODAY);
   const board = document.getElementById('slotBoard');
-  if (!slots?.length) { board.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No slots for today.<br>Go to Settings → Generate Slots!</div>'; return; }
+
+  if (!slots?.length) {
+    document.getElementById('slotSportFilter').innerHTML = '';
+    board.innerHTML='<div class="empty"><div class="empty-icon">📋</div>No slots for today.<br>Go to Settings → Generate Slots!</div>';
+    return;
+  }
+
+  // Build sport filter
+  const sports = ['All', ...new Set(slots.map(s => s.sport).filter(Boolean))];
+  const filterEl = document.getElementById('slotSportFilter');
+  filterEl.innerHTML = sports.map(sp => `
+    <div class="sf-chip ${sp === activeSlotSport ? 'active' : ''}" onclick="setSlotSport('${sp}')">${emojiFor(sp)} ${sp}</div>
+  `).join('');
+
+  // Filter slots
+  const filtered = activeSlotSport === 'All' ? slots : slots.filter(s => s.sport === activeSlotSport);
+
   const bkMap = {};
   (bookings||[]).forEach(b => { bkMap[b.slot_id] = b; });
-  board.innerHTML = `<div class="slot-grid">${slots.map(s => {
-    const bk  = bkMap[s.id];
-    const st  = bk ? (bk.status || bk.booking_status) : s.status;
-    const cls = st==='checkedin'?'checkedin':st==='confirmed'||st==='booked'?'booked':st==='noshow'?'noshow':st==='pending'?'pending':st==='reserved'?'reserved':'open';
-    return `<div class="slot-item ${cls}">
-      <div class="slot-time">${s.start_time?.slice(0,5)}</div>
-      <div class="slot-player">${bk?.player_name||(s.status==='reserved'?'Reserved':(s.status==='open'?'₹'+s.price:'Open'))}</div>
-    </div>`;
-  }).join('')}</div>`;
+
+  // Group by sport
+  const bySport = {};
+  filtered.forEach(s => {
+    if (!bySport[s.sport]) bySport[s.sport] = [];
+    bySport[s.sport].push(s);
+  });
+
+  board.innerHTML = Object.entries(bySport).map(([sport, sportSlots]) => `
+    ${activeSlotSport === 'All' ? `<div class="slot-section-title">${emojiFor(sport)} ${sport}</div>` : ''}
+    <div class="slot-grid">
+      ${sportSlots.map(s => {
+        const bk  = bkMap[s.id];
+        const st  = bk ? (bk.status || bk.booking_status) : s.status;
+        const cls = st==='checkedin'?'checkedin':st==='confirmed'||st==='booked'?'booked':st==='noshow'?'noshow':st==='pending'?'pending':st==='reserved'?'reserved':'open';
+        return `<div class="slot-item ${cls}">
+          <div class="slot-time">${s.start_time?.slice(0,5)}</div>
+          <div class="slot-player">${bk?.player_name||(s.status==='reserved'?'Reserved':(s.status==='open'?'₹'+s.price:'Open'))}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+
+function setSlotSport(sport) {
+  activeSlotSport = sport;
+  loadSlotBoard();
 }
 
 async function triggerNoShow() {
@@ -609,7 +660,7 @@ async function triggerNoShow() {
 }
 
 function showReserveModal() {
-  const reason = prompt('Reason for reserving slot (e.g. Coaching, Maintenance):');
+  const reason = prompt('Reason for reserving slot:');
   if (!reason) return;
   const time = prompt('Which slot time? (e.g. 14:00)');
   if (!time) return;
@@ -618,17 +669,16 @@ function showReserveModal() {
 
 async function reserveSlot(time, reason) {
   const { data } = await sb.from('sz_slots').select('id').eq('zone_id', getZoneId()).eq('slot_date', TODAY).eq('start_time', time+':00').maybeSingle();
-  if (!data) { toast('Slot not found for that time'); return; }
+  if (!data) { toast('Slot not found'); return; }
   await sb.from('sz_slots').update({ status:'reserved' }).eq('id', data.id);
-  toast(`Slot ${time} reserved: ${reason}`);
+  toast(`Slot ${time} reserved`);
   loadSlotBoard();
 }
 
 // ── WALK-IN ────────────────────────────────────────────────────────────────────
 async function loadWalkIn() {
-  const zid = getZoneId();
   document.getElementById('wiSport').innerHTML = selectedSports.map(s => `<option>${s}</option>`).join('');
-  const { data } = await sb.from('sz_walkin_queue').select('*').eq('zone_id', zid).eq('status', 'waiting').order('created_at');
+  const { data } = await sb.from('sz_walkin_queue').select('*').eq('zone_id', getZoneId()).eq('status', 'waiting').order('created_at');
   const list = document.getElementById('walkinList');
   if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">🚶</div>Queue is empty</div>'; return; }
   list.innerHTML = data.map((w,i) => `
@@ -651,14 +701,12 @@ async function addWalkIn() {
   await sb.from('sz_walkin_queue').insert({ zone_id:getZoneId(), player_name:name, player_phone:phone, sport, status:'waiting' });
   document.getElementById('wiName').value = '';
   document.getElementById('wiPhone').value = '';
-  toast('Walk-in added!');
-  loadWalkIn();
+  toast('Walk-in added!'); loadWalkIn();
 }
 
 async function assignWalkIn(id) {
   await sb.from('sz_walkin_queue').update({ status:'assigned' }).eq('id', id);
-  toast('Walk-in assigned!');
-  loadWalkIn();
+  toast('Walk-in assigned!'); loadWalkIn();
 }
 
 // ── CHECK-IN ───────────────────────────────────────────────────────────────────
@@ -731,29 +779,20 @@ async function loadSettings() {
   document.getElementById('s-upi').value      = zone.upi_id||'';
   document.getElementById('s-refund').value   = zone.refund_hours||24;
   document.getElementById('s-maps').value     = zone.maps_url||'';
+  document.getElementById('s-tnc').value      = zone.terms_and_conditions || DEFAULT_TNC;
   if (zone.maps_url) showMapsPreview(zone.maps_url);
 
-  // Build allSports from DB
-  // zone.sports = active sports array
-  // sport_configs keys = all sports ever configured
   const activeSports = zone.sports || [];
   sportConfigs       = zone.sport_configs || {};
-
-  // Merge: active + any in configs that are not active = inactive
-  const allNames = [...new Set([...activeSports, ...Object.keys(sportConfigs)])];
-  // Also add default sports if zone has none yet
-  const defaults = ['Badminton','Tennis','Pickleball','Squash','Swimming'];
-  const baseList = allNames.length ? allNames : defaults;
-
-  allSports = baseList.map(name => ({
-    name,
-    active: activeSports.includes(name)
-  }));
-  selectedSports = activeSports;
+  const allNames     = [...new Set([...activeSports, ...Object.keys(sportConfigs)])];
+  const defaults     = ['Badminton','Tennis','Pickleball','Squash','Swimming'];
+  const baseList     = allNames.length ? allNames : defaults;
+  allSports          = baseList.map(name => ({ name, active: activeSports.includes(name) }));
+  selectedSports     = activeSports;
 
   renderSportToggles();
 
-  offDays  = zone.off_days||[];
+  offDays = zone.off_days||[];
   document.querySelectorAll('.day-chip').forEach(el => {
     el.classList.toggle('selected', offDays.includes(parseInt(el.dataset.day)));
   });
@@ -774,25 +813,25 @@ function showMapsPreview(url) {
 }
 document.getElementById('s-maps').addEventListener('input', function(){ showMapsPreview(this.value.trim()); });
 
-// ── SPORT CONFIG TABS (for settings — shows all sports, inactive greyed) ──────
+// ── SPORT CONFIG TABS ─────────────────────────────────────────────────────────
 function renderSportConfigTabs() {
   const tabs   = document.getElementById('sportConfigTabs');
   const panels = document.getElementById('sportConfigPanels');
   if (!allSports.length) {
-    tabs.innerHTML   = '<div style="font-size:13px;color:var(--muted);">Add sports above first</div>';
-    panels.innerHTML = '';
-    return;
+    tabs.innerHTML = '<div style="font-size:13px;color:var(--muted);">Add sports above first</div>';
+    panels.innerHTML = ''; return;
   }
   tabs.innerHTML = allSports.map((sp,i) => `
     <div class="sct-chip${i===0?' active':''}${!sp.active?' inactive':''}"
          onclick="switchSportConfig('${sp.name}',this)">${emojiFor(sp.name)} ${sp.name}</div>
   `).join('');
+
   panels.innerHTML = allSports.map((sp,i) => {
     const s   = sp.name;
     const cfg = sportConfigs[s]||{};
     const sid = s.replace(/\s/g,'_');
     return `<div class="sport-config-panel${i===0?' active':''}" id="scp-${sid}">
-      ${!sp.active ? `<div class="notice notice-warn" style="margin-bottom:12px;">⏸️ ${s} is currently OFF. Toggle it ON in Sports Offered to activate.</div>` : ''}
+      ${!sp.active ? `<div class="notice notice-warn" style="margin-bottom:12px;">⏸️ ${s} is OFF. Toggle ON to activate.</div>` : ''}
       <div class="form-row">
         <div class="wrap"><label class="form-label">Open Time</label><input class="form-input" type="time" id="cfg-open-${s}" value="${cfg.open_time||'06:00'}" style="margin-bottom:0;"></div>
         <div class="wrap"><label class="form-label">Close Time</label><input class="form-input" type="time" id="cfg-close-${s}" value="${cfg.close_time||'22:00'}" style="margin-bottom:0;"></div>
@@ -810,14 +849,13 @@ function renderSportConfigTabs() {
           <div class="break-item">
             <span style="font-size:13px;font-weight:600;">🕐 ${b}</span>
             <button class="btn btn-red" onclick="removeBreak('${s}',${bi})">Remove</button>
-          </div>
-        `).join('')}
+          </div>`).join('')}
       </div>
       <div class="form-row" style="margin-top:8px;">
         <input class="form-input" id="newbreak-${s}" placeholder="e.g. 13:00-14:00" style="margin-bottom:0;">
         <button class="btn btn-green" onclick="addBreak('${s}')" style="padding:11px 16px;border-radius:10px;">+ Add</button>
       </div>
-      <label class="form-label" style="margin-top:12px;">Peak Hours (e.g. 06:00-09:00, 17:00-22:00)</label>
+      <label class="form-label" style="margin-top:12px;">Peak Hours</label>
       <input class="form-input" id="cfg-peak-${s}" placeholder="06:00-09:00, 17:00-22:00" value="${cfg.peak_hours||''}">
       <div class="form-row">
         <div class="wrap"><label class="form-label">Peak Rate (₹)</label><input class="form-input" type="number" id="cfg-pprice-${s}" value="${cfg.peak_price||''}" placeholder="200" style="margin-bottom:0;"></div>
@@ -826,10 +864,10 @@ function renderSportConfigTabs() {
       <label class="form-label" style="margin-top:12px;">Charges per</label>
       <select class="form-input" id="cfg-chargeper-${s}">
         <option value="player" ${(cfg.charge_per||'player')==='player'?'selected':''}>Per Player</option>
-        <option value="team"   ${cfg.charge_per==='team'?'selected':''}>Per Team</option>
+        <option value="team" ${cfg.charge_per==='team'?'selected':''}>Per Team</option>
       </select>
       <div id="teamsize-${sid}" style="${cfg.charge_per==='team'?'':'display:none'}">
-        <label class="form-label">Team Size (players)</label>
+        <label class="form-label">Team Size</label>
         <input class="form-input" type="number" id="cfg-teamsize-${s}" value="${cfg.team_size||''}" placeholder="11">
       </div>
       <div class="toggle-row">
@@ -846,17 +884,60 @@ function renderSportConfigTabs() {
       </div>
       <label class="form-label" style="margin-top:12px;">Refreshments Note</label>
       <input class="form-input" id="cfg-refnote-${s}" value="${cfg.refreshments_note||''}" placeholder="e.g. Water, Juice, Snacks available">
+      <div class="divider-line"></div>
+      <div class="toggle-row">
+        <span class="toggle-label">🎒 Equipment Available</span>
+        <button class="toggle ${cfg.equipment?'on':''}" id="tog-equip-${s}" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div id="equipdetail-${sid}" style="${cfg.equipment?'':'display:none'}">
+        <label class="form-label" style="margin-top:10px;">Equipment Type</label>
+        <select class="form-input" id="cfg-equiptype-${s}">
+          <option value="rental" ${(cfg.equipment_type||'rental')==='rental'?'selected':''}>On Rent Only</option>
+          <option value="sale"   ${cfg.equipment_type==='sale'?'selected':''}>For Sale Only</option>
+          <option value="both"   ${cfg.equipment_type==='both'?'selected':''}>Rent & Sale Both</option>
+        </select>
+        <label class="form-label">Equipment Details</label>
+        <input class="form-input" id="cfg-equipnote-${s}" value="${cfg.equipment_note||''}" placeholder="e.g. Rackets ₹50/hr, Shuttles ₹30/set">
+      </div>
+      <div class="toggle-row" style="margin-top:4px;">
+        <span class="toggle-label">🎠 Additional Facilities</span>
+        <button class="toggle ${cfg.facilities?'on':''}" id="tog-fac-${s}" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div id="facdetail-${sid}" style="${cfg.facilities?'':'display:none'}">
+        <label class="form-label" style="margin-top:10px;">Facilities Note</label>
+        <input class="form-input" id="cfg-facnote-${s}" value="${cfg.facilities_note||''}" placeholder="e.g. Kids Play Area, Parking, Changing Room, Locker">
+      </div>
     </div>`;
   }).join('');
 
-  // Team size toggle
+  // Wire up toggles for show/hide
   allSports.forEach(sp => {
     const s   = sp.name;
-    const sel = document.getElementById(`cfg-chargeper-${s}`);
     const sid = s.replace(/\s/g,'_');
+
+    // Team size toggle
+    const sel = document.getElementById(`cfg-chargeper-${s}`);
     if (sel) sel.addEventListener('change', function(){
       const div = document.getElementById(`teamsize-${sid}`);
       if (div) div.style.display = this.value==='team' ? 'block' : 'none';
+    });
+
+    // Equipment show/hide
+    const equipTog = document.getElementById(`tog-equip-${s}`);
+    if (equipTog) equipTog.addEventListener('click', function(){
+      setTimeout(() => {
+        const div = document.getElementById(`equipdetail-${sid}`);
+        if (div) div.style.display = this.classList.contains('on') ? 'block' : 'none';
+      }, 10);
+    });
+
+    // Facilities show/hide
+    const facTog = document.getElementById(`tog-fac-${s}`);
+    if (facTog) facTog.addEventListener('click', function(){
+      setTimeout(() => {
+        const div = document.getElementById(`facdetail-${sid}`);
+        if (div) div.style.display = this.classList.contains('on') ? 'block' : 'none';
+      }, 10);
     });
   });
 }
@@ -930,15 +1011,14 @@ async function removeCourt(id) {
   if (!confirm('Remove this court?')) return;
   await sb.from('sz_courts').update({ is_active:false }).eq('id', id);
   courts = courts.filter(c => c.id !== id);
-  renderCourts();
-  toast('Court removed');
+  renderCourts(); toast('Court removed');
 }
 
-// Collect sport configs from form
 function collectSportConfigs() {
   const configs = {};
   allSports.forEach(sp => {
-    const s = sp.name;
+    const s   = sp.name;
+    const sid = s.replace(/\s/g,'_');
     configs[s] = {
       open_time:         document.getElementById(`cfg-open-${s}`)?.value||'06:00',
       close_time:        document.getElementById(`cfg-close-${s}`)?.value||'22:00',
@@ -952,6 +1032,11 @@ function collectSportConfigs() {
       ac:                document.getElementById(`tog-ac-${s}`)?.classList.contains('on')||false,
       refreshments:      document.getElementById(`tog-ref-${s}`)?.classList.contains('on')||false,
       refreshments_note: document.getElementById(`cfg-refnote-${s}`)?.value||'',
+      equipment:         document.getElementById(`tog-equip-${s}`)?.classList.contains('on')||false,
+      equipment_type:    document.getElementById(`cfg-equiptype-${s}`)?.value||'rental',
+      equipment_note:    document.getElementById(`cfg-equipnote-${s}`)?.value||'',
+      facilities:        document.getElementById(`tog-fac-${s}`)?.classList.contains('on')||false,
+      facilities_note:   document.getElementById(`cfg-facnote-${s}`)?.value||'',
       breaks:            sportConfigs[s]?.breaks||[],
     };
   });
@@ -961,29 +1046,30 @@ function collectSportConfigs() {
 async function saveSettings() {
   const configs = collectSportConfigs();
   const updates = {
-    name:          document.getElementById('s-vname').value.trim(),
-    address:       document.getElementById('s-area').value.trim(),
-    city:          document.getElementById('s-city').value.trim(),
-    contact1:      document.getElementById('s-contact1').value.trim()||null,
-    contact2:      document.getElementById('s-contact2').value.trim()||null,
-    upi_id:        document.getElementById('s-upi').value.trim()||null,
-    refund_hours:  parseInt(document.getElementById('s-refund').value)||24,
-    maps_url:      document.getElementById('s-maps').value.trim()||null,
-    open_time:     '06:00',
-    close_time:    '22:00',
-    sports:        selectedSports,   // only active ones
-    off_days:      offDays,
-    holidays:      holidays,
-    sport_configs: configs,
+    name:                  document.getElementById('s-vname').value.trim(),
+    address:               document.getElementById('s-area').value.trim(),
+    city:                  document.getElementById('s-city').value.trim(),
+    contact1:              document.getElementById('s-contact1').value.trim()||null,
+    contact2:              document.getElementById('s-contact2').value.trim()||null,
+    upi_id:                document.getElementById('s-upi').value.trim()||null,
+    refund_hours:          parseInt(document.getElementById('s-refund').value)||24,
+    maps_url:              document.getElementById('s-maps').value.trim()||null,
+    terms_and_conditions:  document.getElementById('s-tnc').value.trim()||null,
+    open_time:             '06:00',
+    close_time:            '22:00',
+    sports:                selectedSports,
+    off_days:              offDays,
+    holidays:              holidays,
+    sport_configs:         configs,
   };
   const { error } = await sb.from('sz_zones').update(updates).eq('id', getZoneId());
   if (error) { toast('Error: ' + error.message); return; }
-  zoneData       = { ...zoneData, ...updates };
-  sportConfigs   = configs;
+  zoneData     = { ...zoneData, ...updates };
+  sportConfigs = configs;
   toast('✅ Settings saved!');
 }
 
-// ── GENERATE SLOTS ─────────────────────────────────────────────────────────────
+// ── GENERATE SLOTS (fixed: per court+date, not just date) ─────────────────────
 async function generateSlots() {
   const fromDate = document.getElementById('genFrom').value;
   const toDate   = document.getElementById('genTo').value;
@@ -994,8 +1080,8 @@ async function generateSlots() {
   btn.disabled = true; btn.textContent = 'Generating...';
   document.getElementById('genStatus').textContent = '';
 
-  const offDaysSet  = new Set(offDays);
-  const holidaySet  = new Set(holidays);
+  const offDaysSet = new Set(offDays);
+  const holidaySet = new Set(holidays);
   const slotsToInsert = [];
   let skipped = 0;
 
@@ -1003,41 +1089,46 @@ async function generateSlots() {
   const end   = new Date(toDate);
 
   while (current <= end) {
-    const dateStr  = current.toISOString().split('T')[0];
+    const dateStr   = current.toISOString().split('T')[0];
     const dayOfWeek = current.getDay();
+
     if (offDaysSet.has(dayOfWeek) || holidaySet.has(dateStr)) {
       current.setDate(current.getDate()+1); skipped++; continue;
     }
-    const { data:existing } = await sb.from('sz_slots').select('id').eq('zone_id', zoneData.id).eq('slot_date', dateStr).limit(1);
-    if (existing?.length) { current.setDate(current.getDate()+1); skipped++; continue; }
 
     for (const court of courts) {
-      // Only generate slots for active sports
+      // Only active sports
       const sp = allSports.find(s => s.name === court.sport);
       if (!sp?.active) continue;
 
-      const cfg        = sportConfigs[court.sport]||{};
-      const openH      = parseInt((cfg.open_time||'06:00').split(':')[0]);
-      const openM      = parseInt((cfg.open_time||'06:00').split(':')[1]||0);
-      const closeH     = parseInt((cfg.close_time||'22:00').split(':')[0]);
-      const closeM     = parseInt((cfg.close_time||'22:00').split(':')[1]||0);
-      const duration   = cfg.duration||60;
-      const peakPrice  = cfg.peak_price||200;
-      const offpeakPrice = cfg.offpeak_price||peakPrice;
-      const peakRanges = parsePeakHours(cfg.peak_hours||'');
-      const breaks     = parseBreaks(cfg.breaks||[]);
+      // FIX: Check per court+date (not just date)
+      const { data:existing } = await sb.from('sz_slots')
+        .select('id').eq('zone_id', zoneData.id)
+        .eq('court_id', court.id).eq('slot_date', dateStr).limit(1);
+      if (existing?.length) continue; // this court already has slots for this date
 
-      let slotStart  = openH*60+openM;
+      const cfg          = sportConfigs[court.sport]||{};
+      const openH        = parseInt((cfg.open_time||'06:00').split(':')[0]);
+      const openM        = parseInt((cfg.open_time||'06:00').split(':')[1]||0);
+      const closeH       = parseInt((cfg.close_time||'22:00').split(':')[0]);
+      const closeM       = parseInt((cfg.close_time||'22:00').split(':')[1]||0);
+      const duration     = cfg.duration||60;
+      const peakPrice    = cfg.peak_price||200;
+      const offpeakPrice = cfg.offpeak_price||peakPrice;
+      const peakRanges   = parsePeakHours(cfg.peak_hours||'');
+      const breaks       = parseBreaks(cfg.breaks||[]);
+
+      let slotStart    = openH*60+openM;
       const closeTotal = closeH*60+closeM;
 
       while (slotStart+duration <= closeTotal) {
         const inBreak = breaks.some(b => slotStart>=b.start && slotStart<b.end);
         if (inBreak) { slotStart+=duration; continue; }
-        const startH = Math.floor(slotStart/60);
-        const startM = slotStart%60;
+        const startH   = Math.floor(slotStart/60);
+        const startM   = slotStart%60;
         const endTotal = slotStart+duration;
-        const endH   = Math.floor(endTotal/60);
-        const endM   = endTotal%60;
+        const endH     = Math.floor(endTotal/60);
+        const endM     = endTotal%60;
         const startStr = `${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')}:00`;
         const endStr   = `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')}:00`;
         const isPeak   = isInPeakHours(slotStart, peakRanges);
