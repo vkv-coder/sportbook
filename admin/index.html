@@ -138,7 +138,8 @@ const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN_PIN = 'sportbook@admin2026';
-
+const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
+const TELEGRAM_CHAT = '8507770594';
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -212,6 +213,7 @@ async function approveOwner(id, venue, email) {
   const { error } = await sb.from('sz_owners').update({is_approved:true}).eq('id', id);
   if (error) { toast('Error: '+error.message); return; }
   toast(`✅ ${venue} approved! They can now login.`);
+  
   loadAll();
 }
 
