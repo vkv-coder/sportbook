@@ -308,10 +308,13 @@ select.form-input{cursor:pointer;}
       <button class="btn btn-green" onclick="addCourt()" style="width:100%;padding:11px;margin-top:10px;border-radius:10px;font-size:13px;">+ Add Court</button>
     </div>
 
+    <!-- Save All Settings -->
+    <button class="save-btn" onclick="saveSettings()">💾 Save All Settings</button>
+
     <!-- Generate Slots -->
-    <div class="card">
+    <div class="card" style="margin-top:12px;">
       <div class="sec-title">⚡ Generate Slots</div>
-      <div class="notice notice-warn">Save settings first, then generate slots for the selected date range.</div>
+      <div class="notice notice-warn">⬆️ Save all settings above first, then generate slots here.</div>
       <div class="form-row">
         <div class="wrap"><label class="form-label">From Date</label><input class="form-input" type="date" id="genFrom" style="margin-bottom:0;"></div>
         <div class="wrap"><label class="form-label">To Date</label><input class="form-input" type="date" id="genTo" style="margin-bottom:0;"></div>
@@ -320,7 +323,6 @@ select.form-input{cursor:pointer;}
       <div id="genStatus" style="margin-top:8px;font-size:13px;color:var(--green);text-align:center;"></div>
     </div>
 
-    <button class="save-btn" onclick="saveSettings()">💾 Save All Settings</button>
     <button class="btn" style="width:100%;margin-top:10px;padding:13px;color:var(--red);background:#FEE2E2;border-radius:12px;font-size:14px;" onclick="logout()">Logout</button>
   </div>
 </main>
