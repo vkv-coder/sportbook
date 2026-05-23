@@ -137,16 +137,30 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const ADMIN_PIN = 'sportbook@admin2026';
-const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
+const ADMIN_PIN   = 'sportbook@admin2026';
+const TELEGRAM_BOT  = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
 const TELEGRAM_CHAT = '8507770594';
+
+// ── Telegram helper ──────────────────────────────────────────────────────────
+async function notifyTelegram(msg) {
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg })
+    });
+  } catch(e) { console.warn('Telegram notification failed:', e); }
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 2800);
+  setTimeout(() => el.classList.remove('show'), 2800);
 }
 
+// ── Login ────────────────────────────────────────────────────────────────────
 function adminLogin() {
   const pin = document.getElementById('adminPin').value;
   if (pin !== ADMIN_PIN) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
@@ -155,21 +169,22 @@ function adminLogin() {
   document.getElementById('navRight').textContent = 'Admin: Vijay Vora';
   loadAll();
 }
+document.getElementById('adminPin').addEventListener('keypress', e => { if (e.key === 'Enter') adminLogin(); });
 
-document.getElementById('adminPin').addEventListener('keypress', e => { if(e.key==='Enter') adminLogin(); });
-
+// ── Tabs ─────────────────────────────────────────────────────────────────────
 function showTab(t) {
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelector(`.tab[onclick="showTab('${t}')"]`).classList.add('active');
-  document.getElementById('screen-'+t).classList.add('active');
+  document.getElementById('screen-' + t).classList.add('active');
 }
 
+// ── Load all owners ──────────────────────────────────────────────────────────
 async function loadAll() {
-  const { data } = await sb.from('sz_owners').select('*').order('created_at', {ascending:false});
-  const all = data || [];
+  const { data } = await sb.from('sz_owners').select('*').order('created_at', { ascending: false });
+  const all      = data || [];
   const pending  = all.filter(o => !o.is_approved);
-  const approved = all.filter(o => o.is_approved);
+  const approved = all.filter(o =>  o.is_approved);
 
   document.getElementById('stat-total').textContent    = all.length;
   document.getElementById('stat-approved').textContent = approved.length;
@@ -179,6 +194,7 @@ async function loadAll() {
   renderOwners(approved, 'approvedOwners', true);
 }
 
+// ── Render owner cards ───────────────────────────────────────────────────────
 function renderOwners(list, elId, isApproved) {
   const el = document.getElementById(elId);
   if (!list.length) {
@@ -188,20 +204,20 @@ function renderOwners(list, elId, isApproved) {
   el.innerHTML = list.map(o => `
     <div class="owner-card" id="ocard-${o.id}">
       <div class="owner-info">
-        <div class="venue">${o.venue_name||'—'}</div>
-        <div class="name">👤 ${o.owner_name||'—'}</div>
+        <div class="venue">${o.venue_name || '—'}</div>
+        <div class="name">👤 ${o.owner_name || '—'}</div>
         <div class="detail">
-          📱 ${o.phone||'—'} · 📧 ${o.email||'—'}<br>
-          📍 ${o.city||'—'}<br>
+          📱 ${o.phone || '—'} · 📧 ${o.email || '—'}<br>
+          📍 ${o.city || '—'}<br>
           🕐 Registered: ${new Date(o.created_at).toLocaleDateString('en-IN')}
-          ${o.zone_id?`<br>🏟️ Zone: ${o.zone_id.slice(0,8)}...`:'<br>🏟️ No zone yet'}
+          ${o.zone_id ? `<br>🏟️ Zone: ${o.zone_id.slice(0,8)}...` : '<br>🏟️ No zone yet'}
         </div>
       </div>
       <div class="owner-actions">
         ${isApproved
           ? `<span class="approved-badge">✅ Approved</span>
              <button class="action-btn reject-btn" onclick="revokeOwner('${o.id}')">Revoke</button>`
-          : `<button class="action-btn approve-btn" onclick="approveOwner('${o.id}','${o.venue_name}','${o.email}')">✅ Approve</button>
+          : `<button class="action-btn approve-btn" onclick="approveOwner('${o.id}','${(o.venue_name||'').replace(/'/g,"\\'")}','${(o.owner_name||'').replace(/'/g,"\\'")}','${o.phone||''}','${o.email||''}')">✅ Approve</button>
              <button class="action-btn reject-btn" onclick="deleteOwner('${o.id}')">❌ Reject</button>`
         }
       </div>
@@ -209,21 +225,35 @@ function renderOwners(list, elId, isApproved) {
   `).join('');
 }
 
-async function approveOwner(id, venue, email) {
-  const { error } = await sb.from('sz_owners').update({is_approved:true}).eq('id', id);
-  if (error) { toast('Error: '+error.message); return; }
+// ── Approve owner ────────────────────────────────────────────────────────────
+async function approveOwner(id, venue, ownerName, phone, email) {
+  const { error } = await sb.from('sz_owners').update({ is_approved: true }).eq('id', id);
+  if (error) { toast('Error: ' + error.message); return; }
+
   toast(`✅ ${venue} approved! They can now login.`);
-  
+
+  // Notify admin via Telegram
+  await notifyTelegram(
+    `✅ OWNER APPROVED\n\n` +
+    `🏟️ Venue: ${venue}\n` +
+    `👤 Owner: ${ownerName}\n` +
+    `📱 Phone: ${phone}\n` +
+    `📧 Email: ${email}\n\n` +
+    `They can now login at sportbook.in`
+  );
+
   loadAll();
 }
 
+// ── Revoke owner ─────────────────────────────────────────────────────────────
 async function revokeOwner(id) {
   if (!confirm('Revoke access for this owner?')) return;
-  await sb.from('sz_owners').update({is_approved:false}).eq('id', id);
+  await sb.from('sz_owners').update({ is_approved: false }).eq('id', id);
   toast('Access revoked');
   loadAll();
 }
 
+// ── Delete / reject owner ────────────────────────────────────────────────────
 async function deleteOwner(id) {
   if (!confirm('Reject and delete this owner registration?')) return;
   await sb.from('sz_owners').delete().eq('id', id);
@@ -231,6 +261,7 @@ async function deleteOwner(id) {
   loadAll();
 }
 
+// ── Add owner (admin direct add) ─────────────────────────────────────────────
 async function addOwner() {
   const name  = document.getElementById('add-name').value.trim();
   const venue = document.getElementById('add-venue').value.trim();
@@ -239,9 +270,8 @@ async function addOwner() {
   const email = document.getElementById('add-email').value.trim();
   const pass  = document.getElementById('add-pass').value.trim();
 
-  if (!name||!venue||!city||!phone||!email||!pass) {
-    document.getElementById('addErr').textContent = 'Please fill all fields';
-    return;
+  if (!name || !venue || !city || !phone || !email || !pass) {
+    document.getElementById('addErr').textContent = 'Please fill all fields'; return;
   }
   if (phone.length !== 10) { document.getElementById('addErr').textContent = 'Enter valid 10-digit mobile'; return; }
   if (pass.length < 6)     { document.getElementById('addErr').textContent = 'Password min 6 characters'; return; }
@@ -255,18 +285,28 @@ async function addOwner() {
     slot_duration: 60, grace_minutes: 15
   }).select().single();
 
-  if (zErr) { document.getElementById('addErr').textContent = 'Error creating venue: '+zErr.message; return; }
+  if (zErr) { document.getElementById('addErr').textContent = 'Error creating venue: ' + zErr.message; return; }
 
-  // Create owner
+  // Create owner row (pre-approved)
   const { error: oErr } = await sb.from('sz_owners').insert({
     owner_name: name, venue_name: venue,
     city, phone, email, password: pass,
     zone_id: zone.id, is_approved: true
   });
 
-  if (oErr) { document.getElementById('addErr').textContent = 'Error creating owner: '+oErr.message; return; }
+  if (oErr) { document.getElementById('addErr').textContent = 'Error creating owner: ' + oErr.message; return; }
 
   toast(`✅ ${venue} added! Owner can login with ${email}`);
+
+  // Notify via Telegram
+  await notifyTelegram(
+    `➕ OWNER ADDED BY ADMIN\n\n` +
+    `🏟️ Venue: ${venue}\n` +
+    `👤 Owner: ${name}\n` +
+    `📱 Phone: ${phone}\n` +
+    `📧 Email: ${email}\n` +
+    `📍 City: ${city}`
+  );
 
   // Clear form
   ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(id => {
