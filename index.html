@@ -26,7 +26,31 @@
   @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
   .hero h1{font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:white;line-height:1.1;margin-bottom:10px;}
   .hero p{font-size:15px;color:rgba(255,255,255,0.82);line-height:1.5;}
-  .choose-section{padding:32px 20px;flex:1;}
+
+  /* ── MAHJONG SECTION ── */
+  .mahjong-section{background:linear-gradient(135deg,#1a1930 0%,#0f0e17 100%);padding:28px 20px;position:relative;overflow:hidden;}
+  .mahjong-section::before{content:'🀄';position:absolute;right:-10px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.06;pointer-events:none;}
+  .mahjong-inner{max-width:420px;margin:0 auto;display:flex;align-items:center;gap:16px;}
+  .mahjong-left{flex:1;}
+  .mahjong-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a84c;margin-bottom:6px;}
+  .mahjong-title{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:#e8e6f0;line-height:1.1;margin-bottom:6px;}
+  .mahjong-title span{color:#c9a84c;}
+  .mahjong-desc{font-size:13px;color:#8b89a8;line-height:1.5;margin-bottom:14px;}
+  .mahjong-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .mahjong-pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid;}
+  .pill-gold{border-color:#c9a84c;color:#c9a84c;background:rgba(201,168,76,0.1);}
+  .pill-blue{border-color:#5dade2;color:#5dade2;background:rgba(93,173,226,0.1);}
+  .pill-green{border-color:#58d68d;color:#58d68d;background:rgba(88,214,141,0.1);}
+  .mahjong-btn{display:inline-flex;align-items:center;gap:8px;background:#c9a84c;color:#0f0e17;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:12px 20px;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:all 0.2s;}
+  .mahjong-btn:hover{background:#e8c97a;transform:translateY(-1px);}
+  .mahjong-tiles{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+  .tile-row{display:flex;gap:4px;}
+  .tile{width:28px;height:36px;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+
+  /* ── SECTION DIVIDER ── */
+  .section-divider{text-align:center;padding:20px 20px 4px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+
+  .choose-section{padding:16px 20px;flex:1;}
   .choose-label{text-align:center;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:20px;}
   .role-cards{display:flex;flex-direction:column;gap:16px;max-width:420px;margin:0 auto;}
   .role-card{background:var(--white);border-radius:var(--radius);padding:28px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 12px rgba(0,0,0,0.07);cursor:pointer;border:2px solid transparent;transition:all 0.2s;}
@@ -49,6 +73,7 @@
   .feat-icon{font-size:22px;margin-bottom:4px;}
   .feat-text{font-size:11px;color:var(--muted);font-weight:500;line-height:1.3;}
   footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:white;}
+
   /* MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;align-items:flex-end;justify-content:center;}
   .modal-overlay.active{display:flex;}
@@ -73,7 +98,6 @@
   .owner-modal .modal-footer-link a{color:var(--green);}
   .divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;}
   .divider::before,.divider::after{content:'';flex:1;height:1px;background:#E5E7EB;}
-  /* PIN BOX */
   .pin-row{display:flex;gap:12px;justify-content:center;margin:16px 0;}
   .pin-row input{width:60px;height:64px;text-align:center;font-size:26px;font-weight:700;border:1.5px solid var(--border);border-radius:12px;outline:none;font-family:'Rajdhani',sans-serif;color:var(--text);transition:border-color 0.2s;-webkit-text-security:disc;}
   .pin-row input:focus{border-color:var(--blue);}
@@ -93,6 +117,40 @@
   <h1>Book Your Court<br>Instantly</h1>
   <p>Find & book badminton, tennis, pickleball<br>courts near you — pay online, slot guaranteed</p>
 </div>
+
+<!-- ══ MAHJONG SECTION ══════════════════════════════════════ -->
+<div class="mahjong-section">
+  <div class="mahjong-inner">
+    <div class="mahjong-left">
+      <div class="mahjong-eyebrow">✦ Now on SportBook</div>
+      <div class="mahjong-title">Mahjong<br><span>Club Booking</span></div>
+      <div class="mahjong-desc">Join a club, book your seat at the table. Four players, one game, endless strategy.</div>
+      <div class="mahjong-pills">
+        <span class="mahjong-pill pill-gold">4-Player Tables</span>
+        <span class="mahjong-pill pill-blue">Club Membership</span>
+        <span class="mahjong-pill pill-green">Live Availability</span>
+      </div>
+      <a href="/mahjong/" class="mahjong-btn">Play Mahjong →</a>
+    </div>
+    <div class="mahjong-tiles">
+      <div class="tile-row">
+        <div class="tile">🀇</div>
+        <div class="tile">🀙</div>
+      </div>
+      <div class="tile-row">
+        <div class="tile">🀄</div>
+        <div class="tile">🀅</div>
+      </div>
+      <div class="tile-row">
+        <div class="tile">🀆</div>
+        <div class="tile">🀈</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<div class="section-divider">Court Sports</div>
 
 <div class="choose-section">
   <p class="choose-label">Who are you?</p>
@@ -129,8 +187,6 @@
 <div class="modal-overlay player-modal" id="playerModal" onclick="closeOnBg(event,'playerModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-
-    <!-- Step 1: Phone -->
     <div class="step active" id="p-step1">
       <div class="modal-title">🏃 Player Login</div>
       <div class="modal-sub">Enter your mobile number to continue</div>
@@ -141,8 +197,6 @@
       <div class="err-msg" id="p-err1"></div>
       <button class="modal-btn" onclick="checkPlayerPhone()">Continue →</button>
     </div>
-
-    <!-- Step 2a: Existing user — enter PIN -->
     <div class="step" id="p-step2">
       <button class="back-btn" onclick="goStep('p-step1','p-step2')">← Back</button>
       <div class="modal-title">Enter Your PIN</div>
@@ -157,8 +211,6 @@
       <button class="modal-btn" onclick="verifyPlayerPIN()">Login →</button>
       <div class="modal-footer-link"><a onclick="goStep('p-step3','p-step2')">Forgot PIN?</a></div>
     </div>
-
-    <!-- Step 2b: New user — register -->
     <div class="step" id="p-step3">
       <button class="back-btn" onclick="goStep('p-step1','p-step3')">← Back</button>
       <div class="modal-title">Create Account</div>
@@ -179,20 +231,17 @@
       <div class="err-msg" id="p-err3"></div>
       <button class="modal-btn" onclick="registerPlayer()">Create Account →</button>
     </div>
-
-    <!-- Step 4: Forgot PIN -->
     <div class="step" id="p-step4">
       <button class="back-btn" onclick="goStep('p-step2','p-step4')">← Back</button>
       <div class="modal-title">Reset PIN</div>
       <div class="modal-sub">Contact your last venue owner to reset, or call SportBook support</div>
       <div style="background:#FEF3C7;border-radius:12px;padding:16px;font-size:13px;color:#92400E;line-height:1.6;">
         📞 SportBook Support<br>
-        <strong>support@sportbook.in</strong><br>
+        <strong>vkvcoder.support@gmail.com</strong><br>
         We'll verify your identity and reset your PIN within 2 hours.
       </div>
       <button class="modal-btn" style="margin-top:16px;" onclick="goStep('p-step1','p-step4')">Back to Login</button>
     </div>
-
   </div>
 </div>
 
@@ -200,8 +249,6 @@
 <div class="modal-overlay owner-modal" id="ownerModal" onclick="closeOnBg(event,'ownerModal')">
   <div class="modal">
     <div class="modal-handle"></div>
-
-    <!-- Step 1: Login -->
     <div class="step active" id="o-step1">
       <div class="modal-title">🏟️ Owner Login</div>
       <div class="modal-sub">Access your venue dashboard</div>
@@ -219,8 +266,6 @@
       <div class="modal-footer-link">Forgot password? <a onclick="goStep('o-step3','o-step1')">Reset here</a></div>
       <div class="modal-footer-link" style="margin-top:8px">New venue? <a onclick="goStep('o-step2','o-step1')">Register as Partner →</a></div>
     </div>
-
-    <!-- Step 2: Register -->
     <div class="step" id="o-step2">
       <button class="back-btn" onclick="goStep('o-step1','o-step2')">← Back</button>
       <div class="modal-title">Register Venue</div>
@@ -234,8 +279,6 @@
       <div class="err-msg" id="o-err2"></div>
       <button class="modal-btn" id="ownerRegBtn" onclick="ownerRegister()">Submit for Approval →</button>
     </div>
-
-    <!-- Step 3: Forgot Password -->
     <div class="step" id="o-step3">
       <button class="back-btn" onclick="goStep('o-step1','o-step3')">← Back</button>
       <div class="modal-title">Reset Password</div>
@@ -244,7 +287,6 @@
       <div class="err-msg" id="o-err3"></div>
       <button class="modal-btn" onclick="ownerResetPassword()">Send Reset Link →</button>
     </div>
-
   </div>
 </div>
 
@@ -253,7 +295,7 @@ const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
 const TELEGRAM_CHAT = '8507770594';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let playerPhone = '';
 
@@ -304,7 +346,6 @@ async function verifyPlayerPIN() {
   const pin = getPIN('p-step2');
   if (pin.length < 4) { setErr('p-err2','Enter 4-digit PIN'); return; }
   setErr('p-err2','');
-
   const { data } = await sb.from('sz_users').select('id,name,pin').eq('phone', playerPhone).maybeSingle();
   if (!data || data.pin !== pin) {
     setErr('p-err2','Incorrect PIN. Try again.');
@@ -312,7 +353,6 @@ async function verifyPlayerPIN() {
     document.querySelector('#p-step2 .pin-row input').focus();
     return;
   }
-  // Save to localStorage and redirect
   localStorage.setItem('sb_phone', playerPhone);
   localStorage.setItem('sb_name', data.name);
   closeModal('playerModal');
@@ -328,10 +368,8 @@ async function registerPlayer() {
   if (!name) { setErr('p-err3','Enter your name'); return; }
   if (pin.length < 4) { setErr('p-err3','Enter 4-digit PIN'); return; }
   setErr('p-err3','');
-
   const { error } = await sb.from('sz_users').insert({ name, phone: playerPhone, pin });
   if (error) { setErr('p-err3','Error creating account. Try again.'); return; }
-
   localStorage.setItem('sb_phone', playerPhone);
   localStorage.setItem('sb_name', name);
   closeModal('playerModal');
@@ -346,20 +384,15 @@ async function ownerLogin() {
   setErr('o-err1','');
   document.getElementById('ownerLoginBtn').disabled = true;
   document.getElementById('ownerLoginBtn').textContent = 'Logging in...';
-
   const { data } = await sb.from('sz_owners').select('*').eq('email', email).eq('password', pass).maybeSingle();
-
   document.getElementById('ownerLoginBtn').disabled = false;
   document.getElementById('ownerLoginBtn').textContent = 'Login to Dashboard →';
-
   if (!data) { setErr('o-err1','Invalid email or password'); return; }
   if (!data.is_approved) { setErr('o-err1','Account pending approval'); return; }
-
   localStorage.setItem('owner_zone_id', data.zone_id);
   localStorage.setItem('owner_venue_name', data.venue_name);
   closeModal('ownerModal');
   window.location.href = 'owner/index.html';
-
 }
 
 async function ownerRegister() {
@@ -369,28 +402,20 @@ async function ownerRegister() {
   const phone = document.getElementById('ownerPhone').value.trim();
   const email = document.getElementById('ownerRegEmail').value.trim();
   const pass  = document.getElementById('ownerRegPassword').value;
-
   if (!name||!venue||!city||!phone||!email||!pass) { setErr('o-err2','Please fill all fields'); return; }
   if (phone.length!==10) { setErr('o-err2','Enter valid 10-digit mobile'); return; }
   if (pass.length<8)     { setErr('o-err2','Password must be at least 8 characters'); return; }
   setErr('o-err2','');
   document.getElementById('ownerRegBtn').disabled=true;
   document.getElementById('ownerRegBtn').textContent='Submitting...';
-
-  // Create Supabase auth user
   const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pass });
   if (authErr) { setErr('o-err2', authErr.message); document.getElementById('ownerRegBtn').disabled=false; document.getElementById('ownerRegBtn').textContent='Submit for Approval →'; return; }
-
-  // Save owner registration (pending approval)
   await sb.from('sz_owners').insert({
     auth_id: authData.user?.id,
     owner_name: name, venue_name: venue,
     city, phone, email, is_approved: false
   });
-
-  // Notify admin via Telegram
-  notifyTelegram(`🏟️ NEW OWNER REGISTRATION\n\nVenue: ${venue}\nOwner: ${name}\nPhone: ${phone}\nEmail: ${email}\nCity: ${city}\n\nGo to Supabase → sz_owners → set is_approved = true`);
-
+  notifyTelegram(`🏟️ NEW OWNER REGISTRATION\n\nVenue: ${venue}\nOwner: ${name}\nPhone: ${phone}\nEmail: ${email}\nCity: ${city}\n\nGo to Admin Panel to approve.`);
   goStep('o-step1','o-step2');
   alert(`Registration submitted!\n\nVenue: ${venue}\nWe'll review and approve within 24 hours.\nYou'll receive an email at ${email}.`);
   document.getElementById('ownerRegBtn').disabled=false;
@@ -407,7 +432,7 @@ async function ownerResetPassword() {
 }
 
 function notifyTelegram(msg) {
-  if (!TELEGRAM_BOT || TELEGRAM_BOT==='YOUR_TELEGRAM_BOT_TOKEN') return;
+  if (!TELEGRAM_BOT) return;
   fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg })
