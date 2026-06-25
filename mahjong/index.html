@@ -232,7 +232,10 @@ async function loadAvailability(){
     let html='';
     for(const club of myClubs){
       const slots=allSlotsCache[club.id]||[];
-      const daySlots=slots.filter(s=>!s.day_of_week||s.day_of_week==='all'||s.day_of_week.toLowerCase()===dayName);
+      const daySlots=slots.filter(s=>{
+        if(!s.day_of_week||s.day_of_week==='all')return true;
+        return s.day_of_week.toLowerCase()===dayName;
+      });
       if(!daySlots.length)continue;
       const bookings=await sb(`mj_bookings?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.confirmed&select=*`);
       let slotsHtml='';
