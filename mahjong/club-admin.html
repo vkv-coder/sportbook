@@ -388,9 +388,11 @@ async function loadApprovedMembers(){
       const bal=m.slot_balance||0;
       return`<div class="member-item" id="mem-${m.id}">
         <div class="member-header"><div class="member-name">${p.name||'Unknown'}</div><span class="badge badge-approved">Member</span></div>
-        <div class="member-meta">📱 <span>${p.mobile||'—'}</span></div>
+        <div class="member-meta">📱 Mobile: <span>${p.mobile||'—'}</span></div>
+        <div class="member-meta">💬 WhatsApp: <span>${p.whatsapp||p.mobile||'—'}</span></div>
         <div class="member-meta">✉️ <span>${p.email||'—'}</span></div>
         <div class="member-meta">👤 <span>${p.gender||'—'}</span></div>
+        ${p.telegram_id?`<div class="member-meta">✈️ Telegram: <span>${p.telegram_id}</span></div>`:''}
         <div class="member-meta" style="margin-top:8px;">🎫 Slot Balance: <span style="color:var(--gold);font-weight:700;">${bal} slots</span></div>
         <div class="member-actions">
           <div class="balance-row">
@@ -400,7 +402,7 @@ async function loadApprovedMembers(){
           </div>
         </div>
         <div class="member-actions" style="margin-top:6px;">
-          <a href="https://wa.me/91${p.mobile}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬</a>
+          <a href="https://wa.me/91${p.whatsapp||p.mobile}?text=${encodeURIComponent('Hi '+p.name+'! Your SportBook membership at '+club.club_name+' is active. You can now book your Mahjong slots. 🀄')}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬 WhatsApp</a>
           <button class="btn btn-red btn-sm" onclick="updateMember('${m.id}','rejected','${p.name}')">Remove</button>
         </div>
       </div>`;
@@ -543,8 +545,12 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,m2,m3,m4){
     await sb('mj_table_sessions','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,booking_date:date,player1_id:pids[0],player2_id:pids[1],player3_id:pids[2],player4_id:pids[3],status:'full'});
     // Update group request
     await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'approved',table_number:tableNo});
-    await tg(`🀄 <b>Group Request Approved</b>\n\nClub: <b>${club.club_name}</b>\nTable: ${tableNo}\nDate: ${date}\n\nAll 4 members booked successfully.`);
-    alert(`✅ Group approved! Table ${tableNo} assigned to all 4 members.`);
+    await tg('🀄 <b>Group Request Approved</b>\n\nClub: <b>'+club.club_name+'</b>\nTable: '+tableNo+'\nDate: '+date+'\n\nAll 4 members booked successfully.');
+    const allPlayerInfo=await sb('mj_players?id=in.('+pids.join(',')+')'+'&select=name,whatsapp,mobile');
+    let waMsg='Group approved! Table '+tableNo+' assigned on '+date+'.';
+    waMsg += '\n\nContact members on WhatsApp:';
+    allPlayerInfo.forEach(function(p,i){ waMsg += '\n'+(i+1)+'. '+p.name+': '+(p.whatsapp||p.mobile); });
+    alert(waMsg);
     loadGroupRequests();
     loadStats();
   }catch(e){alert('Error: '+e.message);}
