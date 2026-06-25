@@ -438,7 +438,7 @@
         <div class="form-group">
           <label>Day of Week</label>
           <select id="slot-day">
-            <option value="all">All Days</option>
+            <option value="all">All Days (Mon–Sun)</option>
             <option value="monday">Monday</option>
             <option value="tuesday">Tuesday</option>
             <option value="wednesday">Wednesday</option>
@@ -873,7 +873,7 @@
     document.getElementById('slots-list').innerHTML = '';
 
     try {
-      const slots = await sb(`mj_slots?club_id=eq.${currentClub.id}&select=*&order=start_time.asc`);
+      const slots = await sb(`mj_slots?club_id=eq.${currentClub.id}&is_active=eq.true&select=*&order=start_time.asc`);
       document.getElementById('slots-loading-admin').style.display = 'none';
 
       if (!slots.length) {
@@ -886,7 +886,7 @@
         <div class="slot-item">
           <div>
             <div class="slot-time">${s.start_time} – ${s.end_time}</div>
-            <div class="slot-day">${s.day_of_week === 'all' ? 'Every day' : (s.day_of_week || 'All days')}</div>
+            <div class="slot-day">${s.day_of_week === 'all' ? 'Every day (Mon–Sun)' : (s.day_of_week ? s.day_of_week.charAt(0).toUpperCase() + s.day_of_week.slice(1) : 'Every day')}</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
             <span style="font-size:11px;color:${s.is_active ? 'var(--green)' : 'var(--muted)'}">
@@ -904,7 +904,10 @@
   async function deleteSlot(slotId) {
     if (!confirm('Delete this slot?')) return;
     try {
-      await sbPatch(`mj_slots?id=eq.${slotId}`, { is_active: false });
+      await fetch(`${SUPABASE_URL}/rest/v1/mj_slots?id=eq.${slotId}`, {
+        method: 'DELETE',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
       allSlots = await sb(`mj_slots?club_id=eq.${currentClub.id}&is_active=eq.true&select=*&order=start_time.asc`);
       loadSlotsAdmin();
     } catch(e) { alert('Error: ' + e.message); }
