@@ -1,857 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mahjong Club — SportBook</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#1a1a2e" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
-
-    :root {
-      --bg: #0f0e17;
-      --surface: #1a1930;
-      --card: #22213a;
-      --border: #2e2d4a;
-      --gold: #c9a84c;
-      --gold-light: #e8c97a;
-      --red: #c0392b;
-      --green: #27ae60;
-      --text: #e8e6f0;
-      --muted: #8b89a8;
-      --white: #ffffff;
-      --radius: 12px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-    }
-
-    /* HEADER */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header-logo {
-      font-family: 'Noto Serif Display', serif;
-      font-size: 20px;
-      color: var(--gold);
-      letter-spacing: 1px;
-    }
-    .header-sub {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 1px;
-    }
-    .tile-icon {
-      font-size: 28px;
-      line-height: 1;
-    }
-    .back-link {
-      color: var(--muted);
-      font-size: 13px;
-      text-decoration: none;
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 6px;
-    }
-    .back-link:hover { color: var(--gold); border-color: var(--gold); }
-
-    /* MAIN */
-    .main {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 24px 16px 60px;
-    }
-
-    /* SCREENS */
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    /* HERO */
-    .hero {
-      text-align: center;
-      padding: 32px 0 28px;
-    }
-    .hero-tile {
-      font-size: 56px;
-      margin-bottom: 12px;
-      display: block;
-    }
-    .hero h1 {
-      font-family: 'Noto Serif Display', serif;
-      font-size: 28px;
-      color: var(--gold);
-      margin-bottom: 8px;
-    }
-    .hero p {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    /* TABS */
-    .tabs {
-      display: flex;
-      background: var(--surface);
-      border-radius: var(--radius);
-      padding: 4px;
-      gap: 4px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border);
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .tab-btn.active {
-      background: var(--gold);
-      color: #0f0e17;
-      font-weight: 600;
-    }
-
-    /* CARD */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gold-light);
-      margin-bottom: 16px;
-    }
-
-    /* FORM */
-    .form-group {
-      margin-bottom: 14px;
-    }
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    input, select {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 11px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus { border-color: var(--gold); }
-    input::placeholder { color: var(--muted); }
-    select option { background: var(--surface); }
-
-    /* BUTTONS */
-    .btn {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-gold {
-      background: var(--gold);
-      color: #0f0e17;
-    }
-    .btn-gold:hover { background: var(--gold-light); }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid var(--gold);
-      color: var(--gold);
-    }
-    .btn-outline:hover { background: var(--gold); color: #0f0e17; }
-    .btn-sm {
-      width: auto;
-      padding: 8px 16px;
-      font-size: 13px;
-    }
-    .btn-green { background: var(--green); color: #fff; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* OTP BOX */
-    .otp-display {
-      background: var(--surface);
-      border: 2px dashed var(--gold);
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 14px;
-    }
-    .otp-display .otp-label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 6px;
-    }
-    .otp-display .otp-code {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--gold);
-      letter-spacing: 8px;
-    }
-    .otp-note {
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
-      margin-bottom: 14px;
-    }
-
-    /* CLUB LIST */
-    .club-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-    .club-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-    .club-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--gold-light);
-    }
-    .club-badge {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .badge-mixed { background: #1a3a5c; color: #5dade2; }
-    .badge-male { background: #1a2e1a; color: #58d68d; }
-    .badge-female { background: #3a1a2e; color: #f1948a; }
-    .badge-member { background: #1a3a1a; color: #58d68d; }
-    .badge-pending { background: #3a2a1a; color: #f0b27a; }
-
-    .club-meta {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-    .club-meta span { color: var(--text); }
-
-    .club-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    /* STATUS */
-    .status-box {
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 13px;
-      margin-bottom: 14px;
-      text-align: center;
-    }
-    .status-success { background: #1a3a1a; border: 1px solid var(--green); color: #58d68d; }
-    .status-error { background: #3a1a1a; border: 1px solid var(--red); color: #f1948a; }
-    .status-info { background: #1a2a3a; border: 1px solid #2980b9; color: #5dade2; }
-    .status-warn { background: #3a2a1a; border: 1px solid #e67e22; color: #f0b27a; }
-
-    /* DIVIDER */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 18px 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* WELCOME BAR */
-    .welcome-bar {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-    .welcome-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gold-light);
-    }
-    .welcome-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    /* SEARCH */
-    .search-box {
-      position: relative;
-      margin-bottom: 16px;
-    }
-    .search-box input {
-      padding-left: 36px;
-    }
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    /* LOADING */
-    .loading {
-      text-align: center;
-      padding: 32px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .spinner {
-      width: 24px;
-      height: 24px;
-      border: 2px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .section-title {
-      font-size: 13px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-      margin-bottom: 14px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-    }
-    .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
-    .empty-state p { font-size: 13px; line-height: 1.6; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mahjong — SportBook</title>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0f0e17" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f0e17; --surface:#1a1930; --card:#22213a; --border:#2e2d4a;
+  --gold:#c9a84c; --gold-light:#e8c97a; --red:#c0392b; --green:#27ae60;
+  --blue:#2980b9; --text:#e8e6f0; --muted:#8b89a8; --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);}
+.header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;}
+.btn-logout:hover{border-color:var(--red);color:var(--red);}
+.nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);}
+.nav-tab{flex:1;padding:12px 8px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.nav-tab .tab-icon{display:block;font-size:18px;margin-bottom:2px;}
+.main{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.date-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;}
+.date-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.date-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;}
+.date-input:focus{border-color:var(--gold);}
+.btn-check{width:100%;padding:12px;border:none;border-radius:8px;background:var(--gold);color:#0f0e17;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif;}
+.btn-check:hover{background:var(--gold-light);}
+.club-avail-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;}
+.club-avail-header{padding:14px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.club-avail-name{font-size:15px;font-weight:600;color:var(--gold-light);}
+.club-avail-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.club-avail-body{padding:14px 16px;}
+.slot-row{margin-bottom:12px;}
+.slot-time{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px;}
+.tables-wrap{display:flex;flex-wrap:wrap;gap:8px;}
+.table-chip{padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid;cursor:pointer;transition:all 0.2s;min-width:90px;text-align:center;}
+.table-chip .seats{font-size:10px;font-weight:400;display:block;margin-top:2px;}
+.chip-open{background:#1a3a1a;border-color:var(--green);color:#58d68d;}
+.chip-open:hover{background:var(--green);color:#fff;}
+.chip-filling{background:#3a2a1a;border-color:#e67e22;color:#f0b27a;}
+.chip-filling:hover{background:#e67e22;color:#fff;}
+.chip-full{background:#2a1a1a;border-color:#555;color:#777;cursor:not-allowed;}
+.chip-mine{background:#1a2a3a;border-color:var(--blue);color:#5dade2;cursor:default;}
+.chip-blocked{background:#2a1a2a;border-color:#666;color:#888;cursor:not-allowed;}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.dot-open{background:var(--green);}.dot-filling{background:#e67e22;}.dot-full{background:#555;}.dot-mine{background:var(--blue);}
+.status-box{border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px;text-align:center;}
+.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
+.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
+.status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
+.status-warn{background:#3a2a1a;border:1px solid #e67e22;color:#f0b27a;}
+.discover-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.discover-name{font-size:15px;font-weight:600;color:var(--gold-light);margin-bottom:8px;}
+.discover-meta{font-size:12px;color:var(--muted);margin-bottom:4px;}
+.discover-meta span{color:var(--text);}
+.badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
+.badge-mixed{background:#1a3a5c;color:#5dade2;}.badge-male{background:#1a2e1a;color:#58d68d;}.badge-female{background:#3a1a2e;color:#f1948a;}.badge-pending{background:#3a2a1a;color:#f0b27a;}
+.booking-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.booking-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.booking-date{font-size:14px;font-weight:600;color:var(--gold-light);}
+.booking-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
+.badge-confirmed{background:#1a3a1a;color:#58d68d;}.badge-cancelled{background:#2a1a1a;color:#777;}
+.booking-meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
+.booking-meta span{color:var(--text);}
+.btn{padding:10px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
+.btn-sm{padding:7px 14px;font-size:12px;}
+.btn-gold{background:var(--gold);color:#0f0e17;}.btn-gold:hover{background:var(--gold-light);}
+.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+.btn-red{background:var(--red);color:#fff;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:13px;line-height:1.6;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px 20px;width:100%;max-width:480px;}
+.modal-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+.modal-actions .btn{flex:1;}
+</style>
 </head>
 <body>
-
 <div class="header">
-  <div class="header-left">
-    <span class="tile-icon">🀄</span>
-    <div>
-      <div class="header-logo">Mahjong</div>
-      <div class="header-sub">SportBook Club Network</div>
-    </div>
+  <div>
+    <div class="header-title">🀄 Mahjong</div>
+    <div class="header-sub" id="header-player-name">Loading...</div>
   </div>
-  <a href="/" class="back-link">← Home</a>
+  <button class="btn-logout" onclick="logout()">Logout</button>
 </div>
-
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="switchTab('tab-availability')"><span class="tab-icon">🗓️</span>Find & Book</button>
+  <button class="nav-tab" onclick="switchTab('tab-my-clubs')"><span class="tab-icon">🏯</span>My Clubs</button>
+  <button class="nav-tab" onclick="switchTab('tab-bookings')"><span class="tab-icon">📋</span>My Bookings</button>
+  <button class="nav-tab" onclick="switchTab('tab-discover')"><span class="tab-icon">🔍</span>Discover</button>
+</div>
 <div class="main">
-
-  <!-- ===== SCREEN 1: WELCOME ===== -->
-  <div class="screen active" id="screen-welcome">
-    <div class="hero">
-      <span class="hero-tile">🀄</span>
-      <h1>Play Mahjong</h1>
-      <p>Join a club near you. Book your seat.<br/>Four players, one table, endless fun.</p>
+  <div class="tab-content active" id="tab-availability">
+    <div class="date-section">
+      <div class="date-label">Select Date to Check Availability</div>
+      <input type="date" class="date-input" id="avail-date" />
+      <button class="btn-check" onclick="loadAvailability()">Check Availability →</button>
     </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showAuthTab('register')">New Player</button>
-      <button class="tab-btn" onclick="showAuthTab('login')">Returning Player</button>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-open"></div> Open</div>
+      <div class="legend-item"><div class="legend-dot dot-filling"></div> Filling</div>
+      <div class="legend-item"><div class="legend-dot dot-full"></div> Full</div>
+      <div class="legend-item"><div class="legend-dot dot-mine"></div> My Booking</div>
     </div>
-
-    <!-- REGISTER -->
-    <div id="tab-register">
-      <div class="card">
-        <div class="card-title">Create Your Profile</div>
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" id="reg-name" placeholder="Your name" />
-        </div>
-        <div class="form-group">
-          <label>Mobile Number</label>
-          <input type="tel" id="reg-mobile" placeholder="10-digit mobile" maxlength="10" />
-        </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="reg-email" placeholder="For booking confirmations" />
-        </div>
-        <div class="form-group">
-          <label>Gender</label>
-          <select id="reg-gender">
-            <option value="">Select gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-        <div id="reg-msg"></div>
-        <button class="btn btn-gold" onclick="sendRegisterOTP()">Send OTP</button>
-      </div>
-    </div>
-
-    <!-- LOGIN -->
-    <div id="tab-login" style="display:none">
-      <div class="card">
-        <div class="card-title">Welcome Back</div>
-        <div class="form-group">
-          <label>Mobile Number</label>
-          <input type="tel" id="login-mobile" placeholder="Your registered mobile" maxlength="10" />
-        </div>
-        <div id="login-msg"></div>
-        <button class="btn btn-gold" onclick="sendLoginOTP()">Send OTP</button>
-      </div>
-    </div>
+    <div id="avail-loading" style="display:none;" class="loading"><div class="spinner"></div>Checking clubs...</div>
+    <div id="avail-results"></div>
   </div>
-
-  <!-- ===== SCREEN 2: OTP VERIFY ===== -->
-  <div class="screen" id="screen-otp">
-    <div class="hero">
-      <span class="hero-tile">🔐</span>
-      <h1>Verify Mobile</h1>
-      <p id="otp-desc">Enter the OTP shown below</p>
-    </div>
-
-    <div class="card">
-      <div class="otp-display">
-        <div class="otp-label">Your OTP (shown for demo)</div>
-        <div class="otp-code" id="otp-shown">----</div>
-      </div>
-      <div class="otp-note">In production this would be sent via SMS. Enter the code above to verify.</div>
-      <div class="form-group">
-        <label>Enter OTP</label>
-        <input type="number" id="otp-input" placeholder="4-digit OTP" maxlength="4" />
-      </div>
-      <div id="otp-msg"></div>
-      <button class="btn btn-gold" onclick="verifyOTP()">Verify & Continue</button>
-      <div class="divider">or</div>
-      <button class="btn btn-outline" onclick="goBack()">← Go Back</button>
-    </div>
+  <div class="tab-content" id="tab-my-clubs">
+    <div id="my-clubs-loading" class="loading"><div class="spinner"></div>Loading your clubs...</div>
+    <div id="my-clubs-list"></div>
   </div>
-
-  <!-- ===== SCREEN 3: CLUBS ===== -->
-  <div class="screen" id="screen-clubs">
-    <div class="welcome-bar">
-      <div>
-        <div class="welcome-name" id="welcome-name">Hello!</div>
-        <div class="welcome-sub">Select a club to request membership</div>
-      </div>
-      <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
-    </div>
-
-    <div class="section-title">Mahjong Clubs</div>
-
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="club-search" placeholder="Search clubs by name or city..." oninput="filterClubs()" />
-    </div>
-
-    <div id="clubs-loading" class="loading">
-      <div class="spinner"></div>
-      Loading clubs...
-    </div>
-    <div id="clubs-list"></div>
+  <div class="tab-content" id="tab-bookings">
+    <div id="bookings-loading" class="loading"><div class="spinner"></div>Loading bookings...</div>
+    <div id="bookings-list"></div>
   </div>
-
+  <div class="tab-content" id="tab-discover">
+    <div id="discover-loading" class="loading"><div class="spinner"></div>Loading clubs...</div>
+    <div id="discover-list"></div>
+  </div>
 </div>
-
+<div class="modal-overlay" id="book-modal">
+  <div class="modal">
+    <div class="modal-title">Book a Seat</div>
+    <div class="modal-sub" id="book-modal-sub"></div>
+    <div id="book-modal-info"></div>
+    <div id="book-modal-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" id="book-confirm-btn" onclick="confirmBooking()">Confirm Seat</button>
+    </div>
+  </div>
+</div>
 <script>
-  const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-  const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
-  const TELEGRAM_CHAT = '8507770594';
-
-  let currentOTP = '';
-  let currentMode = 'register'; // 'register' or 'login'
-  let currentPlayer = null;
-  let allClubs = [];
-
-  // ─── SUPABASE HELPER ───────────────────────────────────────
-  async function sb(path, method = 'GET', body = null, extra = '') {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${extra}`, {
-      method,
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : ''
-      },
-      body: body ? JSON.stringify(body) : null
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || 'Supabase error');
-    }
-    return method === 'DELETE' ? null : res.json();
-  }
-
-  // ─── TELEGRAM ──────────────────────────────────────────────
-  async function sendTelegram(msg) {
-    try {
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
-      });
-    } catch (e) { console.log('Telegram error', e); }
-  }
-
-  // ─── TABS ──────────────────────────────────────────────────
-  function showAuthTab(tab) {
-    currentMode = tab;
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
-      b.classList.toggle('active', (i === 0 && tab === 'register') || (i === 1 && tab === 'login'));
-    });
-    document.getElementById('tab-register').style.display = tab === 'register' ? 'block' : 'none';
-    document.getElementById('tab-login').style.display = tab === 'login' ? 'block' : 'none';
-  }
-
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  function showMsg(elId, msg, type = 'info') {
-    const el = document.getElementById(elId);
-    el.innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
-  }
-
-  function clearMsg(elId) {
-    document.getElementById(elId).innerHTML = '';
-  }
-
-  function generateOTP() {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  }
-
-  // ─── REGISTER ──────────────────────────────────────────────
-  async function sendRegisterOTP() {
-    const name = document.getElementById('reg-name').value.trim();
-    const mobile = document.getElementById('reg-mobile').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const gender = document.getElementById('reg-gender').value;
-
-    if (!name || !mobile || !email || !gender) {
-      showMsg('reg-msg', 'Please fill all fields.', 'error'); return;
-    }
-    if (mobile.length !== 10) {
-      showMsg('reg-msg', 'Enter a valid 10-digit mobile number.', 'error'); return;
-    }
-
-    showMsg('reg-msg', 'Checking...', 'info');
-
-    try {
-      // Check if mobile already exists
-      const existing = await sb(`mj_players?mobile=eq.${mobile}&select=id,name,otp_verified`);
-      if (existing.length > 0) {
-        showMsg('reg-msg', 'Mobile already registered. Use Returning Player tab.', 'warn'); return;
-      }
-
-      currentOTP = generateOTP();
-
-      // Save player
-      await sb('mj_players', 'POST', {
-        name, mobile, email, gender,
-        otp: currentOTP,
-        otp_verified: false
-      });
-
-      document.getElementById('otp-shown').textContent = currentOTP;
-      document.getElementById('otp-desc').textContent = `OTP for ${mobile}`;
-      showScreen('screen-otp');
-
-    } catch (e) {
-      showMsg('reg-msg', 'Error: ' + e.message, 'error');
-    }
-  }
-
-  // ─── LOGIN ─────────────────────────────────────────────────
-  async function sendLoginOTP() {
-    const mobile = document.getElementById('login-mobile').value.trim();
-    if (mobile.length !== 10) {
-      showMsg('login-msg', 'Enter a valid 10-digit mobile number.', 'error'); return;
-    }
-
-    showMsg('login-msg', 'Checking...', 'info');
-
-    try {
-      const players = await sb(`mj_players?mobile=eq.${mobile}&select=id,name,otp_verified`);
-      if (players.length === 0) {
-        showMsg('login-msg', 'Mobile not found. Please register first.', 'error'); return;
-      }
-
-      currentOTP = generateOTP();
-
-      // Update OTP in DB
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_players?mobile=eq.${mobile}`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ otp: currentOTP })
-      });
-
-      document.getElementById('otp-shown').textContent = currentOTP;
-      document.getElementById('otp-desc').textContent = `OTP for ${mobile}`;
-      showScreen('screen-otp');
-
-    } catch (e) {
-      showMsg('login-msg', 'Error: ' + e.message, 'error');
-    }
-  }
-
-  // ─── OTP VERIFY ────────────────────────────────────────────
-  async function verifyOTP() {
-    const entered = document.getElementById('otp-input').value.trim();
-    if (entered !== currentOTP) {
-      showMsg('otp-msg', 'Incorrect OTP. Please try again.', 'error'); return;
-    }
-
-    showMsg('otp-msg', 'Verifying...', 'info');
-
-    try {
-      // Get mobile from whichever tab was active
-      const mobile = currentMode === 'register'
-        ? document.getElementById('reg-mobile').value.trim()
-        : document.getElementById('login-mobile').value.trim();
-
-      // Mark verified
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_players?mobile=eq.${mobile}`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ otp_verified: true })
-      });
-
-      // Fetch player
-      const players = await sb(`mj_players?mobile=eq.${mobile}&select=*`);
-      currentPlayer = players[0];
-      localStorage.setItem('mj_player', JSON.stringify(currentPlayer));
-
-      document.getElementById('welcome-name').textContent = `Hello, ${currentPlayer.name}! 👋`;
-      await loadClubs();
-      showScreen('screen-clubs');
-
-    } catch (e) {
-      showMsg('otp-msg', 'Error: ' + e.message, 'error');
-    }
-  }
-
-  // ─── LOAD CLUBS ────────────────────────────────────────────
-  async function loadClubs() {
-    document.getElementById('clubs-loading').style.display = 'block';
-    document.getElementById('clubs-list').innerHTML = '';
-
-    try {
-      // Get all active clubs
-      allClubs = await sb('mj_clubs?status=eq.active&select=*&order=club_name.asc');
-
-      // Get this player's memberships
-      const memberships = await sb(`mj_members?player_id=eq.${currentPlayer.id}&select=club_id,status`);
-      const memberMap = {};
-      memberships.forEach(m => { memberMap[m.club_id] = m.status; });
-
-      document.getElementById('clubs-loading').style.display = 'none';
-      renderClubs(allClubs, memberMap);
-
-    } catch (e) {
-      document.getElementById('clubs-loading').style.display = 'none';
-      document.getElementById('clubs-list').innerHTML =
-        `<div class="status-box status-error">Failed to load clubs: ${e.message}</div>`;
-    }
-  }
-
-  function renderClubs(clubs, memberMap) {
-    const list = document.getElementById('clubs-list');
-
-    if (clubs.length === 0) {
-      list.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🏯</div>
-          <p>No clubs found.<br/>Check back soon as more clubs join SportBook.</p>
-        </div>`;
+const SUPABASE_URL='https://jqqnnkzozjskziaizajg.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+const TELEGRAM_BOT='8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
+const TELEGRAM_CHAT='8507770594';
+let currentPlayer=null,myClubs=[],myClubIds=[],pendingBooking=null,allSlotsCache={};
+window.addEventListener('DOMContentLoaded',async()=>{
+  const saved=localStorage.getItem('mj_player');
+  if(!saved){window.location.href='/select-game.html?role=player';return;}
+  currentPlayer=JSON.parse(saved);
+  document.getElementById('header-player-name').textContent=currentPlayer.name;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('avail-date').value=today;
+  document.getElementById('avail-date').min=today;
+  await loadMyClubs();
+  loadMyBookings();
+  loadDiscover();
+});
+async function sb(path,method='GET',body=null){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method,headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  if(!res.ok){const e=await res.json();throw new Error(e.message);}
+  return method==='DELETE'?null:res.json();
+}
+async function sbPatch(path,body){
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+async function sendTelegram(msg){
+  try{await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TELEGRAM_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
+}
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx=['tab-availability','tab-my-clubs','tab-bookings','tab-discover'].indexOf(tabId);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+async function loadMyClubs(){
+  document.getElementById('my-clubs-loading').style.display='block';
+  document.getElementById('my-clubs-list').innerHTML='';
+  try{
+    const memberships=await sb(`mj_members?player_id=eq.${currentPlayer.id}&status=eq.approved&select=club_id`);
+    myClubIds=memberships.map(m=>m.club_id);
+    if(!myClubIds.length){
+      document.getElementById('my-clubs-loading').style.display='none';
+      document.getElementById('my-clubs-list').innerHTML='<div class="empty-state"><div class="empty-icon">🏯</div><p>You are not a member of any club yet.<br/>Go to Discover tab to find and join a club.</p></div>';
       return;
     }
-
-    list.innerHTML = clubs.map(club => {
-      const memberStatus = memberMap ? memberMap[club.id] : null;
-      const genderLabel = club.gender_condition === 'male' ? 'Male Only'
-        : club.gender_condition === 'female' ? 'Female Only' : 'Mixed';
-      const genderClass = club.gender_condition === 'male' ? 'badge-male'
-        : club.gender_condition === 'female' ? 'badge-female' : 'badge-mixed';
-
-      let actionBtn = '';
-      if (memberStatus === 'approved') {
-        actionBtn = `
-          <span class="club-badge badge-member">✓ Member</span>
-          <button class="btn btn-gold btn-sm" onclick="goToDashboard('${club.id}')">View Slots →</button>`;
-      } else if (memberStatus === 'pending') {
-        actionBtn = `<span class="club-badge badge-pending">⏳ Request Pending</span>`;
-      } else {
-        actionBtn = `<button class="btn btn-outline btn-sm" onclick="requestMembership('${club.id}','${club.club_name}')">Request to Join</button>`;
+    myClubs=await sb(`mj_clubs?id=in.(${myClubIds.join(',')})&status=eq.active&select=*&order=club_name.asc`);
+    for(const club of myClubs){
+      const slots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
+      allSlotsCache[club.id]=slots;
+    }
+    document.getElementById('my-clubs-loading').style.display='none';
+    const gLabel=g=>g==='male'?'👨 Male Only':g==='female'?'👩 Female Only':'👥 Mixed';
+    document.getElementById('my-clubs-list').innerHTML=myClubs.map(club=>`
+      <div class="discover-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div class="discover-name">🏯 ${club.club_name}</div>
+          <span class="badge ${club.gender_condition==='male'?'badge-male':club.gender_condition==='female'?'badge-female':'badge-mixed'}">${gLabel(club.gender_condition)}</span>
+        </div>
+        <div class="discover-meta">📍 <span>${club.city||'N/A'}</span></div>
+        <div class="discover-meta">🀄 Tables: <span>${club.total_tables}</span></div>
+        <div class="discover-meta">📞 WhatsApp: <span>${club.whatsapp_no||'N/A'}</span></div>
+        <div style="margin-top:10px;"><span style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Approved Member</span></div>
+      </div>`).join('');
+  }catch(e){document.getElementById('my-clubs-loading').style.display='none';document.getElementById('my-clubs-list').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;}
+}
+async function loadAvailability(){
+  const date=document.getElementById('avail-date').value;
+  if(!date){alert('Please select a date.');return;}
+  if(!myClubIds.length){
+    document.getElementById('avail-results').innerHTML='<div class="empty-state"><div class="empty-icon">🏯</div><p>You are not a member of any club yet.<br/>Go to Discover tab to join a club first.</p></div>';
+    return;
+  }
+  document.getElementById('avail-loading').style.display='block';
+  document.getElementById('avail-results').innerHTML='';
+  try{
+    const d=new Date(date+'T00:00:00');
+    const dayNames=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    const dayName=dayNames[d.getDay()];
+    const myBookingsToday=await sb(`mj_bookings?player_id=eq.${currentPlayer.id}&booking_date=eq.${date}&status=eq.confirmed&select=slot_id`);
+    const myBookedSlotIds=myBookingsToday.map(b=>b.slot_id);
+    let html='';
+    for(const club of myClubs){
+      const slots=allSlotsCache[club.id]||[];
+      const daySlots=slots.filter(s=>!s.day_of_week||s.day_of_week==='all'||s.day_of_week.toLowerCase()===dayName);
+      if(!daySlots.length)continue;
+      const bookings=await sb(`mj_bookings?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.confirmed&select=*`);
+      let slotsHtml='';
+      for(const slot of daySlots){
+        const slotBookings=bookings.filter(b=>b.slot_id===slot.id);
+        const isSlotBookedByMe=myBookedSlotIds.includes(slot.id);
+        let tablesHtml='';
+        for(let t=1;t<=club.total_tables;t++){
+          const tableBookings=slotBookings.filter(b=>b.table_number===t);
+          const count=tableBookings.length;
+          const isMine=tableBookings.some(b=>b.player_id===currentPlayer.id);
+          let chipClass='chip-open',seatLabel=`${count}/4 seats`,clickable=true;
+          if(isMine){chipClass='chip-mine';seatLabel='✓ My Seat';clickable=false;}
+          else if(count>=4){chipClass='chip-full';seatLabel='Full';clickable=false;}
+          else if(isSlotBookedByMe&&!isMine){chipClass='chip-blocked';seatLabel='Slot taken';clickable=false;}
+          else if(count>0){chipClass='chip-filling';}
+          const onclick=clickable?`openBookModal('${club.id}','${club.club_name.replace(/'/g,"\\'")}','${slot.id}',${t},${count},'${slot.start_time}–${slot.end_time}','${date}')`:'';
+          tablesHtml+=`<div class="table-chip ${chipClass}" ${onclick?`onclick="${onclick}"`:''}> Table ${t}<span class="seats">${seatLabel}</span></div>`;
+        }
+        slotsHtml+=`<div class="slot-row"><div class="slot-time">🕐 ${slot.start_time} – ${slot.end_time}</div><div class="tables-wrap">${tablesHtml}</div></div>`;
       }
-
-      return `
-        <div class="club-card" id="club-${club.id}">
-          <div class="club-card-header">
-            <div class="club-name">🏯 ${club.club_name}</div>
-            <span class="club-badge ${genderClass}">${genderLabel}</span>
-          </div>
-          <div class="club-meta">📍 <span>${club.city || 'N/A'}</span></div>
-          <div class="club-meta">🀄 Tables: <span>${club.total_tables}</span> &nbsp;|&nbsp; 📞 <span>${club.whatsapp_no || 'N/A'}</span></div>
-          <div class="club-actions">${actionBtn}</div>
-        </div>`;
+      if(slotsHtml){html+=`<div class="club-avail-card"><div class="club-avail-header"><div class="club-avail-name">🏯 ${club.club_name}</div><div class="club-avail-meta">📍 ${club.city||''} · ${club.total_tables} tables</div></div><div class="club-avail-body">${slotsHtml}</div></div>`;}
+    }
+    document.getElementById('avail-loading').style.display='none';
+    document.getElementById('avail-results').innerHTML=html||'<div class="empty-state"><div class="empty-icon">🚫</div><p>No slots available across your clubs on this day.</p></div>';
+  }catch(e){document.getElementById('avail-loading').style.display='none';document.getElementById('avail-results').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;}
+}
+function openBookModal(clubId,clubName,slotId,tableNo,currentCount,timeLabel,date){
+  pendingBooking={clubId,clubName,slotId,tableNo,currentCount,timeLabel,date};
+  document.getElementById('book-modal-sub').textContent=`${clubName} · Table ${tableNo} · ${timeLabel} · ${date}`;
+  document.getElementById('book-modal-info').innerHTML=`<div class="status-box status-info">${currentCount} of 4 seats taken. ${4-currentCount} seat(s) available.<br/>You will take 1 seat.</div>`;
+  document.getElementById('book-modal-msg').innerHTML='';
+  document.getElementById('book-confirm-btn').disabled=false;
+  document.getElementById('book-confirm-btn').textContent='Confirm Seat';
+  document.getElementById('book-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('book-modal').classList.remove('open');pendingBooking=null;}
+async function confirmBooking(){
+  if(!pendingBooking)return;
+  const btn=document.getElementById('book-confirm-btn');
+  btn.disabled=true;btn.textContent='Booking...';
+  try{
+    const{clubId,clubName,slotId,tableNo,date,timeLabel}=pendingBooking;
+    const fresh=await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id,player_id`);
+    if(fresh.length>=4){document.getElementById('book-modal-msg').innerHTML='<div class="status-box status-error">Table just got full! Please choose another.</div>';btn.disabled=false;btn.textContent='Confirm Seat';return;}
+    const crossCheck=await sb(`mj_bookings?player_id=eq.${currentPlayer.id}&slot_id=eq.${slotId}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
+    if(crossCheck.length>0){document.getElementById('book-modal-msg').innerHTML='<div class="status-box status-warn">You already have a booking in this time slot at another club.</div>';btn.disabled=false;btn.textContent='Confirm Seat';return;}
+    await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:currentPlayer.id,booking_date:date,status:'confirmed'});
+    const newCount=fresh.length+1;
+    const sessions=await sb(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&select=*`);
+    const allPlayerIds=[...fresh.map(b=>b.player_id),currentPlayer.id];
+    const sessionData={player1_id:allPlayerIds[0]||null,player2_id:allPlayerIds[1]||null,player3_id:allPlayerIds[2]||null,player4_id:allPlayerIds[3]||null,status:newCount>=4?'full':'filling'};
+    if(sessions.length>0){await sbPatch(`mj_table_sessions?id=eq.${sessions[0].id}`,sessionData);}
+    else{await sb('mj_table_sessions','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,booking_date:date,...sessionData});}
+    if(newCount>=4){await sendTelegram(`🀄 <b>TABLE FULL — Action Required</b>\n\nClub: <b>${clubName}</b>\nTable: <b>${tableNo}</b>\nDate: <b>${date}</b>\nTime: <b>${timeLabel}</b>\n\nAll 4 seats booked. Please notify members from your Club Dashboard.`);}
+    document.getElementById('book-modal-msg').innerHTML=`<div class="status-box status-success">✅ Seat confirmed!${newCount>=4?' Table is FULL — club admin notified.':''}</div>`;
+    btn.textContent='✓ Booked!';
+    setTimeout(()=>{closeModal();loadAvailability();loadMyBookings();},1800);
+  }catch(e){document.getElementById('book-modal-msg').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;btn.disabled=false;btn.textContent='Confirm Seat';}
+}
+async function loadMyBookings(){
+  document.getElementById('bookings-loading').style.display='block';
+  document.getElementById('bookings-list').innerHTML='';
+  try{
+    const bookings=await sb(`mj_bookings?player_id=eq.${currentPlayer.id}&select=*&order=booking_date.desc,created_at.desc`);
+    document.getElementById('bookings-loading').style.display='none';
+    if(!bookings.length){document.getElementById('bookings-list').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>No bookings yet.<br/>Go to Find & Book tab!</p></div>';return;}
+    const clubIds=[...new Set(bookings.map(b=>b.club_id))];
+    const slotIds=[...new Set(bookings.map(b=>b.slot_id))];
+    const[clubs,slots]=await Promise.all([
+      clubIds.length?sb(`mj_clubs?id=in.(${clubIds.join(',')})&select=id,club_name`):Promise.resolve([]),
+      slotIds.length?sb(`mj_slots?id=in.(${slotIds.join(',')})&select=id,start_time,end_time`):Promise.resolve([])
+    ]);
+    const clubMap={};clubs.forEach(c=>{clubMap[c.id]=c;});
+    const slotMap={};slots.forEach(s=>{slotMap[s.id]=s;});
+    document.getElementById('bookings-list').innerHTML=bookings.map(b=>{
+      const club=clubMap[b.club_id];const slot=slotMap[b.slot_id];
+      const slotLabel=slot?`${slot.start_time} – ${slot.end_time}`:'—';
+      return`<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 ${b.booking_date}</div><span class="booking-badge ${b.status==='confirmed'?'badge-confirmed':'badge-cancelled'}">${b.status}</span></div><div class="booking-meta">🏯 Club: <span>${club?.club_name||'—'}</span></div><div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div><div class="booking-meta">🕐 Time: <span>${slotLabel}</span></div>${b.status==='confirmed'?`<div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelBooking('${b.id}','${b.slot_id}',${b.table_number},'${b.booking_date}','${b.club_id}')">Cancel</button></div>`:''}</div>`;
     }).join('');
-  }
-
-  // ─── FILTER CLUBS ──────────────────────────────────────────
-  function filterClubs() {
-    const q = document.getElementById('club-search').value.toLowerCase();
-    const filtered = allClubs.filter(c =>
-      c.club_name.toLowerCase().includes(q) || (c.city || '').toLowerCase().includes(q)
-    );
-    renderClubs(filtered, null);
-  }
-
-  // ─── REQUEST MEMBERSHIP ────────────────────────────────────
-  async function requestMembership(clubId, clubName) {
-    if (!currentPlayer) return;
-
-    const btn = document.querySelector(`#club-${clubId} .btn-outline`);
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
-
-    try {
-      // Check for duplicate
-      const existing = await sb(`mj_members?player_id=eq.${currentPlayer.id}&club_id=eq.${clubId}&select=id`);
-      if (existing.length > 0) {
-        if (btn) { btn.disabled = false; btn.textContent = 'Request to Join'; }
-        alert('You have already sent a request to this club.');
-        return;
-      }
-
-      // Insert membership request
-      await sb('mj_members', 'POST', {
-        club_id: clubId,
-        player_id: currentPlayer.id,
-        status: 'pending'
-      });
-
-      // Notify admin via Telegram
-      await sendTelegram(
-        `🀄 <b>New Membership Request — Mahjong</b>\n\n` +
-        `Club: <b>${clubName}</b>\n` +
-        `Player: <b>${currentPlayer.name}</b>\n` +
-        `Mobile: <b>${currentPlayer.mobile}</b>\n` +
-        `Email: ${currentPlayer.email}\n` +
-        `Gender: ${currentPlayer.gender}\n\n` +
-        `Approve from Club Admin Dashboard.`
-      );
-
-      // Update UI
-      const card = document.getElementById(`club-${clubId}`);
-      if (card) {
-        const actions = card.querySelector('.club-actions');
-        actions.innerHTML = `<span class="club-badge badge-pending">⏳ Request Pending</span>`;
-      }
-
-    } catch (e) {
-      if (btn) { btn.disabled = false; btn.textContent = 'Request to Join'; }
-      alert('Error: ' + e.message);
-    }
-  }
-
-  // ─── GO TO DASHBOARD ───────────────────────────────────────
-  function goToDashboard(clubId) {
-    localStorage.setItem('mj_active_club', clubId);
-    window.location.href = '/mahjong/dashboard.html';
-  }
-
-  // ─── LOGOUT ────────────────────────────────────────────────
-  function logout() {
-    localStorage.removeItem('mj_player');
-    localStorage.removeItem('mj_active_club');
-    currentPlayer = null;
-    showScreen('screen-welcome');
-    document.getElementById('otp-input').value = '';
-    document.getElementById('reg-name').value = '';
-    document.getElementById('reg-mobile').value = '';
-    document.getElementById('reg-email').value = '';
-    document.getElementById('reg-gender').value = '';
-    document.getElementById('login-mobile').value = '';
-  }
-
-  function goBack() {
-    showScreen('screen-welcome');
-  }
-
-  // ─── AUTO LOGIN ────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('mj_player');
-    if (saved) {
-      currentPlayer = JSON.parse(saved);
-      document.getElementById('welcome-name').textContent = `Hello, ${currentPlayer.name}! 👋`;
-      loadClubs();
-      showScreen('screen-clubs');
-    }
-  });
+  }catch(e){document.getElementById('bookings-loading').style.display='none';document.getElementById('bookings-list').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;}
+}
+async function cancelBooking(bookingId,slotId,tableNo,date,clubId){
+  if(!confirm('Cancel this booking?'))return;
+  try{
+    await sbPatch(`mj_bookings?id=eq.${bookingId}`,{status:'cancelled'});
+    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`,{status:'filling'});
+    loadMyBookings();loadAvailability();
+  }catch(e){alert('Error: '+e.message);}
+}
+async function loadDiscover(){
+  document.getElementById('discover-loading').style.display='block';
+  document.getElementById('discover-list').innerHTML='';
+  try{
+    const allClubs=await sb('mj_clubs?status=eq.active&select=*&order=club_name.asc');
+    const memberships=await sb(`mj_members?player_id=eq.${currentPlayer.id}&select=club_id,status`);
+    const memberMap={};memberships.forEach(m=>{memberMap[m.club_id]=m.status;});
+    document.getElementById('discover-loading').style.display='none';
+    const nonMemberClubs=allClubs.filter(c=>!memberMap[c.id]||memberMap[c.id]==='rejected');
+    if(!nonMemberClubs.length){document.getElementById('discover-list').innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div><p>You are a member of all available clubs!</p></div>';return;}
+    const gLabel=g=>g==='male'?'👨 Male Only':g==='female'?'👩 Female Only':'👥 Mixed';
+    document.getElementById('discover-list').innerHTML=nonMemberClubs.map(club=>{
+      const status=memberMap[club.id];
+      const actionBtn=status==='pending'?`<span class="badge badge-pending">⏳ Request Pending</span>`:`<button class="btn btn-outline btn-sm" onclick="requestMembership('${club.id}','${club.club_name.replace(/'/g,"\\'")}',this)">Request to Join</button>`;
+      return`<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 ${club.club_name}</div><span class="badge ${club.gender_condition==='male'?'badge-male':club.gender_condition==='female'?'badge-female':'badge-mixed'}">${gLabel(club.gender_condition)}</span></div><div class="discover-meta">📍 <span>${club.city||'N/A'}</span></div><div class="discover-meta">🀄 Tables: <span>${club.total_tables}</span></div><div style="margin-top:12px;">${actionBtn}</div></div>`;
+    }).join('');
+  }catch(e){document.getElementById('discover-loading').style.display='none';document.getElementById('discover-list').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;}
+}
+async function requestMembership(clubId,clubName,btn){
+  btn.disabled=true;btn.textContent='Sending...';
+  try{
+    const existing=await sb(`mj_members?player_id=eq.${currentPlayer.id}&club_id=eq.${clubId}&select=id`);
+    if(existing.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
+    await sb('mj_members','POST',{club_id:clubId,player_id:currentPlayer.id,status:'pending'});
+    await sendTelegram(`🀄 <b>New Membership Request</b>\n\nClub: <b>${clubName}</b>\nPlayer: <b>${currentPlayer.name}</b>\nMobile: ${currentPlayer.mobile}\nEmail: ${currentPlayer.email}\nGender: ${currentPlayer.gender}\n\nApprove from Club Admin Dashboard.`);
+    btn.outerHTML=`<span class="badge badge-pending">⏳ Request Pending</span>`;
+  }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
+}
+function logout(){localStorage.removeItem('mj_player');localStorage.removeItem('mj_active_club');window.location.href='/select-game.html?role=player';}
 </script>
 </body>
 </html>
