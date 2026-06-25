@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -86,7 +86,7 @@ select option{background:var(--surface);}
 </style>
 </head>
 <body>
-
+ 
 <div id="login-screen">
   <div class="login-wrap">
     <div class="login-box">
@@ -104,7 +104,7 @@ select option{background:var(--surface);}
     </div>
   </div>
 </div>
-
+ 
 <div id="dashboard-screen" style="display:none;">
   <div class="header">
     <div>
@@ -116,7 +116,7 @@ select option{background:var(--surface);}
       <button style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;" onclick="adminLogout()">Logout</button>
     </div>
   </div>
-
+ 
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('tab-overview')"><span class="tab-icon">📊</span>Overview</button>
     <button class="nav-tab" onclick="switchTab('tab-members')"><span class="tab-icon">👥</span>Members</button>
@@ -125,9 +125,9 @@ select option{background:var(--surface);}
     <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
     <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
   </div>
-
+ 
   <div class="main">
-
+ 
     <!-- OVERVIEW -->
     <div class="tab-content active" id="tab-overview">
       <div class="stats-row">
@@ -145,7 +145,7 @@ select option{background:var(--surface);}
         <div id="club-settings-display"></div>
       </div>
     </div>
-
+ 
     <!-- MEMBERS -->
     <div class="tab-content" id="tab-members">
       <div class="section-label">Pending Requests</div>
@@ -156,7 +156,7 @@ select option{background:var(--surface);}
       <div id="approved-members-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="approved-members"></div>
     </div>
-
+ 
     <!-- TABLES/SESSIONS -->
     <div class="tab-content" id="tab-sessions">
       <div class="card" style="margin-bottom:16px;">
@@ -168,7 +168,7 @@ select option{background:var(--surface);}
       <div id="sessions-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="sessions-list"></div>
     </div>
-
+ 
     <!-- GROUP REQUESTS -->
     <div class="tab-content" id="tab-group">
       <div class="section-label">Pending Group Table Requests</div>
@@ -176,7 +176,7 @@ select option{background:var(--surface);}
       <div id="group-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="group-list"></div>
     </div>
-
+ 
     <!-- SLOTS -->
     <div class="tab-content" id="tab-slots">
       <div class="card">
@@ -198,14 +198,14 @@ select option{background:var(--surface);}
           <div class="form-group"><label>Start Time</label><input type="time" id="slot-start"/></div>
           <div class="form-group"><label>End Time</label><input type="time" id="slot-end"/></div>
         </div>
-        <div id="slot-add-msg"></div>
+           <div id="slot-add-msg"></div>
         <button class="btn btn-gold btn-full" onclick="addSlot()">Add Slot</button>
       </div>
       <div class="section-label">Current Slots</div>
       <div id="slots-loading-admin" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="slots-list"></div>
     </div>
-
+ 
     <!-- SETTINGS -->
     <div class="tab-content" id="tab-settings">
       <div class="card">
@@ -222,17 +222,17 @@ select option{background:var(--surface);}
         <button class="btn btn-gold btn-full" onclick="saveSettings()">Save Settings</button>
       </div>
     </div>
-
+ 
   </div>
 </div>
-
+ 
 <script>
 const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const TG_BOT='8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
 const TG_CHAT='8507770594';
 let club=null,allSlots=[];
-
+ 
 async function sb(path,method='GET',body=null){
   const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
   if(!res.ok){const e=await res.json();throw new Error(e.message||JSON.stringify(e));}
@@ -245,7 +245,7 @@ async function tg(msg){
   try{await fetch(`https://api.telegram.org/bot${TG_BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
 }
 function showMsg(id,msg,type){document.getElementById(id).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
-
+ 
 async function adminLogin(){
   const email=document.getElementById('login-email').value.trim();
   const password=document.getElementById('login-password').value.trim();
@@ -262,14 +262,14 @@ async function adminLogin(){
     loadDashboard();
   }catch(e){showMsg('login-msg','Error: '+e.message,'error');}
 }
-
+ 
 function adminLogout(){
   localStorage.removeItem('mj_admin_club');
   club=null;
   document.getElementById('login-screen').style.display='block';
   document.getElementById('dashboard-screen').style.display='none';
 }
-
+ 
 async function loadDashboard(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('dashboard-screen').style.display='block';
@@ -297,7 +297,7 @@ async function loadDashboard(){
   loadSlotsAdmin();
   loadGroupRequests();
 }
-
+ 
 async function loadStats(){
   try{
     const today=new Date().toISOString().split('T')[0];
@@ -311,7 +311,7 @@ async function loadStats(){
     document.getElementById('stat-tables-full').textContent=fullSessions.length;
   }catch(e){}
 }
-
+ 
 async function loadTodaySessions(){
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('today-sessions-loading').style.display='block';
@@ -345,7 +345,7 @@ async function loadTodaySessions(){
     }).join('');
   }catch(e){document.getElementById('today-sessions-loading').style.display='none';}
 }
-
+ 
 async function loadPendingMembers(){
   document.getElementById('pending-members-loading').style.display='block';
   document.getElementById('pending-members').innerHTML='';
@@ -372,7 +372,7 @@ async function loadPendingMembers(){
     }).join('');
   }catch(e){document.getElementById('pending-members-loading').style.display='none';}
 }
-
+ 
 async function loadApprovedMembers(){
   document.getElementById('approved-members-loading').style.display='block';
   document.getElementById('approved-members').innerHTML='';
@@ -402,14 +402,14 @@ async function loadApprovedMembers(){
           </div>
         </div>
         <div class="member-actions" style="margin-top:6px;">
-          <a href="https://wa.me/91${p.whatsapp||p.mobile}?text=${encodeURIComponent('Hi '+p.name+'! Your SportBook membership at '+club.club_name+' is active. You can now book your Mahjong slots. 🀄')}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬 WhatsApp</a>
+          <a href="https://wa.me/91${p.whatsapp||p.mobile}?text=Hi%20${encodeURIComponent(p.name)}%21%20Your%20SportBook%20membership%20is%20active.%20Book%20your%20Mahjong%20slots%20now%21%20%F0%9F%80%84" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬 WhatsApp</a>
           <button class="btn btn-red btn-sm" onclick="updateMember('${m.id}','rejected','${p.name}')">Remove</button>
         </div>
       </div>`;
     }).join('');
   }catch(e){document.getElementById('approved-members-loading').style.display='none';}
 }
-
+ 
 async function addSlotBalance(memId,currentBal){
   const inp=document.getElementById(`bal-${memId}`);
   const add=parseInt(inp.value);
@@ -422,18 +422,19 @@ async function addSlotBalance(memId,currentBal){
   }catch(e){alert('Error: '+e.message);}
 }
 
+  
 async function setSlotBalance(memId,val){
   if(!confirm(`Reset slot balance to ${val}?`))return;
   try{await sbPatch(`mj_members?id=eq.${memId}`,{slot_balance:val});loadApprovedMembers();}
   catch(e){alert('Error: '+e.message);}
 }
-
+ 
 async function updateMember(memId,status,name){
   if(!confirm(`${status} ${name}?`))return;
   try{await sbPatch(`mj_members?id=eq.${memId}`,{status});loadPendingMembers();loadApprovedMembers();loadStats();}
   catch(e){alert('Error: '+e.message);}
 }
-
+ 
 async function loadSessions(){
   const date=document.getElementById('session-date-filter').value;
   if(!date)return;
@@ -475,7 +476,7 @@ async function loadSessions(){
     }).join('');
   }catch(e){document.getElementById('sessions-loading').style.display='none';}
 }
-
+ 
 async function loadGroupRequests(){
   document.getElementById('group-loading').style.display='block';
   document.getElementById('group-list').innerHTML='';
@@ -509,7 +510,7 @@ async function loadGroupRequests(){
     }).join('');
   }catch(e){document.getElementById('group-loading').style.display='none';}
 }
-
+ 
 async function approveGroupRequest(reqId,requestedBy,slotId,date,m2,m3,m4){
   const tableNo=parseInt(document.getElementById(`grp-table-${reqId}`).value);
   if(!tableNo){alert('Please select a table number.');return;}
@@ -555,13 +556,13 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,m2,m3,m4){
     loadStats();
   }catch(e){alert('Error: '+e.message);}
 }
-
+ 
 async function rejectGroupRequest(reqId){
   if(!confirm('Reject this group request?'))return;
   try{await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'rejected'});loadGroupRequests();}
   catch(e){alert('Error: '+e.message);}
 }
-
+ 
 async function addSlot(){
   const day=document.getElementById('slot-day').value;
   const start=document.getElementById('slot-start').value;
@@ -577,7 +578,7 @@ async function addSlot(){
     loadSlotsAdmin();
   }catch(e){showMsg('slot-add-msg','Error: '+e.message,'error');}
 }
-
+ 
 async function loadSlotsAdmin(){
   document.getElementById('slots-loading-admin').style.display='block';
   document.getElementById('slots-list').innerHTML='';
@@ -595,7 +596,7 @@ async function loadSlotsAdmin(){
       </div>`).join('');
   }catch(e){document.getElementById('slots-loading-admin').style.display='none';}
 }
-
+ 
 async function deleteSlot(slotId){
   if(!confirm('Delete this slot?'))return;
   try{
@@ -604,7 +605,7 @@ async function deleteSlot(slotId){
     loadSlotsAdmin();
   }catch(e){alert('Error: '+e.message);}
 }
-
+ 
 async function saveSettings(){
   const policy=document.getElementById('cancel-policy').value.trim();
   const hours=parseInt(document.getElementById('cancel-hours').value)||24;
@@ -617,7 +618,7 @@ async function saveSettings(){
     showMsg('settings-msg','✅ Settings saved!','success');
   }catch(e){showMsg('settings-msg','Error: '+e.message,'error');}
 }
-
+ 
 function switchTab(tabId){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -625,7 +626,7 @@ function switchTab(tabId){
   const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-settings'].indexOf(tabId);
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
 }
-
+ 
 window.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('mj_admin_club');
   if(saved){club=JSON.parse(saved);loadDashboard();}
@@ -633,3 +634,4 @@ window.addEventListener('DOMContentLoaded',()=>{
 </script>
 </body>
 </html>
+ 
