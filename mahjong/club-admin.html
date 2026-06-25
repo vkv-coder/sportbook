@@ -1,350 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Club Admin — Mahjong SportBook</title>
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0f0e17" />
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
-
-    :root {
-      --bg: #0f0e17;
-      --surface: #1a1930;
-      --card: #22213a;
-      --border: #2e2d4a;
-      --gold: #c9a84c;
-      --gold-light: #e8c97a;
-      --red: #c0392b;
-      --green: #27ae60;
-      --blue: #2980b9;
-      --orange: #e67e22;
-      --text: #e8e6f0;
-      --muted: #8b89a8;
-      --radius: 12px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
-
-    /* LOGIN */
-    .login-wrap {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .login-box {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px 24px;
-      width: 100%;
-      max-width: 400px;
-    }
-    .login-title {
-      font-family: 'Noto Serif Display', serif;
-      font-size: 24px;
-      color: var(--gold);
-      text-align: center;
-      margin-bottom: 6px;
-    }
-    .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; }
-
-    /* HEADER */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-title { font-family: 'Noto Serif Display', serif; font-size: 17px; color: var(--gold); }
-    .header-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-
-    /* NAV */
-    .nav-tabs {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-    }
-    .nav-tab {
-      flex: 1;
-      min-width: 70px;
-      padding: 11px 6px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-      font-family: 'Inter', sans-serif;
-    }
-    .nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
-    .nav-tab .tab-icon { display: block; font-size: 18px; margin-bottom: 2px; }
-
-    /* MAIN */
-    .main { max-width: 520px; margin: 0 auto; padding: 20px 16px 80px; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* STAT CARDS */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 12px;
-      text-align: center;
-    }
-    .stat-number { font-size: 24px; font-weight: 700; color: var(--gold); }
-    .stat-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
-
-    /* CARDS */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 14px;
-    }
-    .card-title { font-size: 14px; font-weight: 600; color: var(--gold-light); margin-bottom: 14px; }
-
-    /* FORM */
-    .form-group { margin-bottom: 14px; }
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    input, select, textarea {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 11px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
-    select option { background: var(--surface); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-    /* BUTTONS */
-    .btn {
-      padding: 11px 18px;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-full { width: 100%; }
-    .btn-gold { background: var(--gold); color: #0f0e17; }
-    .btn-gold:hover { background: var(--gold-light); }
-    .btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
-    .btn-green { background: var(--green); color: #fff; }
-    .btn-red { background: var(--red); color: #fff; }
-    .btn-blue { background: var(--blue); color: #fff; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* STATUS */
-    .status-box {
-      border-radius: 8px;
-      padding: 11px 14px;
-      font-size: 13px;
-      margin-bottom: 12px;
-      text-align: center;
-    }
-    .status-success { background: #1a3a1a; border: 1px solid var(--green); color: #58d68d; }
-    .status-error { background: #3a1a1a; border: 1px solid var(--red); color: #f1948a; }
-    .status-info { background: #1a2a3a; border: 1px solid var(--blue); color: #5dade2; }
-    .status-warn { background: #3a2a1a; border: 1px solid var(--orange); color: #f0b27a; }
-
-    /* MEMBER ITEM */
-    .member-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-    .member-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-    .member-name { font-size: 15px; font-weight: 600; color: var(--gold-light); }
-    .member-meta { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
-    .member-meta span { color: var(--text); }
-    .member-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-
-    /* BADGE */
-    .badge {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .badge-pending { background: #3a2a1a; color: #f0b27a; }
-    .badge-approved { background: #1a3a1a; color: #58d68d; }
-    .badge-rejected { background: #2a1a1a; color: #777; }
-    .badge-full { background: #1a2a3a; color: #5dade2; }
-    .badge-filling { background: #2a2a1a; color: #f0b27a; }
-
-    /* SESSION ITEM */
-    .session-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-    .session-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .session-title { font-size: 14px; font-weight: 600; color: var(--gold-light); }
-    .session-players {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-    .session-player { font-size: 12px; color: var(--text); }
-    .session-player .player-num { color: var(--muted); margin-right: 4px; }
-
-    /* SLOT ITEM */
-    .slot-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .slot-time { font-size: 14px; font-weight: 600; color: var(--gold-light); }
-    .slot-day { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    /* AVAILABILITY ITEM */
-    .avail-req {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-    .avail-req-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .avail-player-name { font-size: 14px; font-weight: 600; color: var(--gold-light); }
-
-    /* LOADING */
-    .loading { text-align: center; padding: 28px; color: var(--muted); font-size: 13px; }
-    .spinner {
-      width: 22px; height: 22px;
-      border: 2px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .empty-state { text-align: center; padding: 36px 20px; color: var(--muted); }
-    .empty-state .empty-icon { font-size: 36px; margin-bottom: 10px; }
-    .empty-state p { font-size: 13px; line-height: 1.6; }
-
-    .section-label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .divider { height: 1px; background: var(--border); margin: 16px 0; }
-
-    /* WHATSAPP BTN */
-    .btn-whatsapp {
-      background: #25d366;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-whatsapp:hover { background: #20b858; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organiser Dashboard — Mahjong SportBook</title>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0f0e17" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px;width:100%;max-width:400px;}
+.login-title{font-family:'Noto Serif Display',serif;font-size:24px;color:var(--gold);text-align:center;margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Noto Serif Display',serif;font-size:17px;color:var(--gold);}
+.header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+.nav-tab{flex:1;min-width:60px;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;white-space:nowrap;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.nav-tab .tab-icon{display:block;font-size:16px;margin-bottom:2px;}
+.main{max-width:520px;margin:0 auto;padding:20px 16px 80px;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 12px;text-align:center;}
+.stat-number{font-size:24px;font-weight:700;color:var(--gold);}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+.card-title{font-size:14px;font-weight:600;color:var(--gold-light);margin-bottom:14px;}
+.form-group{margin-bottom:14px;}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+input,select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+select option{background:var(--surface);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn{padding:11px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.btn-full{width:100%;}
+.btn-gold{background:var(--gold);color:#0f0e17;}.btn-gold:hover{background:var(--gold-light);}
+.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.status-box{border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:12px;text-align:center;}
+.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
+.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
+.status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
+.status-warn{background:#3a2a1a;border:1px solid var(--orange);color:#f0b27a;}
+.member-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.member-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.member-name{font-size:15px;font-weight:600;color:var(--gold-light);}
+.member-meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
+.member-meta span{color:var(--text);}
+.member-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;}
+.badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
+.badge-pending{background:#3a2a1a;color:#f0b27a;}
+.badge-approved{background:#1a3a1a;color:#58d68d;}
+.badge-rejected{background:#2a1a1a;color:#777;}
+.badge-full{background:#1a2a3a;color:#5dade2;}
+.badge-filling{background:#2a2a1a;color:#f0b27a;}
+.session-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.session-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.session-title{font-size:14px;font-weight:600;color:var(--gold-light);}
+.slot-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.slot-time{font-size:14px;font-weight:600;color:var(--gold-light);}
+.slot-day{font-size:12px;color:var(--muted);margin-top:2px;}
+.loading{text-align:center;padding:28px;color:var(--muted);font-size:13px;}
+.spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:36px 20px;color:var(--muted);}
+.empty-state .empty-icon{font-size:36px;margin-bottom:10px;}
+.empty-state p{font-size:13px;line-height:1.6;}
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;margin-top:16px;}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.btn-whatsapp{background:#25d366;color:#fff;display:flex;align-items:center;gap:6px;}
+.btn-whatsapp:hover{background:#20b858;}
+/* Balance input inline */
+.balance-row{display:flex;gap:8px;align-items:center;}
+.balance-row input{flex:1;padding:8px 12px;font-size:13px;}
+.balance-badge{font-size:13px;font-weight:700;color:var(--gold);min-width:40px;text-align:right;}
+</style>
 </head>
 <body>
 
-<!-- ===== LOGIN ===== -->
 <div id="login-screen">
   <div class="login-wrap">
     <div class="login-box">
-      <div class="login-title">🀄 Club Admin</div>
+      <div class="login-title">🀄 Organiser Login</div>
       <div class="login-sub">Mahjong SportBook — Club Management</div>
-
-      <div id="login-step1">
-        <div class="form-group">
-          <label>Club Email</label>
-          <input type="email" id="login-email" placeholder="your@email.com" />
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="login-password" placeholder="Your password" />
-        </div>
-        <div id="login-msg"></div>
-        <button class="btn btn-gold btn-full" onclick="adminLogin()">Login</button>
-      </div>
-
-      <div style="margin-top:20px; text-align:center;">
-        <a href="/mahjong/" style="font-size:13px; color:var(--muted); text-decoration:none;">← Player App</a>
+      <div class="form-group"><label>Club Email</label><input type="email" id="login-email" placeholder="your@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="Your password"/></div>
+      <div id="login-msg"></div>
+      <button class="btn btn-gold btn-full" onclick="adminLogin()">Login →</button>
+      <div style="margin-top:20px;text-align:center;">
+        <a href="/" style="font-size:13px;color:var(--muted);text-decoration:none;">🏠 Main Menu</a>
         &nbsp;·&nbsp;
-        <a href="/mahjong/register-club.html" style="font-size:13px; color:var(--gold); text-decoration:none;">Register Club →</a>
+        <a href="/mahjong/register-club.html" style="font-size:13px;color:var(--gold);text-decoration:none;">Register Club →</a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ===== DASHBOARD ===== -->
 <div id="dashboard-screen" style="display:none;">
-
   <div class="header">
     <div>
       <div class="header-title">🀄 <span id="club-name-header">Club</span></div>
@@ -357,84 +118,66 @@
   </div>
 
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('tab-overview')">
-      <span class="tab-icon">📊</span>Overview
-    </button>
-    <button class="nav-tab" onclick="switchTab('tab-members')">
-      <span class="tab-icon">👥</span>Members
-    </button>
-    <button class="nav-tab" onclick="switchTab('tab-sessions')">
-      <span class="tab-icon">🀄</span>Tables
-    </button>
-    <button class="nav-tab" onclick="switchTab('tab-slots')">
-      <span class="tab-icon">🕐</span>Slots
-    </button>
-    <button class="nav-tab" onclick="switchTab('tab-availability')">
-      <span class="tab-icon">📢</span>Requests
-    </button>
+    <button class="nav-tab active" onclick="switchTab('tab-overview')"><span class="tab-icon">📊</span>Overview</button>
+    <button class="nav-tab" onclick="switchTab('tab-members')"><span class="tab-icon">👥</span>Members</button>
+    <button class="nav-tab" onclick="switchTab('tab-sessions')"><span class="tab-icon">🀄</span>Tables</button>
+    <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👨‍👩‍👧‍👦</span>Groups</button>
+    <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
+    <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
   </div>
 
   <div class="main">
 
-    <!-- ===== OVERVIEW ===== -->
+    <!-- OVERVIEW -->
     <div class="tab-content active" id="tab-overview">
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-number" id="stat-members">—</div>
-          <div class="stat-label">Members</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-pending">—</div>
-          <div class="stat-label">Pending</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="stat-tables-full">—</div>
-          <div class="stat-label">Full Today</div>
-        </div>
+        <div class="stat-card"><div class="stat-number" id="stat-members">—</div><div class="stat-label">Members</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-number" id="stat-tables-full">—</div><div class="stat-label">Full Today</div></div>
       </div>
-
       <div class="card">
-        <div class="card-title">📋 Tables Full Today — Notify Members</div>
+        <div class="card-title">📋 Full Tables Today — Notify Members</div>
         <div id="today-sessions-loading" class="loading"><div class="spinner"></div>Loading...</div>
         <div id="today-sessions"></div>
       </div>
-
       <div class="card">
-        <div class="card-title">⚙️ Club Settings</div>
+        <div class="card-title">⚙️ Club Info</div>
         <div id="club-settings-display"></div>
-        <div style="margin-top:12px;">
-          <button class="btn btn-outline btn-full" onclick="switchTab('tab-slots')">Manage Time Slots →</button>
-        </div>
       </div>
     </div>
 
-    <!-- ===== MEMBERS ===== -->
+    <!-- MEMBERS -->
     <div class="tab-content" id="tab-members">
-
       <div class="section-label">Pending Requests</div>
       <div id="pending-members-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="pending-members"></div>
-
       <div class="divider"></div>
       <div class="section-label">Approved Members</div>
       <div id="approved-members-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="approved-members"></div>
     </div>
 
-    <!-- ===== TABLE SESSIONS ===== -->
+    <!-- TABLES/SESSIONS -->
     <div class="tab-content" id="tab-sessions">
       <div class="card" style="margin-bottom:16px;">
         <div class="form-group" style="margin-bottom:0;">
           <label>View Date</label>
-          <input type="date" id="session-date-filter" onchange="loadSessions()" />
+          <input type="date" id="session-date-filter" onchange="loadSessions()"/>
         </div>
       </div>
-
       <div id="sessions-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="sessions-list"></div>
     </div>
 
-    <!-- ===== SLOTS ===== -->
+    <!-- GROUP REQUESTS -->
+    <div class="tab-content" id="tab-group">
+      <div class="section-label">Pending Group Table Requests</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Members requesting to be seated together. Approve to assign them a table.</p>
+      <div id="group-loading" class="loading"><div class="spinner"></div>Loading...</div>
+      <div id="group-list"></div>
+    </div>
+
+    <!-- SLOTS -->
     <div class="tab-content" id="tab-slots">
       <div class="card">
         <div class="card-title">➕ Add Time Slot</div>
@@ -452,543 +195,435 @@
           </select>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Start Time</label>
-            <input type="time" id="slot-start" />
-          </div>
-          <div class="form-group">
-            <label>End Time</label>
-            <input type="time" id="slot-end" />
-          </div>
+          <div class="form-group"><label>Start Time</label><input type="time" id="slot-start"/></div>
+          <div class="form-group"><label>End Time</label><input type="time" id="slot-end"/></div>
         </div>
         <div id="slot-add-msg"></div>
         <button class="btn btn-gold btn-full" onclick="addSlot()">Add Slot</button>
       </div>
-
       <div class="section-label">Current Slots</div>
       <div id="slots-loading-admin" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="slots-list"></div>
     </div>
 
-    <!-- ===== AVAILABILITY REQUESTS ===== -->
-    <div class="tab-content" id="tab-availability">
-      <div class="section-label">Open Availability Posts from Members</div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">These members are looking for a game. You can contact them to arrange a table.</p>
-      <div id="avail-requests-loading" class="loading"><div class="spinner"></div>Loading...</div>
-      <div id="avail-requests"></div>
+    <!-- SETTINGS -->
+    <div class="tab-content" id="tab-settings">
+      <div class="card">
+        <div class="card-title">📋 Cancellation Policy</div>
+        <div class="form-group">
+          <label>Policy Description (shown to members)</label>
+          <textarea id="cancel-policy" rows="3" placeholder="e.g. Cancellations made less than 24 hours before the slot will forfeit 1 slot from your balance."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Penalty-free cancellation window (hours before slot)</label>
+          <input type="number" id="cancel-hours" placeholder="e.g. 24" min="0" max="168"/>
+        </div>
+        <div id="settings-msg"></div>
+        <button class="btn btn-gold btn-full" onclick="saveSettings()">Save Settings</button>
+      </div>
     </div>
 
   </div>
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+const TG_BOT='8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
+const TG_CHAT='8507770594';
+let club=null,allSlots=[];
 
-  let currentClub = null;
-  let allSlots = [];
-  let allApprovedMembers = [];
+async function sb(path,method='GET',body=null){
+  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  if(!res.ok){const e=await res.json();throw new Error(e.message||JSON.stringify(e));}
+  return method==='DELETE'?null:res.json();
+}
+async function sbPatch(path,body){
+  return fetch(`${SB_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+async function tg(msg){
+  try{await fetch(`https://api.telegram.org/bot${TG_BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
+}
+function showMsg(id,msg,type){document.getElementById(id).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
 
-  // ─── SUPABASE ───────────────────────────────────────────────
-  async function sb(path, method = 'GET', body = null) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-      method,
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : ''
-      },
-      body: body ? JSON.stringify(body) : null
-    });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
-    return method === 'DELETE' ? null : res.json();
-  }
+async function adminLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const password=document.getElementById('login-password').value.trim();
+  if(!email||!password){showMsg('login-msg','Enter email and password.','error');return;}
+  showMsg('login-msg','Logging in...','info');
+  try{
+    const clubs=await sb(`mj_clubs?email=eq.${encodeURIComponent(email)}&select=*`);
+    if(!clubs.length){showMsg('login-msg','Club not found.','error');return;}
+    if(clubs[0].admin_password!==password){showMsg('login-msg','Incorrect password.','error');return;}
+    if(clubs[0].status==='pending'){showMsg('login-msg','Club approval pending. Please wait for SportBook admin to approve.','warn');return;}
+    if(clubs[0].status==='paused'){showMsg('login-msg','Club is paused. Contact SportBook admin.','warn');return;}
+    club=clubs[0];
+    localStorage.setItem('mj_admin_club',JSON.stringify(club));
+    loadDashboard();
+  }catch(e){showMsg('login-msg','Error: '+e.message,'error');}
+}
 
-  async function sbPatch(path, body) {
-    return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-  }
+function adminLogout(){
+  localStorage.removeItem('mj_admin_club');
+  club=null;
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('dashboard-screen').style.display='none';
+}
 
-  // ─── LOGIN ──────────────────────────────────────────────────
-  async function adminLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value.trim();
-    if (!email || !password) { showMsg('login-msg', 'Enter email and password.', 'error'); return; }
+async function loadDashboard(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('dashboard-screen').style.display='block';
+  document.getElementById('club-name-header').textContent=club.club_name;
+  document.getElementById('club-meta-header').textContent=`${club.total_tables} tables · ${club.gender_condition} · ${club.city||''}`;
+  document.getElementById('club-settings-display').innerHTML=`
+    <div style="font-size:13px;color:var(--muted);line-height:1.8;">
+      <div>📍 <span style="color:var(--text);">${club.address||'N/A'}</span></div>
+      <div>🏯 Tables: <span style="color:var(--text);">${club.total_tables}</span></div>
+      <div>👥 Gender: <span style="color:var(--text);">${club.gender_condition}</span></div>
+      <div>📞 WhatsApp: <span style="color:var(--text);">${club.whatsapp_no||'N/A'}</span></div>
+      <div>✉️ Email: <span style="color:var(--text);">${club.email}</span></div>
+      ${club.cancellation_policy?`<div style="margin-top:8px;padding:10px;background:var(--surface);border-radius:8px;font-size:12px;color:var(--text);">📋 <b>Cancellation Policy:</b><br/>${club.cancellation_policy}</div>`:''}
+    </div>`;
+  document.getElementById('cancel-policy').value=club.cancellation_policy||'';
+  document.getElementById('cancel-hours').value=club.cancellation_hours||24;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('session-date-filter').value=today;
+  allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
+  loadStats();
+  loadTodaySessions();
+  loadPendingMembers();
+  loadApprovedMembers();
+  loadSessions();
+  loadSlotsAdmin();
+  loadGroupRequests();
+}
 
-    showMsg('login-msg', 'Logging in...', 'info');
-    try {
-      const clubs = await sb(`mj_clubs?email=eq.${encodeURIComponent(email)}&select=*`);
-      if (!clubs.length) { showMsg('login-msg', 'Club not found.', 'error'); return; }
+async function loadStats(){
+  try{
+    const today=new Date().toISOString().split('T')[0];
+    const[members,pending,fullSessions]=await Promise.all([
+      sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=id`),
+      sb(`mj_members?club_id=eq.${club.id}&status=eq.pending&select=id`),
+      sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${today}&status=eq.full&select=id`)
+    ]);
+    document.getElementById('stat-members').textContent=members.length;
+    document.getElementById('stat-pending').textContent=pending.length;
+    document.getElementById('stat-tables-full').textContent=fullSessions.length;
+  }catch(e){}
+}
 
-      const club = clubs[0];
-      if (club.admin_password !== password) { showMsg('login-msg', 'Incorrect password.', 'error'); return; }
-      if (club.status === 'pending') { showMsg('login-msg', 'Club approval is pending. Please wait for SportBook admin to approve.', 'warn'); return; }
-      if (club.status === 'paused') { showMsg('login-msg', 'Club membership is paused. Contact SportBook admin.', 'warn'); return; }
-
-      currentClub = club;
-      localStorage.setItem('mj_admin_club', JSON.stringify(club));
-      loadDashboard();
-
-    } catch(e) { showMsg('login-msg', 'Error: ' + e.message, 'error'); }
-  }
-
-  function adminLogout() {
-    localStorage.removeItem('mj_admin_club');
-    currentClub = null;
-    document.getElementById('login-screen').style.display = 'block';
-    document.getElementById('dashboard-screen').style.display = 'none';
-  }
-
-  function showMsg(elId, msg, type) {
-    document.getElementById(elId).innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
-  }
-
-  // ─── LOAD DASHBOARD ────────────────────────────────────────
-  async function loadDashboard() {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('dashboard-screen').style.display = 'block';
-
-    document.getElementById('club-name-header').textContent = currentClub.club_name;
-    document.getElementById('club-meta-header').textContent =
-      `${currentClub.total_tables} tables · ${currentClub.gender_condition} · ${currentClub.city || ''}`;
-
-    document.getElementById('club-settings-display').innerHTML = `
-      <div style="font-size:13px;color:var(--muted);line-height:1.8;">
-        <div>📍 <span style="color:var(--text);">${currentClub.address || 'N/A'}</span></div>
-        <div>🏯 Tables: <span style="color:var(--text);">${currentClub.total_tables}</span></div>
-        <div>👥 Gender: <span style="color:var(--text);">${currentClub.gender_condition}</span></div>
-        <div>📞 WhatsApp: <span style="color:var(--text);">${currentClub.whatsapp_no || 'N/A'}</span></div>
-        <div>✉️ Email: <span style="color:var(--text);">${currentClub.email}</span></div>
+async function loadTodaySessions(){
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('today-sessions-loading').style.display='block';
+  document.getElementById('today-sessions').innerHTML='';
+  try{
+    const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${today}&status=eq.full&select=*`);
+    document.getElementById('today-sessions-loading').style.display='none';
+    if(!sessions.length){document.getElementById('today-sessions').innerHTML='<div class="empty-state"><div class="empty-icon">🀄</div><p>No full tables today yet.</p></div>';return;}
+    const pids=[...new Set(sessions.flatMap(s=>[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean)))];
+    const pd=pids.length?await sb(`mj_players?id=in.(${pids.join(',')})&select=id,name,mobile,email`):[];
+    const pm={};pd.forEach(p=>{pm[p.id]=p;});
+    document.getElementById('today-sessions').innerHTML=sessions.map(s=>{
+      const slot=allSlots.find(sl=>sl.id===s.slot_id);
+      const slotLabel=slot?`${slot.start_time}–${slot.end_time}`:'—';
+      const players=[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean).map(id=>pm[id]);
+      const emailList=players.map(p=>p?.email).filter(Boolean).join(',');
+      const waMsg=encodeURIComponent(`🀄 *Table Ready!*\n\n${club.club_name}\nDate: ${today}\nTime: ${slotLabel}\nTable: ${s.table_number}\n\nPlayers:\n${players.map((p,i)=>`${i+1}. ${p?.name||'?'}`).join('\n')}`);
+      return`<div class="session-item" style="margin-bottom:14px;">
+        <div class="session-header">
+          <div class="session-title">Table ${s.table_number} · ${slotLabel}</div>
+          <span class="badge badge-full">FULL</span>
+        </div>
+        <div style="margin-bottom:10px;">
+          ${players.map((p,i)=>`<div style="font-size:12px;color:var(--text);margin-bottom:3px;"><span style="color:var(--muted);">P${i+1}</span> ${p?.name||'—'} · ${p?.mobile||''}</div>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn btn-whatsapp btn-sm">💬 WhatsApp</a>
+          ${emailList?`<a href="mailto:${emailList}?subject=Table Ready — ${club.club_name}" class="btn btn-blue btn-sm">✉️ Email All</a>`:''}
+        </div>
       </div>`;
+    }).join('');
+  }catch(e){document.getElementById('today-sessions-loading').style.display='none';}
+}
 
-    // Set session date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('session-date-filter').value = today;
+async function loadPendingMembers(){
+  document.getElementById('pending-members-loading').style.display='block';
+  document.getElementById('pending-members').innerHTML='';
+  try{
+    const mems=await sb(`mj_members?club_id=eq.${club.id}&status=eq.pending&select=*&order=joined_at.asc`);
+    document.getElementById('pending-members-loading').style.display='none';
+    if(!mems.length){document.getElementById('pending-members').innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><p>No pending requests.</p></div>';return;}
+    const pids=mems.map(m=>m.player_id);
+    const players=await sb(`mj_players?id=in.(${pids.join(',')})&select=*`);
+    const pm={};players.forEach(p=>{pm[p.id]=p;});
+    document.getElementById('pending-members').innerHTML=mems.map(m=>{
+      const p=pm[m.player_id]||{};
+      return`<div class="member-item">
+        <div class="member-header"><div class="member-name">${p.name||'Unknown'}</div><span class="badge badge-pending">Pending</span></div>
+        <div class="member-meta">📱 <span>${p.mobile||'—'}</span></div>
+        <div class="member-meta">✉️ <span>${p.email||'—'}</span></div>
+        <div class="member-meta">👤 <span>${p.gender||'—'}</span></div>
+        <div class="member-actions">
+          <button class="btn btn-green btn-sm" onclick="updateMember('${m.id}','approved','${p.name}')">✓ Approve</button>
+          <button class="btn btn-red btn-sm" onclick="updateMember('${m.id}','rejected','${p.name}')">✗ Reject</button>
+          <a href="https://wa.me/91${p.mobile}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬</a>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('pending-members-loading').style.display='none';}
+}
 
-    allSlots = await sb(`mj_slots?club_id=eq.${currentClub.id}&is_active=eq.true&select=*&order=start_time.asc`);
+async function loadApprovedMembers(){
+  document.getElementById('approved-members-loading').style.display='block';
+  document.getElementById('approved-members').innerHTML='';
+  try{
+    const mems=await sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=*&order=joined_at.desc`);
+    document.getElementById('approved-members-loading').style.display='none';
+    if(!mems.length){document.getElementById('approved-members').innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><p>No approved members yet.</p></div>';return;}
+    const pids=mems.map(m=>m.player_id);
+    const players=await sb(`mj_players?id=in.(${pids.join(',')})&select=*`);
+    const pm={};players.forEach(p=>{pm[p.id]=p;});
+    document.getElementById('approved-members').innerHTML=mems.map(m=>{
+      const p=pm[m.player_id]||{};
+      const bal=m.slot_balance||0;
+      return`<div class="member-item" id="mem-${m.id}">
+        <div class="member-header"><div class="member-name">${p.name||'Unknown'}</div><span class="badge badge-approved">Member</span></div>
+        <div class="member-meta">📱 <span>${p.mobile||'—'}</span></div>
+        <div class="member-meta">✉️ <span>${p.email||'—'}</span></div>
+        <div class="member-meta">👤 <span>${p.gender||'—'}</span></div>
+        <div class="member-meta" style="margin-top:8px;">🎫 Slot Balance: <span style="color:var(--gold);font-weight:700;">${bal} slots</span></div>
+        <div class="member-actions">
+          <div class="balance-row">
+            <input type="number" id="bal-${m.id}" placeholder="Add slots" min="1" max="100" style="padding:7px 10px;font-size:12px;"/>
+            <button class="btn btn-gold btn-sm" onclick="addSlotBalance('${m.id}',${bal})">+ Add</button>
+            <button class="btn btn-red btn-sm" onclick="setSlotBalance('${m.id}',0)">Reset</button>
+          </div>
+        </div>
+        <div class="member-actions" style="margin-top:6px;">
+          <a href="https://wa.me/91${p.mobile}" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬</a>
+          <button class="btn btn-red btn-sm" onclick="updateMember('${m.id}','rejected','${p.name}')">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('approved-members-loading').style.display='none';}
+}
 
-    loadStats();
-    loadTodaySessions();
-    loadPendingMembers();
+async function addSlotBalance(memId,currentBal){
+  const inp=document.getElementById(`bal-${memId}`);
+  const add=parseInt(inp.value);
+  if(!add||add<1){alert('Enter a valid number of slots to add.');return;}
+  const newBal=currentBal+add;
+  try{
+    await sbPatch(`mj_members?id=eq.${memId}`,{slot_balance:newBal});
+    inp.value='';
     loadApprovedMembers();
-    loadSessions();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function setSlotBalance(memId,val){
+  if(!confirm(`Reset slot balance to ${val}?`))return;
+  try{await sbPatch(`mj_members?id=eq.${memId}`,{slot_balance:val});loadApprovedMembers();}
+  catch(e){alert('Error: '+e.message);}
+}
+
+async function updateMember(memId,status,name){
+  if(!confirm(`${status} ${name}?`))return;
+  try{await sbPatch(`mj_members?id=eq.${memId}`,{status});loadPendingMembers();loadApprovedMembers();loadStats();}
+  catch(e){alert('Error: '+e.message);}
+}
+
+async function loadSessions(){
+  const date=document.getElementById('session-date-filter').value;
+  if(!date)return;
+  document.getElementById('sessions-loading').style.display='block';
+  document.getElementById('sessions-list').innerHTML='';
+  try{
+    const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${date}&select=*&order=table_number.asc`);
+    document.getElementById('sessions-loading').style.display='none';
+    if(!sessions.length){document.getElementById('sessions-list').innerHTML='<div class="empty-state"><div class="empty-icon">🀄</div><p>No table sessions for this date.</p></div>';return;}
+    const pids=[...new Set(sessions.flatMap(s=>[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean)))];
+    const pd=pids.length?await sb(`mj_players?id=in.(${pids.join(',')})&select=id,name,mobile,email`):[];
+    const pm={};pd.forEach(p=>{pm[p.id]=p;});
+    // Also load waitlist for this date
+    const waitlist=await sb(`mj_waitlist?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.waiting&select=*`);
+    document.getElementById('sessions-list').innerHTML=sessions.map(s=>{
+      const slot=allSlots.find(sl=>sl.id===s.slot_id);
+      const slotLabel=slot?`${slot.start_time}–${slot.end_time}`:'—';
+      const players=[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean).map(id=>pm[id]);
+      const count=players.length;
+      const isFull=count>=4;
+      const tableWaitlist=waitlist.filter(w=>w.slot_id===s.slot_id&&w.table_number===s.table_number);
+      const emailList=players.map(p=>p?.email).filter(Boolean).join(',');
+      const waMsg=encodeURIComponent(`🀄 Table ${s.table_number} — ${club.club_name}\nDate: ${date}\nTime: ${slotLabel}`);
+      return`<div class="session-item">
+        <div class="session-header">
+          <div class="session-title">Table ${s.table_number} · ${slotLabel}</div>
+          <span class="badge ${isFull?'badge-full':'badge-filling'}">${isFull?'FULL':count+'/4'}</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          ${players.map((p,i)=>`<div style="font-size:12px;color:var(--text);margin-bottom:3px;"><span style="color:var(--muted);">P${i+1}</span> ${p?.name||'—'} · ${p?.mobile||''}</div>`).join('')}
+          ${Array(4-count).fill(0).map((_,i)=>`<div style="font-size:12px;color:#555;margin-bottom:3px;"><span style="color:var(--muted);">P${count+i+1}</span> — empty</div>`).join('')}
+        </div>
+        ${tableWaitlist.length?`<div style="font-size:11px;color:#bb8fce;margin-bottom:8px;">⏳ ${tableWaitlist.length} on waitlist</div>`:''}
+        ${isFull?`<div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn btn-sm btn-whatsapp">💬 WhatsApp</a>
+          ${emailList?`<a href="mailto:${emailList}?subject=Table Ready" class="btn btn-blue btn-sm">✉️ Email</a>`:''}
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('sessions-loading').style.display='none';}
+}
+
+async function loadGroupRequests(){
+  document.getElementById('group-loading').style.display='block';
+  document.getElementById('group-list').innerHTML='';
+  try{
+    const reqs=await sb(`mj_group_requests?club_id=eq.${club.id}&status=eq.pending&select=*&order=created_at.asc`);
+    document.getElementById('group-loading').style.display='none';
+    if(!reqs.length){document.getElementById('group-list').innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><p>No pending group requests.</p></div>';return;}
+    // Fetch player names for requester
+    const reqPids=reqs.map(r=>r.requested_by);
+    const reqPlayers=await sb(`mj_players?id=in.(${reqPids.join(',')})&select=id,name,mobile`);
+    const rMap={};reqPlayers.forEach(p=>{rMap[p.id]=p;});
+    document.getElementById('group-list').innerHTML=reqs.map(r=>{
+      const slot=allSlots.find(s=>s.id===r.slot_id);
+      const slotLabel=slot?`${slot.start_time}–${slot.end_time}`:'—';
+      const requester=rMap[r.requested_by];
+      // Build table options
+      let tableOptions='<option value="">Assign Table No.</option>';
+      for(let t=1;t<=club.total_tables;t++){tableOptions+=`<option value="${t}">Table ${t}</option>`;}
+      return`<div class="member-item">
+        <div class="member-header"><div class="member-name">👥 Group Request</div><span class="badge badge-pending">Pending</span></div>
+        <div class="member-meta">📅 Date: <span>${r.booking_date}</span></div>
+        <div class="member-meta">🕐 Slot: <span>${slotLabel}</span></div>
+        <div class="member-meta">👤 Requested by: <span>${requester?.name||'—'} (${requester?.mobile||''})</span></div>
+        <div class="member-meta">👥 Friends: <span>${r.mobile2}, ${r.mobile3}, ${r.mobile4}</span></div>
+        <div class="member-actions">
+          <select id="grp-table-${r.id}" style="padding:7px 10px;font-size:12px;flex:1;">${tableOptions}</select>
+          <button class="btn btn-green btn-sm" onclick="approveGroupRequest('${r.id}','${r.requested_by}','${r.slot_id}','${r.booking_date}','${r.mobile2}','${r.mobile3}','${r.mobile4}')">✓ Approve</button>
+          <button class="btn btn-red btn-sm" onclick="rejectGroupRequest('${r.id}')">✗ Reject</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('group-loading').style.display='none';}
+}
+
+async function approveGroupRequest(reqId,requestedBy,slotId,date,m2,m3,m4){
+  const tableNo=parseInt(document.getElementById(`grp-table-${reqId}`).value);
+  if(!tableNo){alert('Please select a table number.');return;}
+  try{
+    // Get all 4 player IDs
+    const [p1info,p2info,p3info,p4info]=await Promise.all([
+      sb(`mj_players?id=eq.${requestedBy}&select=id`),
+      sb(`mj_players?mobile=eq.${m2}&select=id`),
+      sb(`mj_players?mobile=eq.${m3}&select=id`),
+      sb(`mj_players?mobile=eq.${m4}&select=id`)
+    ]);
+    const pids=[p1info[0]?.id,p2info[0]?.id,p3info[0]?.id,p4info[0]?.id].filter(Boolean);
+    if(pids.length<4){alert('Could not find all 4 players. Please check mobile numbers.');return;}
+    // Check table is free for this slot and date
+    const existing=await sb(`mj_bookings?club_id=eq.${club.id}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
+    if(existing.length>0){alert(`Table ${tableNo} already has bookings for this slot. Please choose another table.`);return;}
+    // Create 4 bookings
+    for(const pid of pids){
+      await sb('mj_bookings','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,player_id:pid,booking_date:date,status:'confirmed'});
+      // Deduct slot balance
+      await fetch(`${SB_URL}/rest/v1/mj_members?player_id=eq.${pid}&club_id=eq.${club.id}`,{
+        method:'PATCH',
+        headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
+        body:JSON.stringify({slot_balance:0}) // Will update properly below
+      });
+      const memData=await sb(`mj_members?player_id=eq.${pid}&club_id=eq.${club.id}&select=slot_balance`);
+      const currentBal=memData[0]?.slot_balance||0;
+      if(currentBal>0){
+        await sbPatch(`mj_members?player_id=eq.${pid}&club_id=eq.${club.id}`,{slot_balance:currentBal-1});
+      }
+    }
+    // Update session
+    await sb('mj_table_sessions','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,booking_date:date,player1_id:pids[0],player2_id:pids[1],player3_id:pids[2],player4_id:pids[3],status:'full'});
+    // Update group request
+    await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'approved',table_number:tableNo});
+    await tg(`🀄 <b>Group Request Approved</b>\n\nClub: <b>${club.club_name}</b>\nTable: ${tableNo}\nDate: ${date}\n\nAll 4 members booked successfully.`);
+    alert(`✅ Group approved! Table ${tableNo} assigned to all 4 members.`);
+    loadGroupRequests();
+    loadStats();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function rejectGroupRequest(reqId){
+  if(!confirm('Reject this group request?'))return;
+  try{await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'rejected'});loadGroupRequests();}
+  catch(e){alert('Error: '+e.message);}
+}
+
+async function addSlot(){
+  const day=document.getElementById('slot-day').value;
+  const start=document.getElementById('slot-start').value;
+  const end=document.getElementById('slot-end').value;
+  if(!start||!end){showMsg('slot-add-msg','Enter start and end time.','error');return;}
+  showMsg('slot-add-msg','Adding...','info');
+  try{
+    await sb('mj_slots','POST',{club_id:club.id,day_of_week:day,start_time:start,end_time:end,is_active:true});
+    document.getElementById('slot-start').value='';
+    document.getElementById('slot-end').value='';
+    showMsg('slot-add-msg','✅ Slot added!','success');
+    allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
     loadSlotsAdmin();
-    loadAvailabilityRequests();
-  }
+  }catch(e){showMsg('slot-add-msg','Error: '+e.message,'error');}
+}
 
-  // ─── STATS ─────────────────────────────────────────────────
-  async function loadStats() {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const [members, pending, fullSessions] = await Promise.all([
-        sb(`mj_members?club_id=eq.${currentClub.id}&status=eq.approved&select=id`),
-        sb(`mj_members?club_id=eq.${currentClub.id}&status=eq.pending&select=id`),
-        sb(`mj_table_sessions?club_id=eq.${currentClub.id}&booking_date=eq.${today}&status=eq.full&select=id`)
-      ]);
-      document.getElementById('stat-members').textContent = members.length;
-      document.getElementById('stat-pending').textContent = pending.length;
-      document.getElementById('stat-tables-full').textContent = fullSessions.length;
-    } catch(e) {}
-  }
+async function loadSlotsAdmin(){
+  document.getElementById('slots-loading-admin').style.display='block';
+  document.getElementById('slots-list').innerHTML='';
+  try{
+    const slots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
+    document.getElementById('slots-loading-admin').style.display='none';
+    if(!slots.length){document.getElementById('slots-list').innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><p>No slots added yet.</p></div>';return;}
+    document.getElementById('slots-list').innerHTML=slots.map(s=>`
+      <div class="slot-item">
+        <div>
+          <div class="slot-time">${s.start_time} – ${s.end_time}</div>
+          <div class="slot-day">${s.day_of_week==='all'?'Every day (Mon–Sun)':s.day_of_week?s.day_of_week.charAt(0).toUpperCase()+s.day_of_week.slice(1):'Every day'}</div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="deleteSlot('${s.id}')">Delete</button>
+      </div>`).join('');
+  }catch(e){document.getElementById('slots-loading-admin').style.display='none';}
+}
 
-  // ─── TODAY SESSIONS ────────────────────────────────────────
-  async function loadTodaySessions() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('today-sessions-loading').style.display = 'block';
-    document.getElementById('today-sessions').innerHTML = '';
+async function deleteSlot(slotId){
+  if(!confirm('Delete this slot?'))return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/mj_slots?id=eq.${slotId}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+    allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
+    loadSlotsAdmin();
+  }catch(e){alert('Error: '+e.message);}
+}
 
-    try {
-      const sessions = await sb(
-        `mj_table_sessions?club_id=eq.${currentClub.id}&booking_date=eq.${today}&status=eq.full&select=*`
-      );
+async function saveSettings(){
+  const policy=document.getElementById('cancel-policy').value.trim();
+  const hours=parseInt(document.getElementById('cancel-hours').value)||24;
+  showMsg('settings-msg','Saving...','info');
+  try{
+    await sbPatch(`mj_clubs?id=eq.${club.id}`,{cancellation_policy:policy,cancellation_hours:hours});
+    club.cancellation_policy=policy;
+    club.cancellation_hours=hours;
+    localStorage.setItem('mj_admin_club',JSON.stringify(club));
+    showMsg('settings-msg','✅ Settings saved!','success');
+  }catch(e){showMsg('settings-msg','Error: '+e.message,'error');}
+}
 
-      document.getElementById('today-sessions-loading').style.display = 'none';
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-settings'].indexOf(tabId);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
 
-      if (!sessions.length) {
-        document.getElementById('today-sessions').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">🀄</div><p>No full tables today yet.</p></div>`;
-        return;
-      }
-
-      const playerIds = [...new Set(sessions.flatMap(s =>
-        [s.player1_id, s.player2_id, s.player3_id, s.player4_id].filter(Boolean)
-      ))];
-
-      const playerData = playerIds.length
-        ? await sb(`mj_players?id=in.(${playerIds.join(',')})&select=id,name,mobile,email`)
-        : [];
-      const playerMap = {};
-      playerData.forEach(p => { playerMap[p.id] = p; });
-
-      document.getElementById('today-sessions').innerHTML = sessions.map(s => {
-        const slot = allSlots.find(sl => sl.id === s.slot_id);
-        const slotLabel = slot ? `${slot.start_time} – ${slot.end_time}` : '—';
-        const players = [s.player1_id, s.player2_id, s.player3_id, s.player4_id]
-          .filter(Boolean)
-          .map(id => playerMap[id]);
-
-        const waNumbers = players.map(p => p?.mobile).filter(Boolean).join(',');
-        const emailList = players.map(p => p?.email).filter(Boolean).join(',');
-        const waMsg = encodeURIComponent(
-          `🀄 *Mahjong Table Ready!*\n\nHi! Your Mahjong table is ready at ${currentClub.club_name}.\n\nDate: ${today}\nTime: ${slotLabel}\nTable No: ${s.table_number}\n\nPlayers:\n${players.map((p,i) => `${i+1}. ${p?.name || 'Unknown'}`).join('\n')}\n\nSee you at the table! 🀄`
-        );
-
-        return `
-          <div class="session-item" style="margin-bottom:14px;">
-            <div class="session-header">
-              <div class="session-title">Table ${s.table_number} · ${slotLabel}</div>
-              <span class="badge badge-full">FULL</span>
-            </div>
-            <div class="session-players">
-              ${players.map((p, i) => `
-                <div class="session-player">
-                  <span class="player-num">P${i+1}</span>
-                  ${p?.name || '—'} · ${p?.mobile || ''}
-                </div>`).join('')}
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn btn-whatsapp btn-sm">
-                💬 WhatsApp Group
-              </a>
-              ${emailList ? `<a href="mailto:${emailList}?subject=Mahjong Table Ready — ${currentClub.club_name}&body=Your table is ready! Date: ${today}, Time: ${slotLabel}, Table: ${s.table_number}" class="btn btn-blue btn-sm">✉️ Email All</a>` : ''}
-            </div>
-          </div>`;
-      }).join('');
-
-    } catch(e) {
-      document.getElementById('today-sessions-loading').style.display = 'none';
-      document.getElementById('today-sessions').innerHTML =
-        `<div class="status-box status-error">Error: ${e.message}</div>`;
-    }
-  }
-
-  // ─── MEMBERS ───────────────────────────────────────────────
-  async function loadPendingMembers() {
-    document.getElementById('pending-members-loading').style.display = 'block';
-    document.getElementById('pending-members').innerHTML = '';
-
-    try {
-      const memberships = await sb(
-        `mj_members?club_id=eq.${currentClub.id}&status=eq.pending&select=*&order=joined_at.asc`
-      );
-
-      document.getElementById('pending-members-loading').style.display = 'none';
-
-      if (!memberships.length) {
-        document.getElementById('pending-members').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">✅</div><p>No pending requests.</p></div>`;
-        return;
-      }
-
-      // Fetch player details
-      const playerIds = memberships.map(m => m.player_id);
-      const players = await sb(`mj_players?id=in.(${playerIds.join(',')})&select=*`);
-      const playerMap = {};
-      players.forEach(p => { playerMap[p.id] = p; });
-
-      document.getElementById('pending-members').innerHTML = memberships.map(m => {
-        const p = playerMap[m.player_id] || {};
-        return `
-          <div class="member-item" id="member-${m.id}">
-            <div class="member-header">
-              <div class="member-name">${p.name || 'Unknown'}</div>
-              <span class="badge badge-pending">Pending</span>
-            </div>
-            <div class="member-meta">📱 <span>${p.mobile || '—'}</span></div>
-            <div class="member-meta">✉️ <span>${p.email || '—'}</span></div>
-            <div class="member-meta">👤 <span>${p.gender || '—'}</span></div>
-            <div class="member-actions">
-              <button class="btn btn-green btn-sm" onclick="updateMemberStatus('${m.id}','approved','${p.name}','${p.mobile}')">✓ Approve</button>
-              <button class="btn btn-red btn-sm" onclick="updateMemberStatus('${m.id}','rejected','${p.name}','${p.mobile}')">✗ Reject</button>
-              <a href="https://wa.me/91${p.mobile}" target="_blank" class="btn btn-whatsapp btn-sm">💬 WhatsApp</a>
-            </div>
-          </div>`;
-      }).join('');
-
-    } catch(e) {
-      document.getElementById('pending-members-loading').style.display = 'none';
-    }
-  }
-
-  async function loadApprovedMembers() {
-    document.getElementById('approved-members-loading').style.display = 'block';
-    document.getElementById('approved-members').innerHTML = '';
-
-    try {
-      const memberships = await sb(
-        `mj_members?club_id=eq.${currentClub.id}&status=eq.approved&select=*&order=joined_at.desc`
-      );
-
-      document.getElementById('approved-members-loading').style.display = 'none';
-
-      if (!memberships.length) {
-        document.getElementById('approved-members').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">👥</div><p>No approved members yet.</p></div>`;
-        return;
-      }
-
-      const playerIds = memberships.map(m => m.player_id);
-      const players = await sb(`mj_players?id=in.(${playerIds.join(',')})&select=*`);
-      const playerMap = {};
-      players.forEach(p => { playerMap[p.id] = p; });
-      allApprovedMembers = players;
-
-      document.getElementById('approved-members').innerHTML = memberships.map(m => {
-        const p = playerMap[m.player_id] || {};
-        return `
-          <div class="member-item">
-            <div class="member-header">
-              <div class="member-name">${p.name || 'Unknown'}</div>
-              <span class="badge badge-approved">Member</span>
-            </div>
-            <div class="member-meta">📱 <span>${p.mobile || '—'}</span></div>
-            <div class="member-meta">✉️ <span>${p.email || '—'}</span></div>
-            <div class="member-meta">👤 <span>${p.gender || '—'}</span></div>
-            <div class="member-actions">
-              <a href="https://wa.me/91${p.mobile}" target="_blank" class="btn btn-whatsapp btn-sm">💬 WhatsApp</a>
-              <button class="btn btn-red btn-sm" onclick="updateMemberStatus('${m.id}','rejected','${p.name}','${p.mobile}')">Remove</button>
-            </div>
-          </div>`;
-      }).join('');
-
-    } catch(e) {
-      document.getElementById('approved-members-loading').style.display = 'none';
-    }
-  }
-
-  async function updateMemberStatus(membershipId, status, playerName, playerMobile) {
-    const action = status === 'approved' ? 'approve' : 'remove/reject';
-    if (!confirm(`${action} ${playerName}?`)) return;
-
-    try {
-      await sbPatch(`mj_members?id=eq.${membershipId}`, { status });
-      loadPendingMembers();
-      loadApprovedMembers();
-      loadStats();
-    } catch(e) { alert('Error: ' + e.message); }
-  }
-
-  // ─── SESSIONS ──────────────────────────────────────────────
-  async function loadSessions() {
-    const date = document.getElementById('session-date-filter').value;
-    if (!date) return;
-
-    document.getElementById('sessions-loading').style.display = 'block';
-    document.getElementById('sessions-list').innerHTML = '';
-
-    try {
-      const sessions = await sb(
-        `mj_table_sessions?club_id=eq.${currentClub.id}&booking_date=eq.${date}&select=*&order=table_number.asc`
-      );
-
-      document.getElementById('sessions-loading').style.display = 'none';
-
-      if (!sessions.length) {
-        document.getElementById('sessions-list').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">🀄</div><p>No table sessions for this date.</p></div>`;
-        return;
-      }
-
-      const playerIds = [...new Set(sessions.flatMap(s =>
-        [s.player1_id, s.player2_id, s.player3_id, s.player4_id].filter(Boolean)
-      ))];
-
-      const playerData = playerIds.length
-        ? await sb(`mj_players?id=in.(${playerIds.join(',')})&select=id,name,mobile,email`)
-        : [];
-      const playerMap = {};
-      playerData.forEach(p => { playerMap[p.id] = p; });
-
-      document.getElementById('sessions-list').innerHTML = sessions.map(s => {
-        const slot = allSlots.find(sl => sl.id === s.slot_id);
-        const slotLabel = slot ? `${slot.start_time} – ${slot.end_time}` : '—';
-        const players = [s.player1_id, s.player2_id, s.player3_id, s.player4_id]
-          .filter(Boolean).map(id => playerMap[id]);
-        const count = players.length;
-        const isFull = count >= 4;
-
-        const emailList = players.map(p => p?.email).filter(Boolean).join(',');
-        const waMsg = encodeURIComponent(
-          `🀄 Table ${s.table_number} — ${currentClub.club_name}\nDate: ${date}\nTime: ${slotLabel}\n\nPlayers:\n${players.map((p,i)=>`${i+1}. ${p?.name||'?'}`).join('\n')}`
-        );
-
-        return `
-          <div class="session-item">
-            <div class="session-header">
-              <div class="session-title">Table ${s.table_number} · ${slotLabel}</div>
-              <span class="badge ${isFull ? 'badge-full' : 'badge-filling'}">${isFull ? 'FULL' : count + '/4'}</span>
-            </div>
-            <div class="session-players">
-              ${players.map((p,i) => `
-                <div class="session-player">
-                  <span class="player-num">P${i+1}</span> ${p?.name || '—'} · ${p?.mobile || ''}
-                </div>`).join('')}
-              ${Array(4 - count).fill(0).map((_,i) =>
-                `<div class="session-player" style="color:var(--muted)"><span class="player-num">P${count+i+1}</span> — (empty)</div>`
-              ).join('')}
-            </div>
-            ${isFull ? `
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn btn-whatsapp btn-sm">💬 WhatsApp</a>
-              ${emailList ? `<a href="mailto:${emailList}?subject=Table Ready — ${currentClub.club_name}" class="btn btn-blue btn-sm">✉️ Email</a>` : ''}
-            </div>` : ''}
-          </div>`;
-      }).join('');
-
-    } catch(e) {
-      document.getElementById('sessions-loading').style.display = 'none';
-      document.getElementById('sessions-list').innerHTML =
-        `<div class="status-box status-error">Error: ${e.message}</div>`;
-    }
-  }
-
-  // ─── SLOTS ─────────────────────────────────────────────────
-  async function addSlot() {
-    const day = document.getElementById('slot-day').value;
-    const start = document.getElementById('slot-start').value;
-    const end = document.getElementById('slot-end').value;
-
-    if (!start || !end) { showMsg('slot-add-msg', 'Enter start and end time.', 'error'); return; }
-
-    showMsg('slot-add-msg', 'Adding...', 'info');
-    try {
-      await sb('mj_slots', 'POST', {
-        club_id: currentClub.id,
-        day_of_week: day,
-        start_time: start,
-        end_time: end,
-        is_active: true
-      });
-      document.getElementById('slot-start').value = '';
-      document.getElementById('slot-end').value = '';
-      showMsg('slot-add-msg', '✅ Slot added!', 'success');
-      allSlots = await sb(`mj_slots?club_id=eq.${currentClub.id}&is_active=eq.true&select=*&order=start_time.asc`);
-      loadSlotsAdmin();
-    } catch(e) { showMsg('slot-add-msg', 'Error: ' + e.message, 'error'); }
-  }
-
-  async function loadSlotsAdmin() {
-    document.getElementById('slots-loading-admin').style.display = 'block';
-    document.getElementById('slots-list').innerHTML = '';
-
-    try {
-      const slots = await sb(`mj_slots?club_id=eq.${currentClub.id}&is_active=eq.true&select=*&order=start_time.asc`);
-      document.getElementById('slots-loading-admin').style.display = 'none';
-
-      if (!slots.length) {
-        document.getElementById('slots-list').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">🕐</div><p>No slots added yet.</p></div>`;
-        return;
-      }
-
-      document.getElementById('slots-list').innerHTML = slots.map(s => `
-        <div class="slot-item">
-          <div>
-            <div class="slot-time">${s.start_time} – ${s.end_time}</div>
-            <div class="slot-day">${s.day_of_week === 'all' ? 'Every day (Mon–Sun)' : (s.day_of_week ? s.day_of_week.charAt(0).toUpperCase() + s.day_of_week.slice(1) : 'Every day')}</div>
-          </div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <span style="font-size:11px;color:${s.is_active ? 'var(--green)' : 'var(--muted)'}">
-              ${s.is_active ? '● Active' : '● Inactive'}
-            </span>
-            <button class="btn btn-red btn-sm" onclick="deleteSlot('${s.id}')">Delete</button>
-          </div>
-        </div>`).join('');
-
-    } catch(e) {
-      document.getElementById('slots-loading-admin').style.display = 'none';
-    }
-  }
-
-  async function deleteSlot(slotId) {
-    if (!confirm('Delete this slot?')) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_slots?id=eq.${slotId}`, {
-        method: 'DELETE',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-      });
-      allSlots = await sb(`mj_slots?club_id=eq.${currentClub.id}&is_active=eq.true&select=*&order=start_time.asc`);
-      loadSlotsAdmin();
-    } catch(e) { alert('Error: ' + e.message); }
-  }
-
-  // ─── AVAILABILITY REQUESTS ─────────────────────────────────
-  async function loadAvailabilityRequests() {
-    document.getElementById('avail-requests-loading').style.display = 'block';
-    document.getElementById('avail-requests').innerHTML = '';
-
-    try {
-      const posts = await sb(
-        `mj_availability_posts?club_id=eq.${currentClub.id}&status=eq.open&select=*&order=preferred_date.asc`
-      );
-
-      document.getElementById('avail-requests-loading').style.display = 'none';
-
-      if (!posts.length) {
-        document.getElementById('avail-requests').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">📢</div><p>No open availability posts from members.</p></div>`;
-        return;
-      }
-
-      const playerIds = [...new Set(posts.map(p => p.player_id))];
-      const players = await sb(`mj_players?id=in.(${playerIds.join(',')})&select=id,name,mobile,email`);
-      const playerMap = {};
-      players.forEach(p => { playerMap[p.id] = p; });
-
-      document.getElementById('avail-requests').innerHTML = posts.map(post => {
-        const p = playerMap[post.player_id] || {};
-        const slot = allSlots.find(s => s.id === post.preferred_slot_id);
-        const slotLabel = slot ? `${slot.start_time} – ${slot.end_time}` : '—';
-
-        return `
-          <div class="avail-req">
-            <div class="avail-req-header">
-              <div class="avail-player-name">${p.name || '—'}</div>
-              <span class="badge badge-approved">Open</span>
-            </div>
-            <div class="member-meta">📅 <span>${post.preferred_date}</span></div>
-            <div class="member-meta">🕐 <span>${slotLabel}</span></div>
-            <div class="member-meta">📱 <span>${p.mobile || '—'}</span></div>
-            <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-              <a href="https://wa.me/91${p.mobile}" target="_blank" class="btn btn-whatsapp btn-sm">💬 Contact</a>
-              <button class="btn btn-sm btn-outline" onclick="markMatched('${post.id}')">✓ Mark Matched</button>
-            </div>
-          </div>`;
-      }).join('');
-
-    } catch(e) {
-      document.getElementById('avail-requests-loading').style.display = 'none';
-    }
-  }
-
-  async function markMatched(postId) {
-    try {
-      await sbPatch(`mj_availability_posts?id=eq.${postId}`, { status: 'matched' });
-      loadAvailabilityRequests();
-    } catch(e) { alert('Error: ' + e.message); }
-  }
-
-  // ─── TABS ──────────────────────────────────────────────────
-  function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    const idx = ['tab-overview','tab-members','tab-sessions','tab-slots','tab-availability'].indexOf(tabId);
-    document.querySelectorAll('.nav-tab')[idx].classList.add('active');
-  }
-
-  // ─── AUTO LOGIN ────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('mj_admin_club');
-    if (saved) {
-      currentClub = JSON.parse(saved);
-      loadDashboard();
-    }
-  });
+window.addEventListener('DOMContentLoaded',()=>{
+  const saved=localStorage.getItem('mj_admin_club');
+  if(saved){club=JSON.parse(saved);loadDashboard();}
+});
 </script>
 </body>
 </html>
