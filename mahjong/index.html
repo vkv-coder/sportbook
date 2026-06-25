@@ -623,6 +623,9 @@ async function loadMyBookings(){
   document.getElementById('bookings-list').innerHTML='';
   try{
     const bookings=await sb(`mj_bookings?player_id=eq.${player.id}&select=*&order=booking_date.desc,created_at.desc`);
+    // Get group requests to identify group bookings
+    const grpReqs=await sb(`mj_group_requests?requested_by=eq.${player.id}&status=eq.approved&select=slot_id,booking_date,table_number`);
+    const grpSet=new Set(grpReqs.map(g=>`${g.slot_id}_${g.booking_date}_${g.table_number}`));
     const waitlist=await sb(`mj_waitlist?player_id=eq.${player.id}&status=eq.waiting&select=*&order=created_at.desc`);
     document.getElementById('bookings-loading').style.display='none';
     if(!bookings.length&&!waitlist.length){document.getElementById('bookings-list').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>No bookings yet.</p></div>';return;}
@@ -661,7 +664,8 @@ async function loadMyBookings(){
           <div class="booking-meta">🏯 Club: <span>${cMap[b.club_id]?.club_name||'—'}</span></div>
           <div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div>
           <div class="booking-meta">🕐 Time: <span>${sl?sl.start_time+'–'+sl.end_time:'—'}</span></div>
-        </div>`;
+          ${grpSet.has(`${b.slot_id}_${b.booking_date}_${b.table_number}`)?'<div style="margin-top:6px;"><span style="font-size:11px;background:#1a2a3a;color:#5dade2;padding:3px 8px;border-radius:20px;font-weight:600;">👥 Group Booking</span></div>':''}
+        </div>`
       }).join('');
     }
     document.getElementById('bookings-list').innerHTML=html;
