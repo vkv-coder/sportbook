@@ -179,6 +179,8 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
               <option value="female">Female</option>
             </select>
           </div>
+          <div class="form-group"><label>WhatsApp Number <span style="color:#f1948a;">*</span></label><input type="tel" id="p-whatsapp" placeholder="10-digit WhatsApp number" maxlength="10" inputmode="numeric" /></div>
+          <div class="form-group"><label>Telegram ID <span style="color:var(--muted);font-weight:400;">(optional)</span></label><input type="text" id="p-telegram" placeholder="e.g. @yourname or your Telegram ID" /></div>
           <div id="p-reg-msg"></div>
           <button class="btn-gold" onclick="sendPlayerOTP('new')">Send OTP →</button>
         </div>
@@ -332,6 +334,8 @@ async function sendPlayerOTP(mode) {
     const mobile = document.getElementById('p-mobile').value.trim();
     const email  = document.getElementById('p-email').value.trim();
     const gender = document.getElementById('p-gender').value;
+    const whatsapp = document.getElementById('p-whatsapp').value.trim();
+    const telegram = document.getElementById('p-telegram').value.trim();
 
     if (!name || !mobile || !email || !gender) { showMsg('p-reg-msg', 'Please fill all fields.', 'error'); return; }
     if (mobile.length !== 10) { showMsg('p-reg-msg', 'Enter valid 10-digit mobile.', 'error'); return; }
@@ -343,7 +347,7 @@ async function sendPlayerOTP(mode) {
       if (existing.length > 0) { showMsg('p-reg-msg', 'Mobile already registered. Use Returning Player tab.', 'warn'); return; }
 
       currentOTP = generateOTP();
-      await sb('mj_players', 'POST', { name, mobile, email, gender, otp: currentOTP, otp_verified: false });
+      await sb('mj_players', 'POST', { name, mobile, email, gender, whatsapp, telegram_id: telegram, otp: currentOTP, otp_verified: false });
 
       document.getElementById('p-otp-shown').textContent = currentOTP;
       showStep('player-step2');
