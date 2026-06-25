@@ -98,7 +98,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <div class="header-title">🀄 Mahjong</div>
     <div class="header-sub" id="header-player-name">Loading...</div>
   </div>
-  <button class="btn-logout" onclick="logout()">Logout</button>
+  <div style="display:flex;gap:8px;">
+    <a href="/" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;border-radius:6px;font-size:11px;text-decoration:none;">🏠 Menu</a>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
 </div>
 <div class="nav-tabs">
   <button class="nav-tab active" onclick="switchTab('tab-availability')"><span class="tab-icon">🗓️</span>Find & Book</button>
