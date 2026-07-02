@@ -3,17 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SportBook — Book Your Court</title>
+<title>SportBook — Book Your Game</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --blue:#1A6BFF; --blue-dark:#1254CC;
-    --green:#00B87A; --green-dark:#009962;
-    --bg:#F4F6FB; --white:#fff;
-    --text:#111827; --muted:#6B7280;
-    --border:#E5E7EB; --radius:18px;
-  }
+  :root{--blue:#1A6BFF;--blue-dark:#1254CC;--green:#00B87A;--green-dark:#009962;--bg:#F4F6FB;--white:#fff;--text:#111827;--muted:#6B7280;--border:#E5E7EB;--radius:18px;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;}
   header{background:var(--white);padding:16px 24px;display:flex;align-items:center;box-shadow:0 1px 0 var(--border);}
@@ -22,14 +16,17 @@
   .hero{background:linear-gradient(135deg,#1A6BFF 0%,#0D3FA6 100%);padding:48px 24px 56px;text-align:center;position:relative;overflow:hidden;}
   .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:rgba(255,255,255,0.06);border-radius:50%;}
   .hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;background:rgba(255,255,255,0.05);border-radius:50%;}
-  .hero-icon{font-size:52px;margin-bottom:14px;display:block;animation:bounce 2s infinite;}
+  .hero-icons{font-size:36px;margin-bottom:14px;display:block;animation:bounce 2s infinite;}
   @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
   .hero h1{font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:white;line-height:1.1;margin-bottom:10px;}
   .hero p{font-size:15px;color:rgba(255,255,255,0.82);line-height:1.5;}
+  .hero-games{display:flex;justify-content:center;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .hero-game-pill{background:rgba(255,255,255,0.15);color:white;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.25);}
+  .hero-game-pill.live{background:rgba(201,168,76,0.3);border-color:rgba(201,168,76,0.6);color:#e8c97a;}
   .choose-section{padding:32px 20px;flex:1;}
   .choose-label{text-align:center;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:20px;}
   .role-cards{display:flex;flex-direction:column;gap:16px;max-width:420px;margin:0 auto;}
-  .role-card{background:var(--white);border-radius:var(--radius);padding:28px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 12px rgba(0,0,0,0.07);cursor:pointer;border:2px solid transparent;transition:all 0.2s;}
+  .role-card{background:var(--white);border-radius:var(--radius);padding:28px 24px;display:flex;align-items:center;gap:20px;box-shadow:0 2px 12px rgba(0,0,0,0.07);cursor:pointer;border:2px solid transparent;transition:all 0.2s;text-decoration:none;}
   .role-card.player{border-color:rgba(26,107,255,0.15);}
   .role-card.owner{border-color:rgba(0,184,122,0.15);}
   .role-card.player:hover{border-color:var(--blue);transform:translateY(-2px);}
@@ -44,375 +41,76 @@
   .player .role-arrow{background:var(--blue);color:white;}
   .owner .role-arrow{background:var(--green);color:white;}
   .role-card:hover .role-arrow{transform:translateX(4px);}
+  .tag-new{display:inline-block;background:#D1FAE5;color:#065F46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;letter-spacing:0.5px;}
   .features{display:flex;justify-content:center;padding:0 20px 24px;max-width:420px;margin:0 auto;width:100%;}
   .feat{flex:1;text-align:center;padding:12px 8px;}
   .feat-icon{font-size:22px;margin-bottom:4px;}
   .feat-text{font-size:11px;color:var(--muted);font-weight:500;line-height:1.3;}
-  footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:white;}
-  /* MODAL */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;align-items:flex-end;justify-content:center;}
-  .modal-overlay.active{display:flex;}
-  .modal{background:white;border-radius:24px 24px 0 0;padding:32px 24px 40px;width:100%;max-width:480px;animation:slideUp 0.3s ease;}
-  @keyframes slideUp{from{transform:translateY(100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
-  .modal-handle{width:40px;height:4px;background:#E5E7EB;border-radius:4px;margin:0 auto 24px;}
-  .modal-title{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:var(--text);margin-bottom:6px;}
-  .modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
-  .input-group{margin-bottom:16px;}
-  .input-group label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;}
-  .input-group input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border-color 0.2s;}
-  .player-modal .input-group input:focus{border-color:var(--blue);}
-  .owner-modal .input-group input:focus{border-color:var(--green);}
-  .modal-btn{width:100%;padding:15px;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px;transition:all 0.2s;color:white;}
-  .player-modal .modal-btn{background:var(--blue);}
-  .player-modal .modal-btn:hover{background:var(--blue-dark);}
-  .owner-modal .modal-btn{background:var(--green);}
-  .owner-modal .modal-btn:hover{background:var(--green-dark);}
-  .modal-footer-link{text-align:center;margin-top:16px;font-size:13px;color:var(--muted);}
-  .modal-footer-link a{font-weight:600;text-decoration:none;cursor:pointer;}
-  .player-modal .modal-footer-link a{color:var(--blue);}
-  .owner-modal .modal-footer-link a{color:var(--green);}
-  .divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;}
-  .divider::before,.divider::after{content:'';flex:1;height:1px;background:#E5E7EB;}
-  /* PIN BOX */
-  .pin-row{display:flex;gap:12px;justify-content:center;margin:16px 0;}
-  .pin-row input{width:60px;height:64px;text-align:center;font-size:26px;font-weight:700;border:1.5px solid var(--border);border-radius:12px;outline:none;font-family:'Rajdhani',sans-serif;color:var(--text);transition:border-color 0.2s;-webkit-text-security:disc;}
-  .pin-row input:focus{border-color:var(--blue);}
-  .step{display:none;}
-  .step.active{display:block;}
-  .back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:4px;font-family:'DM Sans',sans-serif;}
-  .tag-new{display:inline-block;background:#D1FAE5;color:#065F46;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;letter-spacing:0.5px;}
-  .err-msg{color:#EF4444;font-size:13px;text-align:center;margin-top:8px;min-height:20px;}
-  .modal-btn:disabled{opacity:0.6;cursor:not-allowed;}
+  footer{text-align:center;padding:20px 16px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:white;}
+  .footer-disclaimer{font-size:11px;color:#9CA3AF;line-height:1.6;max-width:420px;margin:0 auto 12px;padding:0 12px;}
+  .footer-contact{font-size:12px;color:var(--muted);margin-bottom:12px;}
+  .footer-links{display:flex;justify-content:center;gap:16px;margin-top:10px;}
+  .footer-link{font-size:11px;color:#9CA3AF;text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:20px;}
+  .footer-link:hover{color:var(--blue);border-color:var(--blue);}
+  .footer-copy{font-size:11px;color:#9CA3AF;margin-top:10px;}
 </style>
 </head>
 <body>
 <header><div class="logo">Sport<span>Book</span></div></header>
 
 <div class="hero">
-  <span class="hero-icon">🏸</span>
-  <h1>Book Your Court<br>Instantly</h1>
-  <p>Find & book badminton, tennis, pickleball<br>courts near you — pay online, slot guaranteed</p>
+  <span class="hero-icons">🀄 🏸 🎾 🏊</span>
+  <h1>Book Your Game<br>Instantly</h1>
+  <p>Find clubs, book seats and courts<br>across multiple sports — all in one place</p>
+  <div class="hero-games">
+    <span class="hero-game-pill live">🀄 Mahjong — Live</span>
+    <span class="hero-game-pill">🏸 Badminton — Soon</span>
+    <span class="hero-game-pill">🎾 Tennis — Soon</span>
+    <span class="hero-game-pill">🏊 Swimming — Soon</span>
+  </div>
 </div>
 
 <div class="choose-section">
   <p class="choose-label">Who are you?</p>
   <div class="role-cards">
-    <div class="role-card player" onclick="openModal('player')">
+    <a class="role-card player" href="/select-game.html?role=player">
       <div class="role-icon">🏃</div>
       <div class="role-info">
         <div class="role-title">I'm a Player</div>
-        <div class="role-desc">Find courts, book slots, pay online</div>
+        <div class="role-desc">Find clubs, book your seat, track availability</div>
       </div>
       <div class="role-arrow">→</div>
-    </div>
-    <div class="role-card owner" onclick="openModal('owner')">
+    </a>
+    <a class="role-card owner" href="/select-game.html?role=owner">
       <div class="role-icon">🏟️</div>
       <div class="role-info">
         <div class="role-title">I'm a Venue Owner <span class="tag-new">PARTNER</span></div>
-        <div class="role-desc">Manage courts, slots & bookings</div>
+        <div class="role-desc">Manage your club, members & bookings</div>
       </div>
       <div class="role-arrow" style="background:var(--green)">→</div>
-    </div>
+    </a>
   </div>
 </div>
 
 <div class="features">
   <div class="feat"><div class="feat-icon">⚡</div><div class="feat-text">Instant<br>Confirm</div></div>
-  <div class="feat"><div class="feat-icon">🔒</div><div class="feat-text">Secure<br>Payments</div></div>
+  <div class="feat"><div class="feat-icon">🀄</div><div class="feat-text">Mahjong<br>Clubs</div></div>
   <div class="feat"><div class="feat-icon">📱</div><div class="feat-text">No App<br>Needed</div></div>
   <div class="feat"><div class="feat-icon">🎯</div><div class="feat-text">Slot<br>Guaranteed</div></div>
 </div>
 
-<footer>© 2026 SportBook · Vadodara · All rights reserved</footer>
-
-<!-- PLAYER MODAL -->
-<div class="modal-overlay player-modal" id="playerModal" onclick="closeOnBg(event,'playerModal')">
-  <div class="modal">
-    <div class="modal-handle"></div>
-
-    <!-- Step 1: Phone -->
-    <div class="step active" id="p-step1">
-      <div class="modal-title">🏃 Player Login</div>
-      <div class="modal-sub">Enter your mobile number to continue</div>
-      <div class="input-group">
-        <label>Mobile Number</label>
-        <input type="tel" id="playerPhone" placeholder="98765 43210" maxlength="10" inputmode="numeric">
-      </div>
-      <div class="err-msg" id="p-err1"></div>
-      <button class="modal-btn" onclick="checkPlayerPhone()">Continue →</button>
-    </div>
-
-    <!-- Step 2a: Existing user — enter PIN -->
-    <div class="step" id="p-step2">
-      <button class="back-btn" onclick="goStep('p-step1','p-step2')">← Back</button>
-      <div class="modal-title">Enter Your PIN</div>
-      <div class="modal-sub" id="p-pin-sub">Welcome back! Enter your 4-digit PIN</div>
-      <div class="pin-row">
-        <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'player')">
-        <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'player')">
-        <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'player')">
-        <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'player')">
-      </div>
-      <div class="err-msg" id="p-err2"></div>
-      <button class="modal-btn" onclick="verifyPlayerPIN()">Login →</button>
-      <div class="modal-footer-link"><a onclick="goStep('p-step3','p-step2')">Forgot PIN?</a></div>
-    </div>
-
-    <!-- Step 2b: New user — register -->
-    <div class="step" id="p-step3">
-      <button class="back-btn" onclick="goStep('p-step1','p-step3')">← Back</button>
-      <div class="modal-title">Create Account</div>
-      <div class="modal-sub">First time here! Set up your profile</div>
-      <div class="input-group">
-        <label>Your Name</label>
-        <input type="text" id="playerName" placeholder="Rajesh Patel">
-      </div>
-      <div class="input-group">
-        <label>Set 4-Digit PIN</label>
-        <div class="pin-row" style="justify-content:flex-start;margin:0;">
-          <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'new')" id="np1">
-          <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'new')" id="np2">
-          <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'new')" id="np3">
-          <input type="password" maxlength="1" inputmode="numeric" oninput="pinNext(this,'new')" id="np4">
-        </div>
-      </div>
-      <div class="err-msg" id="p-err3"></div>
-      <button class="modal-btn" onclick="registerPlayer()">Create Account →</button>
-    </div>
-
-    <!-- Step 4: Forgot PIN -->
-    <div class="step" id="p-step4">
-      <button class="back-btn" onclick="goStep('p-step2','p-step4')">← Back</button>
-      <div class="modal-title">Reset PIN</div>
-      <div class="modal-sub">Contact your last venue owner to reset, or call SportBook support</div>
-      <div style="background:#FEF3C7;border-radius:12px;padding:16px;font-size:13px;color:#92400E;line-height:1.6;">
-        📞 SportBook Support<br>
-        <strong>support@sportbook.in</strong><br>
-        We'll verify your identity and reset your PIN within 2 hours.
-      </div>
-      <button class="modal-btn" style="margin-top:16px;" onclick="goStep('p-step1','p-step4')">Back to Login</button>
-    </div>
-
+<footer>
+  <div class="footer-disclaimer">
+    SportBook is a technology platform only. We do not collect or process any payments. All bookings, fees, and cancellations are managed directly by individual clubs and organisers.
   </div>
-</div>
-
-<!-- OWNER MODAL -->
-<div class="modal-overlay owner-modal" id="ownerModal" onclick="closeOnBg(event,'ownerModal')">
-  <div class="modal">
-    <div class="modal-handle"></div>
-
-    <!-- Step 1: Login -->
-    <div class="step active" id="o-step1">
-      <div class="modal-title">🏟️ Owner Login</div>
-      <div class="modal-sub">Access your venue dashboard</div>
-      <div class="input-group">
-        <label>Email Address</label>
-        <input type="email" id="ownerEmail" placeholder="you@example.com">
-      </div>
-      <div class="input-group">
-        <label>Password</label>
-        <input type="password" id="ownerPassword" placeholder="••••••••">
-      </div>
-      <div class="err-msg" id="o-err1"></div>
-      <button class="modal-btn" id="ownerLoginBtn" onclick="ownerLogin()">Login to Dashboard →</button>
-      <div class="divider">or</div>
-      <div class="modal-footer-link">Forgot password? <a onclick="goStep('o-step3','o-step1')">Reset here</a></div>
-      <div class="modal-footer-link" style="margin-top:8px">New venue? <a onclick="goStep('o-step2','o-step1')">Register as Partner →</a></div>
-    </div>
-
-    <!-- Step 2: Register -->
-    <div class="step" id="o-step2">
-      <button class="back-btn" onclick="goStep('o-step1','o-step2')">← Back</button>
-      <div class="modal-title">Register Venue</div>
-      <div class="modal-sub">We'll review & approve within 24 hrs</div>
-      <div class="input-group"><label>Your Name</label><input type="text" id="ownerName" placeholder="Rajesh Patel"></div>
-      <div class="input-group"><label>Venue Name</label><input type="text" id="venueName" placeholder="Smash Arena"></div>
-      <div class="input-group"><label>City / Area</label><input type="text" id="venueCity" placeholder="Fatehgunj, Vadodara"></div>
-      <div class="input-group"><label>Mobile Number</label><input type="tel" id="ownerPhone" placeholder="98765 43210" maxlength="10" inputmode="numeric"></div>
-      <div class="input-group"><label>Email Address</label><input type="email" id="ownerRegEmail" placeholder="you@example.com"></div>
-      <div class="input-group"><label>Password</label><input type="password" id="ownerRegPassword" placeholder="Min 8 characters"></div>
-      <div class="err-msg" id="o-err2"></div>
-      <button class="modal-btn" id="ownerRegBtn" onclick="ownerRegister()">Submit for Approval →</button>
-    </div>
-
-    <!-- Step 3: Forgot Password -->
-    <div class="step" id="o-step3">
-      <button class="back-btn" onclick="goStep('o-step1','o-step3')">← Back</button>
-      <div class="modal-title">Reset Password</div>
-      <div class="modal-sub">We'll send a reset link to your email</div>
-      <div class="input-group"><label>Email Address</label><input type="email" id="ownerResetEmail" placeholder="you@example.com"></div>
-      <div class="err-msg" id="o-err3"></div>
-      <button class="modal-btn" onclick="ownerResetPassword()">Send Reset Link →</button>
-    </div>
-
+  <div class="footer-contact">
+    📧 vkvcoder.support@gmail.com &nbsp;|&nbsp; 📞 9327243611
   </div>
-</div>
-
-<script>
-const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
-const TELEGRAM_CHAT = '8507770594';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let playerPhone = '';
-
-function openModal(role) {
-  document.getElementById(role==='player'?'playerModal':'ownerModal').classList.add('active');
-  document.body.style.overflow='hidden';
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-  document.body.style.overflow='';
-}
-function closeOnBg(e,id){ if(e.target===e.currentTarget) closeModal(id); }
-function goStep(show,hide){
-  document.getElementById(hide).classList.remove('active');
-  document.getElementById(show).classList.add('active');
-}
-function setErr(id,msg){ document.getElementById(id).textContent=msg; }
-
-function pinNext(input, role) {
-  input.value = input.value.replace(/\D/g,'');
-  if (input.value && input.nextElementSibling && input.nextElementSibling.tagName==='INPUT') {
-    input.nextElementSibling.focus();
-  }
-}
-
-function getPIN(rowId) {
-  return [...document.querySelectorAll(`#${rowId} .pin-row input`)].map(i=>i.value).join('');
-}
-
-// ── PLAYER FLOW ──────────────────────────────────────────────
-async function checkPlayerPhone() {
-  const phone = document.getElementById('playerPhone').value.trim();
-  if (phone.length !== 10) { setErr('p-err1','Enter valid 10-digit mobile number'); return; }
-  setErr('p-err1','');
-  playerPhone = phone;
-  const { data } = await sb.from('sz_users').select('id,name,pin').eq('phone', phone).maybeSingle();
-  if (data && data.pin) {
-    document.getElementById('p-pin-sub').textContent = `Welcome back ${data.name}! Enter your 4-digit PIN`;
-    goStep('p-step2','p-step1');
-    setTimeout(()=>document.querySelector('#p-step2 .pin-row input').focus(),100);
-  } else {
-    goStep('p-step3','p-step1');
-    setTimeout(()=>document.getElementById('playerName').focus(),100);
-  }
-}
-
-async function verifyPlayerPIN() {
-  const pin = getPIN('p-step2');
-  if (pin.length < 4) { setErr('p-err2','Enter 4-digit PIN'); return; }
-  setErr('p-err2','');
-
-  const { data } = await sb.from('sz_users').select('id,name,pin').eq('phone', playerPhone).maybeSingle();
-  if (!data || data.pin !== pin) {
-    setErr('p-err2','Incorrect PIN. Try again.');
-    document.querySelectorAll('#p-step2 .pin-row input').forEach(i=>i.value='');
-    document.querySelector('#p-step2 .pin-row input').focus();
-    return;
-  }
-  // Save to localStorage and redirect
-  localStorage.setItem('sb_phone', playerPhone);
-  localStorage.setItem('sb_name', data.name);
-  closeModal('playerModal');
-  window.location.href = 'booking/index.html';
-}
-
-async function registerPlayer() {
-  const name = document.getElementById('playerName').value.trim();
-  const pin  = [document.getElementById('np1').value,
-                document.getElementById('np2').value,
-                document.getElementById('np3').value,
-                document.getElementById('np4').value].join('');
-  if (!name) { setErr('p-err3','Enter your name'); return; }
-  if (pin.length < 4) { setErr('p-err3','Enter 4-digit PIN'); return; }
-  setErr('p-err3','');
-
-  const { error } = await sb.from('sz_users').insert({ name, phone: playerPhone, pin });
-  if (error) { setErr('p-err3','Error creating account. Try again.'); return; }
-
-  localStorage.setItem('sb_phone', playerPhone);
-  localStorage.setItem('sb_name', name);
-  closeModal('playerModal');
-  window.location.href = 'booking/index.html';
-}
-
-// ── OWNER FLOW ───────────────────────────────────────────────
-async function ownerLogin() {
-  const email = document.getElementById('ownerEmail').value.trim();
-  const pass  = document.getElementById('ownerPassword').value;
-  if (!email||!pass) { setErr('o-err1','Enter email and password'); return; }
-  setErr('o-err1','');
-  document.getElementById('ownerLoginBtn').disabled = true;
-  document.getElementById('ownerLoginBtn').textContent = 'Logging in...';
-
-  const { data } = await sb.from('sz_owners').select('*').eq('email', email).eq('password', pass).maybeSingle();
-
-  document.getElementById('ownerLoginBtn').disabled = false;
-  document.getElementById('ownerLoginBtn').textContent = 'Login to Dashboard →';
-
-  if (!data) { setErr('o-err1','Invalid email or password'); return; }
-  if (!data.is_approved) { setErr('o-err1','Account pending approval'); return; }
-
-  localStorage.setItem('owner_zone_id', data.zone_id);
-  localStorage.setItem('owner_venue_name', data.venue_name);
-  closeModal('ownerModal');
-  window.location.href = 'owner/index.html';
-
-}
-
-async function ownerRegister() {
-  const name  = document.getElementById('ownerName').value.trim();
-  const venue = document.getElementById('venueName').value.trim();
-  const city  = document.getElementById('venueCity').value.trim();
-  const phone = document.getElementById('ownerPhone').value.trim();
-  const email = document.getElementById('ownerRegEmail').value.trim();
-  const pass  = document.getElementById('ownerRegPassword').value;
-
-  if (!name||!venue||!city||!phone||!email||!pass) { setErr('o-err2','Please fill all fields'); return; }
-  if (phone.length!==10) { setErr('o-err2','Enter valid 10-digit mobile'); return; }
-  if (pass.length<8)     { setErr('o-err2','Password must be at least 8 characters'); return; }
-  setErr('o-err2','');
-  document.getElementById('ownerRegBtn').disabled=true;
-  document.getElementById('ownerRegBtn').textContent='Submitting...';
-
-  // Create Supabase auth user
-  const { data: authData, error: authErr } = await sb.auth.signUp({ email, password: pass });
-  if (authErr) { setErr('o-err2', authErr.message); document.getElementById('ownerRegBtn').disabled=false; document.getElementById('ownerRegBtn').textContent='Submit for Approval →'; return; }
-
-  // Save owner registration (pending approval)
-  await sb.from('sz_owners').insert({
-    auth_id: authData.user?.id,
-    owner_name: name, venue_name: venue,
-    city, phone, email, is_approved: false
-  });
-
-  // Notify admin via Telegram
-  notifyTelegram(`🏟️ NEW OWNER REGISTRATION\n\nVenue: ${venue}\nOwner: ${name}\nPhone: ${phone}\nEmail: ${email}\nCity: ${city}\n\nGo to Supabase → sz_owners → set is_approved = true`);
-
-  goStep('o-step1','o-step2');
-  alert(`Registration submitted!\n\nVenue: ${venue}\nWe'll review and approve within 24 hours.\nYou'll receive an email at ${email}.`);
-  document.getElementById('ownerRegBtn').disabled=false;
-  document.getElementById('ownerRegBtn').textContent='Submit for Approval →';
-}
-
-async function ownerResetPassword() {
-  const email = document.getElementById('ownerResetEmail').value.trim();
-  if (!email) { setErr('o-err3','Enter your email address'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://sportbook.in/owner/' });
-  if (error) { setErr('o-err3', error.message); return; }
-  alert(`Reset link sent to ${email}\nCheck your inbox!`);
-  goStep('o-step1','o-step3');
-}
-
-function notifyTelegram(msg) {
-  if (!TELEGRAM_BOT || TELEGRAM_BOT==='YOUR_TELEGRAM_BOT_TOKEN') return;
-  fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg })
-  }).catch(()=>{});
-}
-</script>
+  <div class="footer-links">
+    <a href="/admin" class="footer-link">🔐 Admin Login</a>
+    <a href="/select-game.html?role=owner" class="footer-link">🏯 Organiser Login</a>
+  </div>
+  <div class="footer-copy">© 2026 SportBook · Vadodara · All rights reserved</div>
+</footer>
 </body>
 </html>
