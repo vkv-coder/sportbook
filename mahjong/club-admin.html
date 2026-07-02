@@ -308,12 +308,12 @@ function verifyForgotOTP(){
 }
 
 async function adminLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value.trim();
+  var email=document.getElementById('login-email').value.trim();
+  var password=document.getElementById('login-password').value.trim();
   if(!email||!password){showMsg('login-msg','Enter email and password.','error');return;}
   showMsg('login-msg','Logging in...','info');
   try{
-    const clubs=await sb(`mj_clubs?email=eq.${encodeURIComponent(email)}&select=*`);
+    var clubs=await sb('mj_clubs?email=eq.'+encodeURIComponent(email)+'&select=*');
     if(!clubs.length){showMsg('login-msg','Club not found.','error');return;}
     if(clubs[0].admin_password!==password){showMsg('login-msg','Incorrect password.','error');return;}
     if(clubs[0].status==='pending'){showMsg('login-msg','Club approval pending. Please wait for SportBook admin to approve.','warn');return;}
