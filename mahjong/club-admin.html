@@ -517,22 +517,27 @@ async function loadSessions(){
       const isFull=count>=4;
       const tableWaitlist=waitlist.filter(w=>w.slot_id===s.slot_id&&w.table_number===s.table_number);
       const emailList=players.map(p=>p?.email).filter(Boolean).join(',');
-      const waMsg=encodeURIComponent(`🀄 Table ${s.table_number} — ${club.club_name}\nDate: ${date}\nTime: ${slotLabel}`);
-      return`<div class="session-item">
-        <div class="session-header">
-          <div class="session-title">Table ${s.table_number} · ${slotLabel}</div>
-          <span class="badge ${isFull?'badge-full':'badge-filling'}">${isFull?'FULL':count+'/4'}</span>
-        </div>
-        <div style="margin-bottom:8px;">
-          ${players.map((p,i)=>`<div style="font-size:12px;color:var(--text);margin-bottom:3px;"><span style="color:var(--muted);">P${i+1}</span> ${p?.name||'—'} · ${p?.mobile||''}</div>`).join('')}
-          ${Array(4-count).fill(0).map((_,i)=>`<div style="font-size:12px;color:#555;margin-bottom:3px;"><span style="color:var(--muted);">P${count+i+1}</span> — empty</div>`).join('')}
-        </div>
-        ${tableWaitlist.length?`<div style="font-size:11px;color:#bb8fce;margin-bottom:8px;">⏳ ${tableWaitlist.length} on waitlist</div>`:''}
-        ${isFull?`<div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn btn-sm btn-whatsapp">💬 WhatsApp</a>
-          ${emailList?`<a href="mailto:${emailList}?subject=Table Ready" class="btn btn-blue btn-sm">✉️ Email</a>`:''}
-        </div>`:''}
-      </div>`;
+      const waMsg=encodeURIComponent('🀄 Table '+s.table_number+' — '+club.club_name+'\nDate: '+date+'\nTime: '+slotLabel);
+      // Build reassign options for each player
+      let playerRowsHtml=players.map((p,i)=>{
+        if(!p)return '';
+        let tableOpts='';
+        for(let t=1;t<=club.total_tables;t++){tableOpts+='<option value="'+t+'" '+(t===s.table_number?'selected':'')+'>'+'Table '+t+'</option>';}
+        let waNotify=encodeURIComponent('Hi '+p.name+'! Your Mahjong seat has been confirmed at '+club.club_name+'. Date: '+date+', Time: '+slotLabel+'. Please check your table assignment. See you there!');
+        return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap;">'
+          +'<span style="font-size:12px;color:var(--text);flex:1;min-width:120px;">'+p.name+' ('+p.mobile+')</span>'
+          +'<select onchange="reassignPlayer(''+p.id+'',this.value,''+slotId+'',''+date+'')" style="padding:4px 8px;font-size:11px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;">'+tableOpts+'</select>'
+          +'<a href="https://wa.me/91'+(p.whatsapp||p.mobile)+'?text='+waNotify+'" target="_blank" class="btn btn-sm btn-whatsapp" style="padding:4px 8px;font-size:11px;">💬</a>'
+          +'</div>';
+      }).join('');
+      return '<div class="session-item">'
+        +'<div class="session-header"><div class="session-title">Table '+s.table_number+' · '+slotLabel+'</div><span class="badge '+(isFull?'badge-full':'badge-filling')+'">'+(isFull?'FULL':count+'/4')+'</span></div>'
+        +'<div style="margin-bottom:10px;">'+playerRowsHtml
+        +Array(4-count).fill(0).map((_,i)=>'<div style="font-size:12px;color:#555;margin-bottom:3px;"><span style="color:var(--muted);">P'+(count+i+1)+'</span> — empty</div>').join('')
+        +'</div>'
+        +(tableWaitlist.length?'<div style="font-size:11px;color:#bb8fce;margin-bottom:8px;">⏳ '+tableWaitlist.length+' on waitlist</div>':'')
+        +(isFull?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"><a href="https://wa.me/?text='+waMsg+'" target="_blank" class="btn btn-sm btn-whatsapp">💬 All WhatsApp</a>'+(emailList?'<a href="mailto:'+emailList+'?subject=Table Ready" class="btn btn-blue btn-sm">✉️ Email All</a>':'')+'</div>':'')
+        +'</div>';
     }).join('');
   }catch(e){document.getElementById('sessions-loading').style.display='none';}
 }
@@ -677,6 +682,16 @@ async function saveSettings(){
     localStorage.setItem('mj_admin_club',JSON.stringify(club));
     showMsg('settings-msg','✅ Settings saved!','success');
   }catch(e){showMsg('settings-msg','Error: '+e.message,'error');}
+}
+
+async function reassignPlayer(playerId, newTableNo, slotId, date){
+  if(!confirm('Move this player to Table '+newTableNo+'?'))return;
+  try{
+    // Update booking table number
+    await sbPatch('mj_bookings?player_id=eq.'+playerId+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed',{table_number:parseInt(newTableNo)});
+    // Reload sessions
+    loadSessions();
+  }catch(e){alert('Error: '+e.message);}
 }
 
 function switchTab(tabId){

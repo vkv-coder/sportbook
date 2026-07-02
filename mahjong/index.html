@@ -33,24 +33,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .club-avail-name{font-size:15px;font-weight:600;color:var(--gold-light);}
 .club-avail-meta{font-size:11px;color:var(--muted);margin-top:2px;}
 .club-avail-body{padding:14px 16px;}
-.slot-row{margin-bottom:14px;}
-.slot-time{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px;}
-.tables-wrap{display:flex;flex-wrap:wrap;gap:8px;}
-.table-chip{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid;cursor:pointer;transition:all 0.2s;min-width:100px;text-align:center;}
-.table-chip .seats{font-size:10px;font-weight:400;display:block;margin-top:2px;}
-.chip-open{background:#1a3a1a;border-color:var(--green);color:#58d68d;}
-.chip-open:hover{background:var(--green);color:#fff;}
-.chip-filling{background:#3a2a1a;border-color:var(--orange);color:#f0b27a;}
-.chip-filling:hover{background:var(--orange);color:#fff;}
-.chip-full{background:#2a1a1a;border-color:#555;color:#777;}
-.chip-mine{background:#1a2a3a;border-color:var(--blue);color:#5dade2;}
-.chip-blocked{background:#2a1a2a;border-color:#666;color:#888;cursor:not-allowed;}
-.chip-waitlist{background:#2a1a3a;border-color:#8e44ad;color:#bb8fce;cursor:pointer;}
-.chip-waitlist:hover{background:#8e44ad;color:#fff;}
-.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
-.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
-.legend-dot{width:8px;height:8px;border-radius:50%;}
-.dot-open{background:var(--green);}.dot-filling{background:var(--orange);}.dot-full{background:#555;}.dot-mine{background:var(--blue);}.dot-wait{background:#8e44ad;}
+.slot-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.slot-time{font-size:14px;font-weight:600;color:var(--gold);margin-bottom:6px;}
+.slot-seats{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.slot-seats span{color:var(--text);font-weight:600;}
+.btn-book-seat{width:100%;padding:11px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
+.btn-book-seat:hover{background:#1e8449;}
+.btn-book-seat:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-booked{width:100%;padding:11px;border:none;border-radius:8px;background:#1a2a3a;color:#5dade2;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--blue);}
+.btn-full{width:100%;padding:11px;border:none;border-radius:8px;background:#2a1a3a;color:#bb8fce;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid #8e44ad;}
+.btn-blocked{width:100%;padding:11px;border:1px solid #555;border-radius:8px;background:#1a1a2a;color:#666;font-size:13px;font-weight:600;cursor:not-allowed;font-family:'Inter',sans-serif;}
 .status-box{border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px;text-align:center;}
 .status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
 .status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
@@ -74,7 +66,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .btn-gold{background:var(--gold);color:#0f0e17;}.btn-gold:hover{background:var(--gold-light);}
 .btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
 .btn-red{background:var(--red);color:#fff;}
-.btn-full{width:100%;}
+.btn-full-w{width:100%;}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
 .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
 .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
@@ -83,20 +75,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .empty-state .empty-icon{font-size:40px;margin-bottom:12px;}
 .empty-state p{font-size:13px;line-height:1.6;}
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;margin-top:16px;}
-/* BALANCE CARD */
-.balance-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
-.balance-label{font-size:12px;color:var(--muted);}
-.balance-val{font-size:22px;font-weight:700;color:var(--gold);}
-.balance-club{font-size:11px;color:var(--muted);margin-top:2px;}
-/* SEAT VIEW */
-.seats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
-.seat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
-.seat-num{font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600;}
-.seat-name{font-size:13px;font-weight:600;color:var(--text);}
-.seat-empty{font-size:12px;color:#555;font-style:italic;}
-.seat-mine{border-color:var(--blue);background:#1a2a3a;}
-.seat-mine .seat-name{color:#5dade2;}
-/* MODAL */
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.form-group input,.form-group select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);}
+.form-group input::placeholder{color:var(--muted);}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal{background:var(--card);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
@@ -104,11 +87,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:16px;}
 .modal-actions{display:flex;gap:10px;margin-top:16px;}
 .modal-actions .btn{flex:1;}
-.form-group{margin-bottom:12px;}
-.form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
-.form-group input,.form-group select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;}
-.form-group input:focus,.form-group select:focus{border-color:var(--gold);}
-.form-group input::placeholder{color:var(--muted);}
 </style>
 </head>
 <body>
@@ -139,13 +117,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <input type="date" class="date-input" id="avail-date"/>
       <button class="btn-check" onclick="loadAvailability()">Check Availability →</button>
     </div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot dot-open"></div>Open</div>
-      <div class="legend-item"><div class="legend-dot dot-filling"></div>Filling</div>
-      <div class="legend-item"><div class="legend-dot dot-full"></div>Full</div>
-      <div class="legend-item"><div class="legend-dot dot-mine"></div>My Seat</div>
-      <div class="legend-item"><div class="legend-dot dot-wait"></div>Waitlist</div>
-    </div>
     <div id="avail-loading" style="display:none;" class="loading"><div class="spinner"></div>Checking clubs...</div>
     <div id="avail-results"></div>
   </div>
@@ -154,33 +125,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="tab-content" id="tab-group">
     <div class="discover-card">
       <div class="discover-name" style="margin-bottom:4px;">👥 Group Table Request</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Want to sit with 3 specific friends? Send a group request to your organiser. Enter their mobile numbers below.</div>
-      <div class="form-group">
-        <label>Select Club</label>
-        <select id="grp-club"></select>
-      </div>
-      <div class="form-group">
-        <label>Select Date</label>
-        <input type="date" id="grp-date"/>
-      </div>
-      <div class="form-group">
-        <label>Select Time Slot</label>
-        <select id="grp-slot"></select>
-      </div>
-      <div class="form-group">
-        <label>Friend 2 Mobile</label>
-        <input type="tel" id="grp-m2" placeholder="10-digit mobile" maxlength="10"/>
-      </div>
-      <div class="form-group">
-        <label>Friend 3 Mobile</label>
-        <input type="tel" id="grp-m3" placeholder="10-digit mobile" maxlength="10"/>
-      </div>
-      <div class="form-group">
-        <label>Friend 4 Mobile</label>
-        <input type="tel" id="grp-m4" placeholder="10-digit mobile" maxlength="10"/>
-      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Want to sit with 3 specific friends? Send a group request to your organiser.</div>
+      <div class="form-group"><label>Select Club</label><select id="grp-club"></select></div>
+      <div class="form-group"><label>Select Date</label><input type="date" id="grp-date"/></div>
+      <div class="form-group"><label>Select Time Slot</label><select id="grp-slot"></select></div>
+      <div class="form-group"><label>Friend 2 Mobile</label><input type="tel" id="grp-m2" placeholder="10-digit mobile" maxlength="10"/></div>
+      <div class="form-group"><label>Friend 3 Mobile</label><input type="tel" id="grp-m3" placeholder="10-digit mobile" maxlength="10"/></div>
+      <div class="form-group"><label>Friend 4 Mobile</label><input type="tel" id="grp-m4" placeholder="10-digit mobile" maxlength="10"/></div>
       <div id="grp-msg"></div>
-      <button class="btn btn-gold btn-full" onclick="sendGroupRequest()">Send Group Request →</button>
+      <button class="btn btn-gold btn-full-w" onclick="sendGroupRequest()">Send Group Request →</button>
     </div>
     <div class="section-label">My Group Requests</div>
     <div id="grp-list-loading" class="loading"><div class="spinner"></div>Loading...</div>
@@ -207,17 +160,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
 </div>
 
-<!-- SEAT VIEW MODAL -->
-<div class="modal-overlay" id="seat-modal">
+<!-- CANCEL BOOKING MODAL -->
+<div class="modal-overlay" id="cancel-modal">
   <div class="modal">
-    <div class="modal-title">🀄 Table Details</div>
-    <div class="modal-sub" id="seat-modal-sub"></div>
-    <div id="seat-modal-seats"></div>
-    <div id="seat-modal-actions"></div>
-    <div id="seat-modal-msg"></div>
+    <div class="modal-title">Cancel Booking</div>
+    <div class="modal-sub" id="cancel-modal-sub"></div>
+    <div id="cancel-modal-msg"></div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeSeatModal()">Close</button>
-      <button class="btn btn-gold" id="seat-book-btn" style="display:none;" onclick="confirmBooking()">Book My Seat</button>
+      <button class="btn btn-outline" onclick="closeCancelModal()">Keep Booking</button>
+      <button class="btn btn-red" onclick="confirmCancel()">Yes, Cancel</button>
     </div>
   </div>
 </div>
@@ -246,7 +197,7 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const TG_BOT='8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
 const TG_CHAT='8507770594';
 let player=null,myClubs=[],myClubIds=[],slotsCache={},membershipsCache={};
-let pendingBooking=null,pendingWaitlist=null;
+let pendingCancel=null,pendingWaitlist=null;
 
 window.addEventListener('DOMContentLoaded',async()=>{
   const saved=localStorage.getItem('mj_player');
@@ -264,59 +215,49 @@ window.addEventListener('DOMContentLoaded',async()=>{
 });
 
 async function sb(path,method='GET',body=null){
-  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
   if(!res.ok){const e=await res.json();throw new Error(e.message||JSON.stringify(e));}
   return method==='DELETE'?null:res.json();
 }
 async function sbPatch(path,body){
-  return fetch(`${SB_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
 }
 async function tg(msg){
-  try{await fetch(`https://api.telegram.org/bot${TG_BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
+  try{await fetch('https://api.telegram.org/bot'+TG_BOT+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
 }
-function showMsg(id,msg,type){document.getElementById(id).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
+function showMsg(id,msg,type){document.getElementById(id).innerHTML='<div class="status-box status-'+type+'">'+msg+'</div>';}
 
 function switchTab(tabId){
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
   document.getElementById(tabId).classList.add('active');
-  const idx=['tab-availability','tab-group','tab-my-clubs','tab-bookings','tab-discover'].indexOf(tabId);
+  var idx=['tab-availability','tab-group','tab-my-clubs','tab-bookings','tab-discover'].indexOf(tabId);
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
 }
 
 async function loadMyClubs(){
   document.getElementById('my-clubs-loading').style.display='block';
   try{
-    const mems=await sb(`mj_members?player_id=eq.${player.id}&status=eq.approved&select=club_id,slot_balance`);
-    myClubIds=mems.map(m=>m.club_id);
-    membershipsCache={};mems.forEach(m=>{membershipsCache[m.club_id]=m;});
+    var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id,slot_balance');
+    myClubIds=mems.map(function(m){return m.club_id;});
+    membershipsCache={};
+    mems.forEach(function(m){membershipsCache[m.club_id]=m;});
     if(!myClubIds.length){
       document.getElementById('my-clubs-loading').style.display='none';
       document.getElementById('my-clubs-list').innerHTML='<div class="empty-state"><div class="empty-icon">🏯</div><p>Not a member of any club yet.<br/>Go to Discover tab to join a club.</p></div>';
       renderBalanceBar();return;
     }
-    myClubs=await sb(`mj_clubs?id=in.(${myClubIds.join(',')})&status=eq.active&select=*&order=club_name.asc`);
-    for(const club of myClubs){
-      const slots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
-      slotsCache[club.id]=slots;
+    myClubs=await sb('mj_clubs?id=in.('+myClubIds.join(',')+')'+'&status=eq.active&select=*&order=club_name.asc');
+    for(var i=0;i<myClubs.length;i++){
+      var slots=await sb('mj_slots?club_id=eq.'+myClubs[i].id+'&is_active=eq.true&select=*&order=start_time.asc');
+      slotsCache[myClubs[i].id]=slots;
     }
     document.getElementById('my-clubs-loading').style.display='none';
-    const gL=g=>g==='male'?'👨 Male Only':g==='female'?'👩 Female Only':'👥 Mixed';
-    document.getElementById('my-clubs-list').innerHTML=myClubs.map(c=>{
-      const bal=membershipsCache[c.id]?.slot_balance||0;
-      return`<div class="discover-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="discover-name">🏯 ${c.club_name}</div>
-          <span class="badge ${c.gender_condition==='male'?'badge-male':c.gender_condition==='female'?'badge-female':'badge-mixed'}">${gL(c.gender_condition)}</span>
-        </div>
-        <div class="discover-meta">📍 <span>${c.city||'N/A'}</span></div>
-        <div class="discover-meta">🀄 Tables: <span>${c.total_tables}</span></div>
-        <div class="discover-meta">📞 WhatsApp: <span>${c.whatsapp_no||'N/A'}</span></div>
-        <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Member</span>
-          <span style="font-size:13px;color:var(--gold);font-weight:700;">🎫 ${bal} slots left</span>
-        </div>
-      </div>`;
+    document.getElementById('my-clubs-list').innerHTML=myClubs.map(function(c){
+      var bal=membershipsCache[c.id]?membershipsCache[c.id].slot_balance||0:0;
+      var gL=c.gender_condition==='male'?'👨 Male Only':c.gender_condition==='female'?'👩 Female Only':'👥 Mixed';
+      var bc=c.gender_condition==='male'?'badge-male':c.gender_condition==='female'?'badge-female':'badge-mixed';
+      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+c.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+( c.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+c.total_tables+'</span></div><div class="discover-meta">📞 WhatsApp: <span>'+(c.whatsapp_no||'N/A')+'</span></div><div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Member</span><span style="font-size:13px;color:var(--gold);font-weight:700;">🎫 '+bal+' slots left</span></div></div>';
     }).join('');
     renderBalanceBar();
     populateGroupClubSelect();
@@ -325,29 +266,26 @@ async function loadMyClubs(){
 
 function renderBalanceBar(){
   if(!myClubs.length){document.getElementById('balance-display').innerHTML='';return;}
-  const items=myClubs.map(c=>{
-    const bal=membershipsCache[c.id]?.slot_balance||0;
-    return`<div style="text-align:center;flex:1;"><div style="font-size:20px;font-weight:700;color:${bal<=3?'var(--red)':bal<=7?'var(--orange)':'var(--gold)'};">${bal}</div><div style="font-size:10px;color:var(--muted);">${c.club_name}</div></div>`;
+  var items=myClubs.map(function(c){
+    var bal=membershipsCache[c.id]?membershipsCache[c.id].slot_balance||0:0;
+    var col=bal<=3?'var(--red)':bal<=7?'var(--orange)':'var(--gold)';
+    return '<div style="text-align:center;flex:1;"><div style="font-size:20px;font-weight:700;color:'+col+';">'+bal+'</div><div style="font-size:10px;color:var(--muted);">'+c.club_name+'</div></div>';
   }).join('<div style="width:1px;background:var(--border);"></div>');
-  document.getElementById('balance-display').innerHTML=`
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;">
-      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;">🎫 My Slot Balance</div>
-      <div style="display:flex;gap:0;align-items:center;">${items}</div>
-    </div>`;
+  document.getElementById('balance-display').innerHTML='<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:600;">🎫 My Slot Balance</div><div style="display:flex;gap:0;align-items:center;">'+items+'</div></div>';
 }
 
 function populateGroupClubSelect(){
-  const sel=document.getElementById('grp-club');
-  sel.innerHTML='<option value="">Select club</option>'+myClubs.map(c=>`<option value="${c.id}">${c.club_name}</option>`).join('');
-  sel.onchange=()=>{
-    const clubId=sel.value;
-    const slots=slotsCache[clubId]||[];
-    document.getElementById('grp-slot').innerHTML='<option value="">Select slot</option>'+slots.map(s=>`<option value="${s.id}">${s.start_time} – ${s.end_time} (${s.day_of_week==='all'?'Every day':s.day_of_week})</option>`).join('');
+  var sel=document.getElementById('grp-club');
+  sel.innerHTML='<option value="">Select club</option>'+myClubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('');
+  sel.onchange=function(){
+    var clubId=sel.value;
+    var slots=slotsCache[clubId]||[];
+    document.getElementById('grp-slot').innerHTML='<option value="">Select slot</option>'+slots.map(function(s){return '<option value="'+s.id+'">'+s.start_time+' - '+s.end_time+' ('+( s.day_of_week==='all'?'Every day':s.day_of_week)+')</option>';}).join('');
   };
 }
 
 async function loadAvailability(){
-  const date=document.getElementById('avail-date').value;
+  var date=document.getElementById('avail-date').value;
   if(!date){alert('Please select a date.');return;}
   if(!myClubIds.length){
     document.getElementById('avail-results').innerHTML='<div class="empty-state"><div class="empty-icon">🏯</div><p>Not a member of any club yet.<br/>Go to Discover tab first.</p></div>';return;
@@ -355,240 +293,200 @@ async function loadAvailability(){
   document.getElementById('avail-loading').style.display='block';
   document.getElementById('avail-results').innerHTML='';
   try{
-    const d=new Date(date+'T00:00:00');
-    const days=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-    const dayName=days[d.getDay()];
-    const myBookingsToday=await sb(`mj_bookings?player_id=eq.${player.id}&booking_date=eq.${date}&status=eq.confirmed&select=slot_id`);
-    const myBookedSlotIds=myBookingsToday.map(b=>b.slot_id);
-    const myWaitlist=await sb(`mj_waitlist?player_id=eq.${player.id}&booking_date=eq.${date}&status=eq.waiting&select=slot_id,club_id,table_number`);
-    let html='';
-    for(const club of myClubs){
-      const slots=(slotsCache[club.id]||[]).filter(s=>{
+    var d=new Date(date+'T00:00:00');
+    var days=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    var dayName=days[d.getDay()];
+    var myBookingsToday=await sb('mj_bookings?player_id=eq.'+player.id+'&booking_date=eq.'+date+'&status=eq.confirmed&select=slot_id,club_id');
+    var myWaitlist=await sb('mj_waitlist?player_id=eq.'+player.id+'&booking_date=eq.'+date+'&status=eq.waiting&select=slot_id,club_id');
+    var html='';
+    for(var ci=0;ci<myClubs.length;ci++){
+      var club=myClubs[ci];
+      var slots=(slotsCache[club.id]||[]).filter(function(s){
         if(!s.day_of_week||s.day_of_week==='all')return true;
         return s.day_of_week.toLowerCase()===dayName;
       });
       if(!slots.length)continue;
-      const bookings=await sb(`mj_bookings?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.confirmed&select=*`);
-      let slotsHtml='';
-      for(const slot of slots){
-        const slotBookings=bookings.filter(b=>b.slot_id===slot.id);
-        const isSlotBookedByMe=myBookedSlotIds.includes(slot.id);
-        let tablesHtml='';
-        for(let t=1;t<=club.total_tables;t++){
-          const tb=slotBookings.filter(b=>b.table_number===t);
-          const count=tb.length;
-          const isMine=tb.some(b=>b.player_id===player.id);
-          const onWaitlist=myWaitlist.some(w=>w.slot_id===slot.id&&w.club_id===club.id&&w.table_number===t);
-          let cls='chip-open',label=`${count}/4`,clickFn=`openSeatModal('${club.id}','${club.club_name.replace(/'/g,"\\'")}','${slot.id}',${t},'${slot.start_time}–${slot.end_time}','${date}')`;
-          if(isMine){cls='chip-mine';label='✓ My Seat';}
-          else if(onWaitlist){cls='chip-waitlist';label='⏳ Waitlisted';}
-          else if(count>=4){cls='chip-full chip-waitlist';label='Full • Join Wait';clickFn=`openWaitlistModal('${club.id}','${slot.id}',${t},'${slot.start_time}–${slot.end_time}','${date}','${club.club_name.replace(/'/g,"\\'")}')`;} 
-          else if(isSlotBookedByMe){cls='chip-blocked';label='Slot taken';clickFn='';}
-          else if(count>0){cls='chip-filling';}
-          tablesHtml+=`<div class="table-chip ${cls}" ${clickFn?`onclick="${clickFn}"`:''}">Table ${t}<span class="seats">${label}</span></div>`;
+      var bookings=await sb('mj_bookings?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.confirmed&select=*');
+      var slotsHtml='';
+      for(var si=0;si<slots.length;si++){
+        var slot=slots[si];
+        var slotBookings=bookings.filter(function(b){return b.slot_id===slot.id;});
+        var totalBooked=slotBookings.length;
+        var isMineInSlot=slotBookings.some(function(b){return b.player_id===player.id;});
+        var myBookingInThisSlot=myBookingsToday.some(function(b){return b.slot_id===slot.id;});
+        var onWaitlist=myWaitlist.some(function(w){return w.slot_id===slot.id&&w.club_id===club.id;});
+        var seatsLeft=club.total_tables*4-totalBooked;
+        var bal=membershipsCache[club.id]?membershipsCache[club.id].slot_balance||0:0;
+        var btnHtml='';
+        if(isMineInSlot){
+          btnHtml='<button class="btn-booked" onclick="openCancelModal(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+ '\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\')">✓ Your Seat Booked — Cancel?</button>';
+        } else if(onWaitlist){
+          btnHtml='<button class="btn-booked" style="border-color:#8e44ad;color:#bb8fce;">⏳ On Waitlist</button>';
+        } else if(seatsLeft<=0){
+          btnHtml='<button class="btn-full" onclick="openWaitlistModal(\''+club.id+'\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\',\''+club.club_name.replace(/'/g,"\\'")+'\')">Full — Join Waitlist</button>';
+        } else if(myBookingInThisSlot){
+          btnHtml='<button class="btn-blocked">Already booked this time slot at another club</button>';
+        } else if(bal<=0){
+          btnHtml='<button class="btn-blocked">No slot balance — contact organiser</button>';
+        } else {
+          btnHtml='<button class="btn-book-seat" onclick="bookSeat(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\',this)">Book a Seat ('+seatsLeft+' available)</button>';
         }
-        slotsHtml+=`<div class="slot-row"><div class="slot-time">🕐 ${slot.start_time} – ${slot.end_time}</div><div class="tables-wrap">${tablesHtml}</div></div>`;
+        slotsHtml+='<div class="slot-row"><div class="slot-time">🕐 '+slot.start_time+' – '+slot.end_time+'</div><div class="slot-seats">Seats booked: <span>'+totalBooked+'/'+(club.total_tables*4)+'</span></div>'+btnHtml+'</div>';
       }
-      if(slotsHtml){html+=`<div class="club-avail-card"><div class="club-avail-header"><div class="club-avail-name">🏯 ${club.club_name}</div><div class="club-avail-meta">📍 ${club.city||''} · ${club.total_tables} tables</div></div><div class="club-avail-body">${slotsHtml}</div></div>`;}
+      if(slotsHtml){html+='<div class="club-avail-card"><div class="club-avail-header"><div class="club-avail-name">🏯 '+club.club_name+'</div><div class="club-avail-meta">📍 '+(club.city||'')+' · '+club.total_tables+' tables</div></div><div class="club-avail-body">'+slotsHtml+'</div></div>';}
     }
     document.getElementById('avail-loading').style.display='none';
-    document.getElementById('avail-results').innerHTML=html||'<div class="empty-state"><div class="empty-icon">🚫</div><p>No slots available on this day.</p></div>';
-  }catch(e){document.getElementById('avail-loading').style.display='none';document.getElementById('avail-results').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;}
+    document.getElementById('avail-results').innerHTML=html||'<div class="empty-state"><div class="empty-icon">🚫</div><p>No slots available on this day across your clubs.</p></div>';
+  }catch(e){document.getElementById('avail-loading').style.display='none';document.getElementById('avail-results').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';}
 }
 
-// SEAT VIEW MODAL
-async function openSeatModal(clubId,clubName,slotId,tableNo,timeLabel,date){
-  pendingBooking={clubId,clubName,slotId,tableNo,timeLabel,date};
-  document.getElementById('seat-modal-sub').textContent=`${clubName} · Table ${tableNo} · ${timeLabel} · ${date}`;
-  document.getElementById('seat-modal-msg').innerHTML='';
-  document.getElementById('seat-modal').classList.add('open');
-  document.getElementById('seat-modal-seats').innerHTML='<div class="loading"><div class="spinner"></div></div>';
-  document.getElementById('seat-modal-actions').innerHTML='';
-  document.getElementById('seat-book-btn').style.display='none';
-  try{
-    const bookings=await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=player_id`);
-    const playerIds=bookings.map(b=>b.player_id);
-    let playerNames={};
-    if(playerIds.length){
-      const players=await sb(`mj_players?id=in.(${playerIds.join(',')})&select=id,name`);
-      players.forEach(p=>{playerNames[p.id]=p.name;});
-    }
-    const count=bookings.length;
-    const isMine=bookings.some(b=>b.player_id===player.id);
-    let seatsHtml='<div class="seats-grid">';
-    for(let i=1;i<=4;i++){
-      const bid=bookings[i-1]?.player_id;
-      const isMe=bid===player.id;
-      seatsHtml+=`<div class="seat-box ${isMe?'seat-mine':''}">
-        <div class="seat-num">Seat ${i}</div>
-        ${bid?`<div class="seat-name">${isMe?'✓ You':playerNames[bid]||'Member'}</div>`:`<div class="seat-empty">Available</div>`}
-      </div>`;
-    }
-    seatsHtml+='</div>';
-    document.getElementById('seat-modal-seats').innerHTML=seatsHtml;
-    // Show book button only if seat available and not already booked
-    const bal=membershipsCache[clubId]?.slot_balance||0;
-    if(!isMine&&count<4){
-      if(bal<=0){
-        document.getElementById('seat-modal-actions').innerHTML='<div class="status-box status-warn">⚠️ No slot balance remaining. Contact your organiser to add slots.</div>';
-      } else {
-        document.getElementById('seat-book-btn').style.display='block';
-      }
-    }
-    if(isMine){
-      document.getElementById('seat-modal-actions').innerHTML=`<button class="btn btn-red btn-full" onclick="cancelFromModal()">Cancel My Booking</button>`;
-    }
-  }catch(e){document.getElementById('seat-modal-seats').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;}
-}
-
-function closeSeatModal(){document.getElementById('seat-modal').classList.remove('open');pendingBooking=null;}
-
-async function cancelFromModal(){
-  if(!pendingBooking)return;
-  if(!confirm('Cancel your booking for this seat?'))return;
-  const{clubId,slotId,tableNo,date}=pendingBooking;
-  try{
-    const bookings=await sb(`mj_bookings?player_id=eq.${player.id}&club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
-    if(!bookings.length){alert('Booking not found.');return;}
-    await sbPatch(`mj_bookings?id=eq.${bookings[0].id}`,{status:'cancelled'});
-    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`,{status:'filling'});
-    // Restore slot balance
-    const mem=membershipsCache[clubId];
-    if(mem){
-      const newBal=(mem.slot_balance||0)+1;
-      await sbPatch(`mj_members?player_id=eq.${player.id}&club_id=eq.${clubId}`,{slot_balance:newBal});
-      membershipsCache[clubId].slot_balance=newBal;
-    }
-    // Check waitlist and assign next person
-    await processWaitlist(clubId,slotId,tableNo,date);
-    closeSeatModal();
-    loadAvailability();
-    loadMyBookings();
-    renderBalanceBar();
-    alert('Booking cancelled. Slot balance restored.');
-  }catch(e){alert('Error: '+e.message);}
-}
-
-async function confirmBooking(){
-  if(!pendingBooking)return;
-  const btn=document.getElementById('seat-book-btn');
+async function bookSeat(clubId,clubName,slotId,timeLabel,date,btn){
   btn.disabled=true;btn.textContent='Booking...';
   try{
-    const{clubId,clubName,slotId,tableNo,date,timeLabel}=pendingBooking;
-    const fresh=await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id,player_id`);
-    if(fresh.length>=4){showMsg('seat-modal-msg','Table just got full! Choose another.',  'error');btn.disabled=false;btn.textContent='Book My Seat';return;}
-    const cross=await sb(`mj_bookings?player_id=eq.${player.id}&slot_id=eq.${slotId}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
-    if(cross.length>0){showMsg('seat-modal-msg','You already have a booking in this time slot at another club.','warn');btn.disabled=false;btn.textContent='Book My Seat';return;}
-    // Check balance
-    const bal=membershipsCache[clubId]?.slot_balance||0;
-    if(bal<=0){showMsg('seat-modal-msg','No slot balance. Contact your organiser.','warn');btn.disabled=false;btn.textContent='Book My Seat';return;}
-    await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:player.id,booking_date:date,status:'confirmed'});
+    var bal=membershipsCache[clubId]?membershipsCache[clubId].slot_balance||0:0;
+    if(bal<=0){btn.disabled=false;btn.textContent='Book a Seat';alert('No slot balance. Contact your organiser.');return;}
+    // Get all bookings for this slot at this club to find next available table
+    var slotBookings=await sb('mj_bookings?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed&select=table_number');
+    // Count seats per table
+    var tableCount={};
+    slotBookings.forEach(function(b){tableCount[b.table_number]=(tableCount[b.table_number]||0)+1;});
+    // Find first table with less than 4 seats (first empty first fill)
+    var club=myClubs.find(function(c){return c.id===clubId;});
+    var assignedTable=null;
+    for(var t=1;t<=club.total_tables;t++){
+      if((tableCount[t]||0)<4){assignedTable=t;break;}
+    }
+    if(!assignedTable){btn.disabled=false;btn.textContent='Book a Seat';alert('No seats available. All tables are full.');return;}
+    // Cross club check - same slot already booked elsewhere
+    var cross=await sb('mj_bookings?player_id=eq.'+player.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed&select=id');
+    if(cross.length>0){btn.disabled=false;btn.textContent='Book a Seat';alert('You already have a booking in this time slot at another club.');return;}
+    // Create booking
+    await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:assignedTable,player_id:player.id,booking_date:date,status:'confirmed'});
     // Deduct slot balance
-    const newBal=bal-1;
-    await sbPatch(`mj_members?player_id=eq.${player.id}&club_id=eq.${clubId}`,{slot_balance:newBal});
+    var newBal=bal-1;
+    await sbPatch('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId,{slot_balance:newBal});
     membershipsCache[clubId].slot_balance=newBal;
-    const newCount=fresh.length+1;
-    // Update session
-    const sessions=await sb(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&select=*`);
-    const allPids=[...fresh.map(b=>b.player_id),player.id];
-    const sd={player1_id:allPids[0]||null,player2_id:allPids[1]||null,player3_id:allPids[2]||null,player4_id:allPids[3]||null,status:newCount>=4?'full':'filling'};
-    if(sessions.length>0){await sbPatch(`mj_table_sessions?id=eq.${sessions[0].id}`,sd);}
-    else{await sb('mj_table_sessions','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,booking_date:date,...sd});}
-    if(newCount>=4){await tg(`🀄 <b>TABLE FULL</b>\n\nClub: <b>${clubName}</b>\nTable: <b>${tableNo}</b>\nDate: <b>${date}</b>\nTime: <b>${timeLabel}</b>\n\nPlease notify members from Club Dashboard.`);}
-    showMsg('seat-modal-msg',`✅ Seat booked! Balance: ${newBal} slots remaining.`,'success');
-    btn.textContent='✓ Booked!';
-    setTimeout(()=>{closeSeatModal();loadAvailability();loadMyBookings();renderBalanceBar();},1800);
-  }catch(e){showMsg('seat-modal-msg','Error: '+e.message,'error');btn.disabled=false;btn.textContent='Book My Seat';}
+    // Update table session
+    var tableBookings=slotBookings.filter(function(b){return b.table_number===assignedTable;});
+    var newCount=tableBookings.length+1;
+    var sessions=await sb('mj_table_sessions?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&table_number=eq.'+assignedTable+'&booking_date=eq.'+date+'&select=*');
+    // We need player IDs for session - fetch them
+    var tblBookingsFull=await sb('mj_bookings?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&table_number=eq.'+assignedTable+'&booking_date=eq.'+date+'&status=eq.confirmed&select=player_id');
+    var allPids=tblBookingsFull.map(function(b){return b.player_id;});
+    var sd={player1_id:allPids[0]||null,player2_id:allPids[1]||null,player3_id:allPids[2]||null,player4_id:allPids[3]||null,status:newCount>=4?'full':'filling'};
+    if(sessions.length>0){await sbPatch('mj_table_sessions?id=eq.'+sessions[0].id,sd);}
+    else{await sb('mj_table_sessions','POST',{club_id:clubId,slot_id:slotId,table_number:assignedTable,booking_date:date,player1_id:sd.player1_id,player2_id:sd.player2_id,player3_id:sd.player3_id,player4_id:sd.player4_id,status:sd.status});}
+    if(newCount>=4){await tg('🀄 <b>TABLE FULL — Action Required</b>\n\nClub: <b>'+clubName+'</b>\nTable: <b>'+assignedTable+'</b>\nDate: <b>'+date+'</b>\nTime: <b>'+timeLabel+'</b>\n\nAll 4 seats booked. Please notify members from Club Dashboard.');}
+    btn.textContent='✓ Seat Booked!';
+    btn.className='btn-booked';
+    btn.disabled=false;
+    renderBalanceBar();
+    loadMyBookings();
+    // Refresh availability after short delay
+    setTimeout(function(){loadAvailability();},1500);
+  }catch(e){btn.disabled=false;btn.textContent='Book a Seat';alert('Error: '+e.message);}
 }
 
-// WAITLIST
-function openWaitlistModal(clubId,slotId,tableNo,timeLabel,date,clubName){
-  pendingWaitlist={clubId,slotId,tableNo,timeLabel,date,clubName};
-  document.getElementById('waitlist-modal-sub').textContent=`${clubName} · Table ${tableNo} · ${timeLabel} · ${date}`;
-  document.getElementById('waitlist-msg').innerHTML='';
-  // Set min deadline to now
-  const now=new Date();
-  now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
-  document.getElementById('waitlist-deadline').min=now.toISOString().slice(0,16);
-  document.getElementById('waitlist-modal').classList.add('open');
+// CANCEL MODAL
+function openCancelModal(clubId,clubName,slotId,timeLabel,date){
+  pendingCancel={clubId,clubName,slotId,date};
+  document.getElementById('cancel-modal-sub').textContent=clubName+' · '+timeLabel+' · '+date;
+  document.getElementById('cancel-modal-msg').innerHTML='';
+  document.getElementById('cancel-modal').classList.add('open');
 }
-function closeWaitlistModal(){document.getElementById('waitlist-modal').classList.remove('open');pendingWaitlist=null;}
-
-async function confirmWaitlist(){
-  if(!pendingWaitlist)return;
-  const deadline=document.getElementById('waitlist-deadline').value;
-  if(!deadline){showMsg('waitlist-msg','Please set your deadline.','error');return;}
-  const{clubId,slotId,tableNo,date,clubName,timeLabel}=pendingWaitlist;
+function closeCancelModal(){document.getElementById('cancel-modal').classList.remove('open');pendingCancel=null;}
+async function confirmCancel(){
+  if(!pendingCancel)return;
+  var c=pendingCancel;
   try{
-    const existing=await sb(`mj_waitlist?player_id=eq.${player.id}&club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.waiting&select=id`);
-    if(existing.length>0){showMsg('waitlist-msg','Already on waitlist for this table.','warn');return;}
-    await sb('mj_waitlist','POST',{club_id:clubId,player_id:player.id,slot_id:slotId,table_number:tableNo,booking_date:date,deadline:new Date(deadline).toISOString(),status:'waiting'});
-    showMsg('waitlist-msg','✅ Added to waitlist! You will be auto-assigned if a seat opens before your deadline.','success');
-    setTimeout(()=>{closeWaitlistModal();loadAvailability();loadMyBookings();},1800);
-  }catch(e){showMsg('waitlist-msg','Error: '+e.message,'error');}
+    var bookings=await sb('mj_bookings?player_id=eq.'+player.id+'&club_id=eq.'+c.clubId+'&slot_id=eq.'+c.slotId+'&booking_date=eq.'+c.date+'&status=eq.confirmed&select=id,table_number');
+    if(!bookings.length){alert('Booking not found.');return;}
+    var tableNo=bookings[0].table_number;
+    await sbPatch('mj_bookings?id=eq.'+bookings[0].id,{status:'cancelled'});
+    await sbPatch('mj_table_sessions?club_id=eq.'+c.clubId+'&slot_id=eq.'+c.slotId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+c.date,{status:'filling'});
+    // Restore slot balance
+    var mem=membershipsCache[c.clubId];
+    if(mem){var newBal=(mem.slot_balance||0)+1;await sbPatch('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+c.clubId,{slot_balance:newBal});membershipsCache[c.clubId].slot_balance=newBal;}
+    // Process waitlist
+    await processWaitlist(c.clubId,c.slotId,tableNo,c.date);
+    closeCancelModal();
+    renderBalanceBar();
+    loadMyBookings();
+    loadAvailability();
+  }catch(e){alert('Error: '+e.message);}
 }
 
 async function processWaitlist(clubId,slotId,tableNo,date){
   try{
-    const now=new Date().toISOString();
-    const waiting=await sb(`mj_waitlist?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.waiting&order=created_at.asc&select=*`);
-    // Remove expired entries
-    for(const w of waiting){
-      if(new Date(w.deadline)<new Date()){
-        await sbPatch(`mj_waitlist?id=eq.${w.id}`,{status:'expired'});
-      }
+    var waiting=await sb('mj_waitlist?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date+'&status=eq.waiting&order=created_at.asc&select=*');
+    for(var i=0;i<waiting.length;i++){
+      if(new Date(waiting[i].deadline)<new Date()){await sbPatch('mj_waitlist?id=eq.'+waiting[i].id,{status:'expired'});}
     }
-    const valid=waiting.filter(w=>new Date(w.deadline)>=new Date());
+    var valid=waiting.filter(function(w){return new Date(w.deadline)>=new Date();});
     if(!valid.length)return;
-    // Assign first valid waitlist person
-    const next=valid[0];
-    // Check their balance
-    const mem=await sb(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}&select=slot_balance`);
-    const bal=mem[0]?.slot_balance||0;
-    if(bal<=0){await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'no_balance'});return;}
-    // Book for them
+    var next=valid[0];
+    var mem=await sb('mj_members?player_id=eq.'+next.player_id+'&club_id=eq.'+clubId+'&select=slot_balance');
+    var bal=mem[0]?mem[0].slot_balance||0:0;
+    if(bal<=0){await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'no_balance'});return;}
     await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed'});
-    await sbPatch(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}`,{slot_balance:bal-1});
-    await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'assigned'});
-    // Notify admin
-    const pinfo=await sb(`mj_players?id=eq.${next.player_id}&select=name,mobile`);
-    const pname=pinfo[0]?.name||'Member';
-    await tg(`🀄 <b>Waitlist Auto-Assigned</b>\n\nClub: <b>${clubId}</b>\nPlayer: <b>${pname}</b>\nTable: ${tableNo}\nDate: ${date}\n\nSeat auto-assigned from waitlist.`);
-  }catch(e){console.log('Waitlist error:',e);}
+    await sbPatch('mj_members?player_id=eq.'+next.player_id+'&club_id=eq.'+clubId,{slot_balance:bal-1});
+    await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'assigned'});
+    var pinfo=await sb('mj_players?id=eq.'+next.player_id+'&select=name,mobile');
+    var pname=pinfo[0]?pinfo[0].name:'Member';
+    await tg('🀄 <b>Waitlist Auto-Assigned</b>\n\nClub ID: '+clubId+'\nPlayer: <b>'+pname+'</b>\nTable: '+tableNo+'\nDate: '+date+'\n\nSeat auto-assigned from waitlist.');
+  }catch(e){}
+}
+
+// WAITLIST MODAL
+function openWaitlistModal(clubId,slotId,timeLabel,date,clubName){
+  pendingWaitlist={clubId,slotId,timeLabel,date,clubName};
+  document.getElementById('waitlist-modal-sub').textContent=clubName+' · '+timeLabel+' · '+date;
+  document.getElementById('waitlist-msg').innerHTML='';
+  var now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  document.getElementById('waitlist-deadline').min=now.toISOString().slice(0,16);
+  document.getElementById('waitlist-modal').classList.add('open');
+}
+function closeWaitlistModal(){document.getElementById('waitlist-modal').classList.remove('open');pendingWaitlist=null;}
+async function confirmWaitlist(){
+  if(!pendingWaitlist)return;
+  var deadline=document.getElementById('waitlist-deadline').value;
+  if(!deadline){showMsg('waitlist-msg','Please set your deadline.','error');return;}
+  var w=pendingWaitlist;
+  try{
+    var existing=await sb('mj_waitlist?player_id=eq.'+player.id+'&club_id=eq.'+w.clubId+'&slot_id=eq.'+w.slotId+'&booking_date=eq.'+w.date+'&status=eq.waiting&select=id');
+    if(existing.length>0){showMsg('waitlist-msg','Already on waitlist for this slot.','warn');return;}
+    await sb('mj_waitlist','POST',{club_id:w.clubId,player_id:player.id,slot_id:w.slotId,booking_date:w.date,deadline:new Date(deadline).toISOString(),status:'waiting'});
+    showMsg('waitlist-msg','✅ Added to waitlist! You will be auto-assigned if a seat opens before your deadline.','success');
+    setTimeout(function(){closeWaitlistModal();loadAvailability();loadMyBookings();},1800);
+  }catch(e){showMsg('waitlist-msg','Error: '+e.message,'error');}
 }
 
 // GROUP REQUEST
 async function sendGroupRequest(){
-  const clubId=document.getElementById('grp-club').value;
-  const date=document.getElementById('grp-date').value;
-  const slotId=document.getElementById('grp-slot').value;
-  const m2=document.getElementById('grp-m2').value.trim();
-  const m3=document.getElementById('grp-m3').value.trim();
-  const m4=document.getElementById('grp-m4').value.trim();
+  var clubId=document.getElementById('grp-club').value;
+  var date=document.getElementById('grp-date').value;
+  var slotId=document.getElementById('grp-slot').value;
+  var m2=document.getElementById('grp-m2').value.trim();
+  var m3=document.getElementById('grp-m3').value.trim();
+  var m4=document.getElementById('grp-m4').value.trim();
   if(!clubId||!date||!slotId||!m2||!m3||!m4){showMsg('grp-msg','Please fill all fields.','error');return;}
   if(m2.length!==10||m3.length!==10||m4.length!==10){showMsg('grp-msg','All mobile numbers must be 10 digits.','error');return;}
   if([m2,m3,m4].includes(player.mobile)){showMsg('grp-msg','Do not enter your own mobile number.','error');return;}
   showMsg('grp-msg','Sending request...','info');
   try{
-    // Verify all 3 friends are members of this club
-    const [p2,p3,p4]=await Promise.all([
-      sb(`mj_players?mobile=eq.${m2}&select=id,name`),
-      sb(`mj_players?mobile=eq.${m3}&select=id,name`),
-      sb(`mj_players?mobile=eq.${m4}&select=id,name`)
-    ]);
+    var p2=await sb('mj_players?mobile=eq.'+m2+'&select=id,name');
+    var p3=await sb('mj_players?mobile=eq.'+m3+'&select=id,name');
+    var p4=await sb('mj_players?mobile=eq.'+m4+'&select=id,name');
     if(!p2.length||!p3.length||!p4.length){showMsg('grp-msg','One or more mobile numbers not found in SportBook.','error');return;}
-    // Check all are members of this club
-    const ids=[p2[0].id,p3[0].id,p4[0].id];
-    const mems=await sb(`mj_members?player_id=in.(${ids.join(',')})&club_id=eq.${clubId}&status=eq.approved&select=player_id`);
+    var ids=[p2[0].id,p3[0].id,p4[0].id];
+    var mems=await sb('mj_members?player_id=in.('+ids.join(',')+')'+'&club_id=eq.'+clubId+'&status=eq.approved&select=player_id');
     if(mems.length<3){showMsg('grp-msg','One or more friends are not approved members of this club.','error');return;}
     await sb('mj_group_requests','POST',{club_id:clubId,requested_by:player.id,slot_id:slotId,booking_date:date,mobile2:m2,mobile3:m3,mobile4:m4,status:'pending'});
-    const club=myClubs.find(c=>c.id===clubId);
-    const slot=(slotsCache[clubId]||[]).find(s=>s.id===slotId);
-    await tg(`🀄 <b>Group Table Request</b>\n\nClub: <b>${club?.club_name}</b>\nRequested by: <b>${player.name}</b> (${player.mobile})\nDate: ${date}\nSlot: ${slot?.start_time}–${slot?.end_time}\nFriends: ${m2}, ${m3}, ${m4}\n\nApprove from Club Dashboard → Tables tab.`);
+    var club=myClubs.find(function(c){return c.id===clubId;});
+    var slot=(slotsCache[clubId]||[]).find(function(s){return s.id===slotId;});
+    await tg('🀄 <b>Group Table Request</b>\n\nClub: <b>'+(club?club.club_name:'')+'</b>\nRequested by: <b>'+player.name+'</b> ('+player.mobile+')\nDate: '+date+'\nSlot: '+(slot?slot.start_time+'-'+slot.end_time:'')+'\nFriends: '+m2+', '+m3+', '+m4+'\n\nApprove from Club Dashboard.');
     showMsg('grp-msg','✅ Group request sent! Organiser will assign you a table.','success');
-    document.getElementById('grp-m2').value='';
-    document.getElementById('grp-m3').value='';
-    document.getElementById('grp-m4').value='';
+    document.getElementById('grp-m2').value='';document.getElementById('grp-m3').value='';document.getElementById('grp-m4').value='';
     loadGroupRequests();
   }catch(e){showMsg('grp-msg','Error: '+e.message,'error');}
 }
@@ -597,23 +495,14 @@ async function loadGroupRequests(){
   document.getElementById('grp-list-loading').style.display='block';
   document.getElementById('grp-list').innerHTML='';
   try{
-    const reqs=await sb(`mj_group_requests?requested_by=eq.${player.id}&select=*&order=created_at.desc`);
+    var reqs=await sb('mj_group_requests?requested_by=eq.'+player.id+'&select=*&order=created_at.desc');
     document.getElementById('grp-list-loading').style.display='none';
     if(!reqs.length){document.getElementById('grp-list').innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><p>No group requests sent yet.</p></div>';return;}
-    document.getElementById('grp-list').innerHTML=reqs.map(r=>{
-      const club=myClubs.find(c=>c.id===r.club_id);
-      const slot=(slotsCache[r.club_id]||[]).find(s=>s.id===r.slot_id);
-      const statusColor=r.status==='approved'?'#58d68d':r.status==='rejected'?'#f1948a':'#f0b27a';
-      return`<div class="booking-item">
-        <div class="booking-header">
-          <div class="booking-date">📅 ${r.booking_date}</div>
-          <span style="font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;background:#1a1930;color:${statusColor};">${r.status.toUpperCase()}</span>
-        </div>
-        <div class="booking-meta">🏯 Club: <span>${club?.club_name||'—'}</span></div>
-        <div class="booking-meta">🕐 Slot: <span>${slot?slot.start_time+'–'+slot.end_time:'—'}</span></div>
-        <div class="booking-meta">👥 Friends: <span>${r.mobile2}, ${r.mobile3}, ${r.mobile4}</span></div>
-        ${r.table_number?`<div class="booking-meta">🀄 Table Assigned: <span>${r.table_number}</span></div>`:''}
-      </div>`;
+    document.getElementById('grp-list').innerHTML=reqs.map(function(r){
+      var club=myClubs.find(function(c){return c.id===r.club_id;});
+      var slot=(slotsCache[r.club_id]||[]).find(function(s){return s.id===r.slot_id;});
+      var sc=r.status==='approved'?'#58d68d':r.status==='rejected'?'#f1948a':'#f0b27a';
+      return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+r.booking_date+'</div><span style="font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;background:#1a1930;color:'+sc+';">'+r.status.toUpperCase()+'</span></div><div class="booking-meta">🏯 Club: <span>'+(club?club.club_name:'—')+'</span></div><div class="booking-meta">🕐 Slot: <span>'+(slot?slot.start_time+'-'+slot.end_time:'—')+'</span></div><div class="booking-meta">👥 Friends: <span>'+r.mobile2+', '+r.mobile3+', '+r.mobile4+'</span></div>'+(r.table_number?'<div class="booking-meta">🀄 Table Assigned: <span>'+r.table_number+'</span></div>':'')+'</div>';
     }).join('');
   }catch(e){document.getElementById('grp-list-loading').style.display='none';}
 }
@@ -622,50 +511,33 @@ async function loadMyBookings(){
   document.getElementById('bookings-loading').style.display='block';
   document.getElementById('bookings-list').innerHTML='';
   try{
-    const bookings=await sb(`mj_bookings?player_id=eq.${player.id}&select=*&order=booking_date.desc,created_at.desc`);
-    // Get group requests to identify group bookings
-    const grpReqs=await sb(`mj_group_requests?requested_by=eq.${player.id}&status=eq.approved&select=slot_id,booking_date,table_number`);
-    const grpSet=new Set(grpReqs.map(g=>`${g.slot_id}_${g.booking_date}_${g.table_number}`));
-    const waitlist=await sb(`mj_waitlist?player_id=eq.${player.id}&status=eq.waiting&select=*&order=created_at.desc`);
+    var bookings=await sb('mj_bookings?player_id=eq.'+player.id+'&select=*&order=booking_date.desc,created_at.desc');
+    var waitlist=await sb('mj_waitlist?player_id=eq.'+player.id+'&status=eq.waiting&select=*&order=created_at.desc');
+    var grpReqs=await sb('mj_group_requests?requested_by=eq.'+player.id+'&status=eq.approved&select=slot_id,booking_date,table_number');
+    var grpSet=new Set(grpReqs.map(function(g){return g.slot_id+'_'+g.booking_date+'_'+g.table_number;}));
     document.getElementById('bookings-loading').style.display='none';
     if(!bookings.length&&!waitlist.length){document.getElementById('bookings-list').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>No bookings yet.</p></div>';return;}
-    const clubIds=[...new Set([...bookings.map(b=>b.club_id),...waitlist.map(w=>w.club_id)])];
-    const slotIds=[...new Set([...bookings.map(b=>b.slot_id),...waitlist.map(w=>w.slot_id)])];
-    const[clubs,slots]=await Promise.all([
-      clubIds.length?sb(`mj_clubs?id=in.(${clubIds.join(',')})&select=id,club_name`):Promise.resolve([]),
-      slotIds.length?sb(`mj_slots?id=in.(${slotIds.join(',')})&select=id,start_time,end_time`):Promise.resolve([])
-    ]);
-    const cMap={};clubs.forEach(c=>{cMap[c.id]=c;});
-    const sMap={};slots.forEach(s=>{sMap[s.id]=s;});
-    let html='';
-    // Waitlist entries
+    var clubIds=[...new Set([...bookings.map(function(b){return b.club_id;}),...waitlist.map(function(w){return w.club_id;})])];
+    var slotIds=[...new Set([...bookings.map(function(b){return b.slot_id;}),...waitlist.map(function(w){return w.slot_id;})])];
+    var clubs=clubIds.length?await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name'):[];
+    var slots=slotIds.length?await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time'):[];
+    var cMap={};clubs.forEach(function(c){cMap[c.id]=c;});
+    var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
+    var html='';
     if(waitlist.length){
       html+='<div class="section-label">⏳ On Waitlist</div>';
-      html+=waitlist.map(w=>{
-        const sl=sMap[w.slot_id];
-        const dl=new Date(w.deadline).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'});
-        return`<div class="booking-item">
-          <div class="booking-header"><div class="booking-date">📅 ${w.booking_date}</div><span class="booking-badge badge-waiting">Waiting</span></div>
-          <div class="booking-meta">🏯 Club: <span>${cMap[w.club_id]?.club_name||'—'}</span></div>
-          <div class="booking-meta">🀄 Table: <span>${w.table_number}</span></div>
-          <div class="booking-meta">🕐 Time: <span>${sl?sl.start_time+'–'+sl.end_time:'—'}</span></div>
-          <div class="booking-meta">⏰ Deadline: <span>${dl}</span></div>
-          <div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist('${w.id}')">Cancel Waitlist</button></div>
-        </div>`;
+      html+=waitlist.map(function(w){
+        var sl=sMap[w.slot_id];
+        var dl=new Date(w.deadline).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'});
+        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">Waiting</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta">⏰ Deadline: <span>'+dl+'</span></div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')">Cancel Waitlist</button></div></div>';
       }).join('');
     }
-    // Confirmed bookings
     if(bookings.length){
       html+='<div class="section-label">✅ Confirmed Bookings</div>';
-      html+=bookings.map(b=>{
-        const sl=sMap[b.slot_id];
-        return`<div class="booking-item">
-          <div class="booking-header"><div class="booking-date">📅 ${b.booking_date}</div><span class="booking-badge ${b.status==='confirmed'?'badge-confirmed':'badge-cancelled'}">${b.status}</span></div>
-          <div class="booking-meta">🏯 Club: <span>${cMap[b.club_id]?.club_name||'—'}</span></div>
-          <div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div>
-          <div class="booking-meta">🕐 Time: <span>${sl?sl.start_time+'–'+sl.end_time:'—'}</span></div>
-          ${grpSet.has(`${b.slot_id}_${b.booking_date}_${b.table_number}`)?'<div style="margin-top:6px;"><span style="font-size:11px;background:#1a2a3a;color:#5dade2;padding:3px 8px;border-radius:20px;font-weight:600;">👥 Group Booking</span></div>':''}
-        </div>`
+      html+=bookings.map(function(b){
+        var sl=sMap[b.slot_id];
+        var isGrp=grpSet.has(b.slot_id+'_'+b.booking_date+'_'+b.table_number);
+        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+b.booking_date+'</div><span class="booking-badge '+(b.status==='confirmed'?'badge-confirmed':'badge-cancelled')+'">'+b.status+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[b.club_id]?cMap[b.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div>'+(isGrp?'<div style="margin-top:6px;"><span style="font-size:11px;background:#1a2a3a;color:#5dade2;padding:3px 8px;border-radius:20px;font-weight:600;">👥 Group Booking</span></div>':'')+'</div>';
       }).join('');
     }
     document.getElementById('bookings-list').innerHTML=html;
@@ -674,50 +546,43 @@ async function loadMyBookings(){
 
 async function cancelWaitlist(id){
   if(!confirm('Cancel waitlist request?'))return;
-  try{await sbPatch(`mj_waitlist?id=eq.${id}`,{status:'cancelled'});loadMyBookings();}
+  try{await sbPatch('mj_waitlist?id=eq.'+id,{status:'cancelled'});loadMyBookings();}
   catch(e){alert('Error: '+e.message);}
 }
 
 async function loadDiscover(){
   document.getElementById('discover-loading').style.display='block';
   try{
-    const allClubs=await sb('mj_clubs?status=eq.active&select=*&order=club_name.asc');
-    const mems=await sb(`mj_members?player_id=eq.${player.id}&select=club_id,status`);
-    const mMap={};mems.forEach(m=>{mMap[m.club_id]=m.status;});
+    var allClubs=await sb('mj_clubs?status=eq.active&select=*&order=club_name.asc');
+    var mems=await sb('mj_members?player_id=eq.'+player.id+'&select=club_id,status');
+    var mMap={};mems.forEach(function(m){mMap[m.club_id]=m.status;});
     document.getElementById('discover-loading').style.display='none';
-    const others=allClubs.filter(c=>!mMap[c.id]||mMap[c.id]==='rejected');
+    var others=allClubs.filter(function(c){return !mMap[c.id]||mMap[c.id]==='rejected';});
     if(!others.length){document.getElementById('discover-list').innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div><p>You are a member of all available clubs!</p></div>';return;}
-    const gL=g=>g==='male'?'👨 Male Only':g==='female'?'👩 Female Only':'👥 Mixed';
-    document.getElementById('discover-list').innerHTML=others.map(club=>{
-      const status=mMap[club.id];
-      const genderBlocked=(club.gender_condition==='male'&&player.gender==='female')||(club.gender_condition==='female'&&player.gender==='male');
-      const actionBtn=genderBlocked
-        ?`<span style="font-size:12px;color:#f1948a;background:#3a1a1a;padding:4px 10px;border-radius:20px;">🚫 ${club.gender_condition==='male'?'Male':'Female'} members only</span>`
+    document.getElementById('discover-list').innerHTML=others.map(function(club){
+      var status=mMap[club.id];
+      var genderBlocked=(club.gender_condition==='male'&&player.gender==='female')||(club.gender_condition==='female'&&player.gender==='male');
+      var gL=club.gender_condition==='male'?'👨 Male Only':club.gender_condition==='female'?'👩 Female Only':'👥 Mixed';
+      var bc=club.gender_condition==='male'?'badge-male':club.gender_condition==='female'?'badge-female':'badge-mixed';
+      var actionBtn=genderBlocked
+        ?'<span style="font-size:12px;color:#f1948a;background:#3a1a1a;padding:4px 10px;border-radius:20px;">🚫 '+(club.gender_condition==='male'?'Male':'Female')+' members only</span>'
         :status==='pending'
-          ?`<span class="badge badge-pending">⏳ Request Pending</span>`
-          :`<button class="btn btn-outline btn-sm" onclick="requestMembership('${club.id}','${club.club_name.replace(/'/g,"\\'")}','${club.gender_condition}',this)">Request to Join</button>`;
-      return`<div class="discover-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
-          <div class="discover-name">🏯 ${club.club_name}</div>
-          <span class="badge ${club.gender_condition==='male'?'badge-male':club.gender_condition==='female'?'badge-female':'badge-mixed'}">${gL(club.gender_condition)}</span>
-        </div>
-        <div class="discover-meta">📍 <span>${club.city||'N/A'}</span></div>
-        <div class="discover-meta">🀄 Tables: <span>${club.total_tables}</span></div>
-        <div style="margin-top:12px;">${actionBtn}</div>
-      </div>`;
+          ?'<span class="badge badge-pending">⏳ Request Pending</span>'
+          :'<button class="btn btn-outline btn-sm" onclick="requestMembership(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+club.gender_condition+'\',this)">Request to Join</button>';
+      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+club.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(club.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+club.total_tables+'</span></div><div style="margin-top:12px;">'+actionBtn+'</div></div>';
     }).join('');
   }catch(e){document.getElementById('discover-loading').style.display='none';}
 }
 
 async function requestMembership(clubId,clubName,genderCondition,btn){
-  if((genderCondition==='male'&&player.gender==='female')||(genderCondition==='female'&&player.gender==='male')){alert(`Sorry! This club accepts ${genderCondition} members only.`);return;}
+  if((genderCondition==='male'&&player.gender==='female')||(genderCondition==='female'&&player.gender==='male')){alert('Sorry! This club accepts '+genderCondition+' members only.');return;}
   btn.disabled=true;btn.textContent='Sending...';
   try{
-    const ex=await sb(`mj_members?player_id=eq.${player.id}&club_id=eq.${clubId}&select=id`);
+    var ex=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&select=id');
     if(ex.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
     await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
-    await tg(`🀄 <b>New Membership Request</b>\n\nClub: <b>${clubName}</b>\nPlayer: <b>${player.name}</b>\nMobile: ${player.mobile}\nEmail: ${player.email}\nGender: ${player.gender}\n\nApprove from Club Dashboard.`);
-    btn.outerHTML=`<span class="badge badge-pending">⏳ Request Pending</span>`;
+    await tg('🀄 <b>New Membership Request</b>\n\nClub: <b>'+clubName+'</b>\nPlayer: <b>'+player.name+'</b>\nMobile: '+player.mobile+'\nEmail: '+player.email+'\nGender: '+player.gender+'\n\nApprove from Club Dashboard.');
+    btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
   }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
 }
 
