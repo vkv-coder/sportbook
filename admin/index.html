@@ -211,6 +211,9 @@ main{padding:24px;max-width:700px;margin:0 auto;}
         <div class="stat-card"><div class="stat-val" id="sm-stat-active">—</div><div class="stat-label">Active</div></div>
         <div class="stat-card"><div class="stat-val" id="sm-stat-pending">—</div><div class="stat-label">Pending</div></div>
       </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button onclick="exportMembersCSV()" style="background:#00B87A;color:white;border:none;padding:9px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">📥 Export All Members CSV</button>
+      </div>
       <div class="tabs" id="sm-tabs">
         <button class="tab active" onclick="showSmTab('sm-pending')">⏳ Pending</button>
         <button class="tab" onclick="showSmTab('sm-active')">✅ Active</button>
@@ -533,6 +536,39 @@ async function updateSiteMember(id, newStatus, name, mobile, email) {
   toast(`✅ ${name} approved as SportBook member!`);
   await notifyTelegram(`🎮 <b>New Member Approved</b>\n\n👤 ${name}\n📱 ${mobile}\n📧 ${email}\n\nThey can now browse and join clubs on sportbook.in`);
   loadSiteMembers();
+}
+
+async function exportMembersCSV() {
+  try {
+    const data = await fetch(`${SUPABASE_URL}/rest/v1/sp_members?select=*&order=created_at.desc`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    }).then(r => r.json());
+
+    if (!data.length) { toast('No members found.'); return; }
+
+    const headers = ['Name','Mobile','Email','Gender','WhatsApp','Telegram','Status','Registered On'];
+    const rows = data.map(m => [
+      m.name||'',
+      m.mobile||'',
+      m.email||'',
+      m.gender||'',
+      m.whatsapp||'',
+      m.telegram_id||'',
+      m.status||'',
+      m.created_at?new Date(m.created_at).toLocaleDateString('en-IN'):''
+    ]);
+
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('
+');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sportbook_members_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('✅ CSV downloaded!');
+  } catch(e) { toast('Error: ' + e.message); }
 }
 
 async function deleteSiteMember(id, name) {
