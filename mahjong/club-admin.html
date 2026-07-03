@@ -255,6 +255,7 @@ select option{background:var(--surface);}
         <div class="form-group"><label>Venue Name</label><input type="text" id="venue-name" placeholder="e.g. Café Coffee Day, Alkapuri"/></div>
         <div class="form-group"><label>Full Address</label><input type="text" id="venue-address" placeholder="e.g. 12, Alkapuri Society, Vadodara"/></div>
         <div class="form-group"><label>Note (optional)</label><input type="text" id="venue-note" placeholder="e.g. Pool side, 1st floor entry"/></div>
+        <div class="form-group"><label>Google Maps Link (optional)</label><input type="url" id="venue-map" placeholder="Paste Google Maps link here"/></div>
         <div id="venue-add-msg"></div>
         <button class="btn btn-gold btn-full" onclick="addVenueEvent()">Add Venue Event →</button>
       </div>
@@ -735,11 +736,13 @@ async function addVenueEvent(){
   if(!date||!name||!address){showMsg('venue-add-msg','Please fill date, venue name and address.','error');return;}
   showMsg('venue-add-msg','Adding...','info');
   try{
-    await sb('mj_venue_events','POST',{club_id:club.id,event_date:date,venue_name:name,address:address,note:note||null});
+    const mapLink=document.getElementById('venue-map').value.trim();
+    await sb('mj_venue_events','POST',{club_id:club.id,event_date:date,venue_name:name,address:address,note:note||null,map_link:mapLink||null});
     document.getElementById('venue-date').value='';
     document.getElementById('venue-name').value='';
     document.getElementById('venue-address').value='';
     document.getElementById('venue-note').value='';
+    document.getElementById('venue-map').value='';
     showMsg('venue-add-msg','✅ Venue event added! Members will see this on their app.','success');
     loadVenueEvents();
   }catch(e){showMsg('venue-add-msg','Error: '+e.message,'error');}
@@ -770,6 +773,7 @@ async function loadVenueEvents(){
         <div style="font-size:12px;color:var(--muted);">📅 ${e.event_date}</div>
         <div style="font-size:12px;color:var(--text);margin-top:4px;">🏠 ${e.address}</div>
         ${e.note?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">💬 ${e.note}</div>`:''}
+        ${e.map_link?`<a href="${e.map_link}" target="_blank" style="display:inline-block;margin-top:8px;background:#1a3a5c;color:#5dade2;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">🗺️ Open in Google Maps</a>`:''}
       </div>`;
     }).join('');
   }catch(e){document.getElementById('venue-loading').style.display='none';}
