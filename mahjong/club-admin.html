@@ -189,10 +189,14 @@ select option{background:var(--surface);}
     <!-- TABLES/SESSIONS -->
     <div class="tab-content" id="tab-sessions">
       <div class="card" style="margin-bottom:16px;">
-        <div class="form-group" style="margin-bottom:0;">
+        <div class="form-group" style="margin-bottom:10px;">
           <label>View Date</label>
           <input type="date" id="session-date-filter" onchange="loadSessions()"/>
         </div>
+        <button class="btn btn-gold btn-full" onclick="copyTableAssignments()" style="display:flex;align-items:center;justify-content:center;gap:8px;">
+          📋 Copy Table Assignments for WhatsApp Group
+        </button>
+        <div id="copy-msg" style="margin-top:8px;"></div>
       </div>
       <div id="sessions-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="sessions-list"></div>
@@ -745,6 +749,44 @@ async function loadLeaderboardAdmin(){
     document.getElementById('lb-loading-admin').style.display='none';
     document.getElementById('lb-content-admin').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
   }
+}
+
+async function copyTableAssignments(){
+  const date=document.getElementById('session-date-filter').value;
+  if(!date){showMsg('copy-msg','Please select a date first.','error');return;}
+  showMsg('copy-msg','Preparing...','info');
+  try{
+    const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.full&select=*&order=table_number.asc`);
+    if(!sessions.length){showMsg('copy-msg','No full tables found for this date.','warn');return;}
+    const pids=[...new Set(sessions.flatMap(s=>[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean)))];
+    const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name`);
+    const pMap={};players.forEach(p=>{pMap[p.id]=p;});
+    const slotIds=[...new Set(sessions.map(s=>s.slot_id))];
+    const slots=slotIds.length?await sb(`mj_slots?id=in.(${slotIds.join(',')})&select=id,start_time,end_time`):[];
+    const sMap={};slots.forEach(s=>{sMap[s.id]=s;});
+    // Group sessions by slot
+    const bySlot={};
+    sessions.forEach(s=>{
+      if(!bySlot[s.slot_id])bySlot[s.slot_id]=[];
+      bySlot[s.slot_id].push(s);
+    });
+    let msg='🀄 *Table Assignments — '+club.club_name+'*\n';
+    msg+='📅 Date: '+date+'\n\n';
+    for(const slotId of Object.keys(bySlot)){
+      const slot=sMap[slotId];
+      if(slot)msg+='🕐 Time: '+slot.start_time+' – '+slot.end_time+'\n\n';
+      bySlot[slotId].forEach(s=>{
+        msg+='*Table '+s.table_number+':*\n';
+        [s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean).forEach((pid,i)=>{
+          msg+='  '+(i+1)+'. '+(pMap[pid]?pMap[pid].name:'—')+'\n';
+        });
+        msg+='\n';
+      });
+    }
+    // Copy to clipboard
+    await navigator.clipboard.writeText(msg);
+    showMsg('copy-msg','✅ Copied! Paste directly into your WhatsApp group.','success');
+  }catch(e){showMsg('copy-msg','Error: '+e.message,'error');}
 }
 
 function switchTab(tabId){
