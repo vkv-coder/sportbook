@@ -532,7 +532,7 @@ async function loadDiscover(){
         :status==='pending'
           ?'<span class="badge badge-pending">⏳ Request Pending</span>'
           :'<button class="btn btn-outline btn-sm" onclick="requestMembership(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+club.gender_condition+'\',this)">Request to Join</button>';
-      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+club.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(club.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+club.total_tables+'</span></div><div style="margin-top:12px;">'+actionBtn+'</div></div>';
+      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+club.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(club.city||'N/A')+'</span></div>'+(club.address?'<div class="discover-meta">🏠 <span>'+club.address+'</span></div>':'')+'<div class="discover-meta">🀄 Tables: <span>'+club.total_tables+'</span></div>'+(club.email?'<div class="discover-meta">✉️ <span>'+club.email+'</span></div>':'')+'<div style="margin-top:12px;">'+actionBtn+'</div></div>';
     }).join('');
   }catch(e){document.getElementById('discover-loading').style.display='none';}
 }
