@@ -178,15 +178,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <div class="modal">
     <div class="modal-title">⏳ Join Waitlist</div>
     <div class="modal-sub" id="waitlist-modal-sub"></div>
-    <div class="form-group">
-      <label>I need confirmation by (deadline)</label>
-      <input type="datetime-local" id="waitlist-deadline"/>
+    <div id="waitlist-position-box" style="background:var(--surface);border:1px solid var(--gold);border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Your Waitlist Position</div>
+      <div id="waitlist-position-num" style="font-size:32px;font-weight:700;color:var(--gold);">WL/—</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">You will be auto-confirmed if a seat opens up</div>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">If a seat opens before your deadline you will be auto-assigned. If not, your waitlist request cancels automatically.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Your slot balance will only be deducted when your seat is confirmed. You can opt out anytime.</div>
     <div id="waitlist-msg"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeWaitlistModal()">Cancel</button>
-      <button class="btn btn-gold" onclick="confirmWaitlist()">Join Waitlist</button>
+      <button class="btn btn-gold" onclick="confirmWaitlist()">Join Waitlist →</button>
     </div>
   </div>
 </div>
@@ -388,42 +389,53 @@ async function confirmCancel(){
 
 async function processWaitlist(clubId,slotId,tableNo,date){
   try{
-    var waiting=await sb('mj_waitlist?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date+'&status=eq.waiting&order=created_at.asc&select=*');
-    for(var i=0;i<waiting.length;i++){if(new Date(waiting[i].deadline)<new Date()){await sbPatch('mj_waitlist?id=eq.'+waiting[i].id,{status:'expired'});}}
-    var valid=waiting.filter(function(w){return new Date(w.deadline)>=new Date();});
-    if(!valid.length)return;
-    var next=valid[0];
+    // Get all waiting entries ordered by created_at (position order)
+    var waiting=await sb('mj_waitlist?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.waiting&order=created_at.asc&select=*');
+    if(!waiting.length)return;
+    var next=waiting[0];
+    // Check slot balance
     var mem=await sb('mj_members?player_id=eq.'+next.player_id+'&club_id=eq.'+clubId+'&select=slot_balance');
     var bal=mem[0]?mem[0].slot_balance||0:0;
-    if(bal<=0){await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'no_balance'});return;}
+    if(bal<=0){
+      // Skip this player - no balance, try next
+      await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'no_balance'});
+      await processWaitlist(clubId,slotId,tableNo,date);
+      return;
+    }
+    // Auto-assign seat
     await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed'});
+    // Deduct slot balance NOW (only on actual confirmation)
     await sbPatch('mj_members?player_id=eq.'+next.player_id+'&club_id=eq.'+clubId,{slot_balance:bal-1});
     await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'assigned'});
-    var pinfo=await sb('sp_members?id=eq.'+next.player_id+'&select=name,mobile');
-    var pname=pinfo[0]?pinfo[0].name:'Member';
-    await tg('🀄 <b>Waitlist Auto-Assigned</b>\n\nClub ID: '+clubId+'\nPlayer: <b>'+pname+'</b>\nTable: '+tableNo+'\nDate: '+date+'\n\nSeat auto-assigned from waitlist.');
+    // Notify admin on Telegram
+    var pinfo=await sb('sp_members?id=eq.'+next.player_id+'&select=name,mobile,whatsapp');
+    var p=pinfo[0]||{};
+    await tg('🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub: <b>'+clubId+'</b>\nPlayer: <b>'+(p.name||'Member')+'</b>\nMobile: '+(p.mobile||'—')+'\nWhatsApp: '+(p.whatsapp||p.mobile||'—')+'\nTable: '+tableNo+'\nDate: '+date+'\n\n⚡ Please inform the player their seat is confirmed!');
   }catch(e){}
 }
 
-function openWaitlistModal(clubId,slotId,timeLabel,date,clubName){
+async function openWaitlistModal(clubId,slotId,timeLabel,date,clubName){
   pendingWaitlist={clubId,slotId,timeLabel,date,clubName};
   document.getElementById('waitlist-modal-sub').textContent=clubName+' · '+timeLabel+' · '+date;
   document.getElementById('waitlist-msg').innerHTML='';
-  var now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
-  document.getElementById('waitlist-deadline').min=now.toISOString().slice(0,16);
+  // Get current waitlist count for position
+  try{
+    var existing=await sb('mj_waitlist?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.waiting&select=id');
+    document.getElementById('waitlist-position-num').textContent='WL/'+(existing.length+1);
+  }catch(e){
+    document.getElementById('waitlist-position-num').textContent='WL/—';
+  }
   document.getElementById('waitlist-modal').classList.add('open');
 }
 function closeWaitlistModal(){document.getElementById('waitlist-modal').classList.remove('open');pendingWaitlist=null;}
 async function confirmWaitlist(){
   if(!pendingWaitlist)return;
-  var deadline=document.getElementById('waitlist-deadline').value;
-  if(!deadline){showMsg('waitlist-msg','Please set your deadline.','error');return;}
   var w=pendingWaitlist;
   try{
     var existing=await sb('mj_waitlist?player_id=eq.'+player.id+'&club_id=eq.'+w.clubId+'&slot_id=eq.'+w.slotId+'&booking_date=eq.'+w.date+'&status=eq.waiting&select=id');
     if(existing.length>0){showMsg('waitlist-msg','Already on waitlist for this slot.','warn');return;}
-    await sb('mj_waitlist','POST',{club_id:w.clubId,player_id:player.id,slot_id:w.slotId,booking_date:w.date,deadline:new Date(deadline).toISOString(),status:'waiting'});
-    showMsg('waitlist-msg','✅ Added to waitlist! You will be auto-assigned if a seat opens before your deadline.','success');
+    await sb('mj_waitlist','POST',{club_id:w.clubId,player_id:player.id,slot_id:w.slotId,booking_date:w.date,status:'waiting'});
+    showMsg('waitlist-msg','✅ Added to waitlist! Your slot balance will only be deducted when your seat is confirmed.','success');
     setTimeout(function(){closeWaitlistModal();loadAvailability();loadMyBookings();},1800);
   }catch(e){showMsg('waitlist-msg','Error: '+e.message,'error');}
 }
@@ -492,10 +504,14 @@ async function loadMyBookings(){
     var html='';
     if(waitlist.length){
       html+='<div class="section-label">⏳ On Waitlist</div>';
+      var wlBySlot={};
+      waitlist.forEach(function(w){var key=w.club_id+'_'+w.slot_id+'_'+w.booking_date;if(!wlBySlot[key])wlBySlot[key]=[];wlBySlot[key].push(w);});
       html+=waitlist.map(function(w){
         var sl=sMap[w.slot_id];
-        var dl=new Date(w.deadline).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'});
-        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">Waiting</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta">⏰ Deadline: <span>'+dl+'</span></div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')">Cancel Waitlist</button></div></div>';
+        var key=w.club_id+'_'+w.slot_id+'_'+w.booking_date;
+        var pos=(wlBySlot[key]||[]).findIndex(function(x){return x.id===w.id;})+1;
+        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">WL/'+pos+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta" style="color:#bb8fce;font-weight:600;">⏳ Position: WL/'+pos+'</div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')" >Opt Out from Waitlist</button></div></div>';
+      }).join('');
       }).join('');
     }
     if(bookings.length){
