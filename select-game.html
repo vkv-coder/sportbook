@@ -120,7 +120,58 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
   <p id="hero-sub">Select a sport to continue</p>
 </div>
 
-<div class="games-section">
+<!-- PLAYER DIRECT PANEL (shown instead of game grid for players) -->
+<div id="player-direct-panel" style="display:none;max-width:420px;margin:20px auto;padding:0 20px;">
+  <div style="background:linear-gradient(135deg,#0f0e17,#1a1930);border-radius:16px;padding:24px 20px;border:1px solid #2e2d4a;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#c9a84c;margin-bottom:6px;">🎮 SportBook Player</div>
+    <div style="font-size:13px;color:#8b89a8;margin-bottom:20px;">Register as a new player or login if you are already registered.</div>
+
+    <div class="tabs-row">
+      <button class="tab-btn active" onclick="switchPlayerTab('new')">New Player</button>
+      <button class="tab-btn" onclick="switchPlayerTab('returning')">Returning Player</button>
+    </div>
+
+    <div class="step active" id="player-step1">
+      <div id="new-tab">
+        <div class="form-group"><label>Full Name</label><input type="text" id="p-name" placeholder="Your name"/></div>
+        <div class="form-group"><label>Mobile Number</label><input type="tel" id="p-mobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric"/></div>
+        <div class="form-group"><label>Email Address</label><input type="email" id="p-email" placeholder="For booking confirmations"/></div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="p-gender">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+        <div class="form-group"><label>WhatsApp Number <span style="color:#f1948a;">*</span></label><input type="tel" id="p-whatsapp" placeholder="10-digit WhatsApp number" maxlength="10" inputmode="numeric"/></div>
+        <div class="form-group"><label>Telegram ID <span style="color:#8b89a8;font-weight:400;">(optional)</span></label><input type="text" id="p-telegram" placeholder="e.g. @yourname or your Telegram ID"/></div>
+        <div id="p-reg-msg"></div>
+        <button class="btn-gold" onclick="sendPlayerOTP('new')">Send OTP →</button>
+      </div>
+
+      <div id="returning-tab" style="display:none;">
+        <div class="form-group"><label>Mobile Number</label><input type="tel" id="p-login-mobile" placeholder="Your registered mobile" maxlength="10" inputmode="numeric"/></div>
+        <div id="p-login-msg"></div>
+        <button class="btn-gold" onclick="sendPlayerOTP('returning')">Send OTP →</button>
+      </div>
+    </div>
+
+    <div class="step" id="player-step2">
+      <div class="otp-display">
+        <div class="otp-label">Your OTP (demo)</div>
+        <div class="otp-code" id="p-otp-shown">----</div>
+      </div>
+      <div class="otp-note">In production this will be sent via SMS</div>
+      <div class="form-group"><label>Enter OTP</label><input type="number" id="p-otp-input" placeholder="4-digit OTP"/></div>
+      <div id="p-otp-msg"></div>
+      <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
+      <button class="link-btn" onclick="goPlayerBack()">← Go Back</button>
+    </div>
+  </div>
+</div>
+
+<div id="games-section" class="games-section">
   <div class="games-label">Available Games</div>
   <div class="games-grid">
     <div class="game-card active" onclick="selectGame('mahjong')">
@@ -281,6 +332,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
   </div>
 </div>
 
+</div><!-- end games-section -->
 <footer>© 2026 SportBook · Vadodara · All rights reserved</footer>
 
 <script>
@@ -300,17 +352,20 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hero-title').textContent = 'Choose Your Sport';
     document.getElementById('hero-sub').textContent = 'Select a sport to manage your club';
   } else {
+    // PLAYER — show registration/login form directly, hide game grid
     document.getElementById('role-badge').textContent = '🏃 Player';
-    document.getElementById('hero-title').textContent = 'Choose Your Game';
-    document.getElementById('hero-sub').textContent = 'Select a sport to find clubs and book your seat';
-  }
+    document.getElementById('hero-title').textContent = 'Player Login / Register';
+    document.getElementById('hero-sub').textContent = 'New player? Register below. Returning? Login with your mobile.';
+    document.getElementById('games-section').style.display = 'none';
+    document.getElementById('player-direct-panel').style.display = 'block';
 
-  // Auto-check if player already logged in
-  const saved = localStorage.getItem('sp_member');
-  if (saved && currentRole === 'player') {
-    const member = JSON.parse(saved);
-    if (member.status === 'active') {
-      window.location.href = '/mahjong/index.html';
+    // Auto-check if player already logged in and active
+    const saved = localStorage.getItem('sp_member');
+    if (saved) {
+      const member = JSON.parse(saved);
+      if (member.status === 'active') {
+        window.location.href = '/mahjong/index.html';
+      }
     }
   }
 });
@@ -449,6 +504,10 @@ async function verifyPlayerOTP() {
       showMsg('p-otp-msg','✅ Welcome back! Taking you to clubs...','success');
       setTimeout(() => { window.location.href = '/mahjong/index.html'; }, 1200);
     } else {
+      // Send Telegram notification to admin for new registrations
+      if (currentMode === 'new') {
+        await notifyAdmin(member);
+      }
       showMsg('p-otp-msg','✅ OTP verified!','success');
       setTimeout(() => {
         document.getElementById('approval-overlay').classList.add('open');
@@ -456,6 +515,23 @@ async function verifyPlayerOTP() {
     }
 
   } catch(e) { showMsg('p-otp-msg','Error: '+e.message,'error'); }
+}
+
+async function notifyAdmin(member) {
+  try {
+    const msg = '🎮 <b>New Player Registration</b>\n\n'
+      + '👤 Name: <b>' + member.name + '</b>\n'
+      + '📱 Mobile: ' + member.mobile + '\n'
+      + '✉️ Email: ' + member.email + '\n'
+      + '👤 Gender: ' + member.gender + '\n'
+      + '💬 WhatsApp: ' + (member.whatsapp || member.mobile) + '\n\n'
+      + 'Please approve from Admin Panel: sportbook.in/admin';
+    await fetch('https://api.telegram.org/bot8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: '8507770594', text: msg, parse_mode: 'HTML' })
+    });
+  } catch(e) {}
 }
 
 function showStep(stepId) {
