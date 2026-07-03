@@ -540,32 +540,32 @@ async function updateSiteMember(id, newStatus, name, mobile, email) {
 
 async function exportMembersCSV() {
   try {
-    const data = await fetch(`${SUPABASE_URL}/rest/v1/sp_members?select=*&order=created_at.desc`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    }).then(r => r.json());
-
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    const data = await resp.json();
     if (!data.length) { toast('No members found.'); return; }
-
     const headers = ['Name','Mobile','Email','Gender','WhatsApp','Telegram','Status','Registered On'];
-    const rows = data.map(m => [
-      m.name||'',
-      m.mobile||'',
-      m.email||'',
-      m.gender||'',
-      m.whatsapp||'',
-      m.telegram_id||'',
-      m.status||'',
-      m.created_at?new Date(m.created_at).toLocaleDateString('en-IN'):''
-    ]);
-
-    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('
-');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const rows = data.map(function(m) {
+      return [
+        m.name||'', m.mobile||'', m.email||'', m.gender||'',
+        m.whatsapp||'', m.telegram_id||'', m.status||'',
+        m.created_at ? new Date(m.created_at).toLocaleDateString('en-IN') : ''
+      ];
+    });
+    var csvLines = [headers.join(',')];
+    rows.forEach(function(r) {
+      csvLines.push(r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(','));
+    });
+    var csvContent = csvLines.join('\n');
+    var blob = new Blob([csvContent], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
     a.href = url;
     a.download = 'sportbook_members_' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast('✅ CSV downloaded!');
   } catch(e) { toast('Error: ' + e.message); }
