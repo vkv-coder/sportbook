@@ -151,6 +151,7 @@ select option{background:var(--surface);}
     <button class="nav-tab" onclick="switchTab('tab-sessions')"><span class="tab-icon">🀄</span>Tables</button>
     <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👨‍👩‍👧‍👦</span>Groups</button>
     <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
+    <button class="nav-tab" onclick="switchTab('tab-venue')"><span class="tab-icon">📍</span>Venues</button>
     <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>Ranks</button>
     <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
   </div>
@@ -237,6 +238,23 @@ select option{background:var(--surface);}
       <div class="section-label">Current Slots</div>
       <div id="slots-loading-admin" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="slots-list"></div>
+    </div>
+
+    <!-- VENUE EVENTS -->
+    <div class="tab-content" id="tab-venue">
+      <div class="card">
+        <div class="card-title">📍 Add Special Venue</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">When your club plays at a different location — café, resort etc. — add it here. All members and site visitors will see it.</div>
+        <div class="form-group"><label>Event Date</label><input type="date" id="venue-date"/></div>
+        <div class="form-group"><label>Venue Name</label><input type="text" id="venue-name" placeholder="e.g. Café Coffee Day, Alkapuri"/></div>
+        <div class="form-group"><label>Full Address</label><input type="text" id="venue-address" placeholder="e.g. 12, Alkapuri Society, Vadodara"/></div>
+        <div class="form-group"><label>Note (optional)</label><input type="text" id="venue-note" placeholder="e.g. Pool side, 1st floor entry"/></div>
+        <div id="venue-add-msg"></div>
+        <button class="btn btn-gold btn-full" onclick="addVenueEvent()">Add Venue Event →</button>
+      </div>
+      <div class="section-label">Upcoming & Past Venue Events</div>
+      <div id="venue-loading" class="loading"><div class="spinner"></div>Loading...</div>
+      <div id="venue-list"></div>
     </div>
 
     <!-- LEADERBOARD -->
@@ -703,6 +721,62 @@ async function reassignPlayer(el){
   }catch(e){alert('Error: '+e.message);}
 }
 
+async function addVenueEvent(){
+  const date=document.getElementById('venue-date').value;
+  const name=document.getElementById('venue-name').value.trim();
+  const address=document.getElementById('venue-address').value.trim();
+  const note=document.getElementById('venue-note').value.trim();
+  if(!date||!name||!address){showMsg('venue-add-msg','Please fill date, venue name and address.','error');return;}
+  showMsg('venue-add-msg','Adding...','info');
+  try{
+    await sb('mj_venue_events','POST',{club_id:club.id,event_date:date,venue_name:name,address:address,note:note||null});
+    document.getElementById('venue-date').value='';
+    document.getElementById('venue-name').value='';
+    document.getElementById('venue-address').value='';
+    document.getElementById('venue-note').value='';
+    showMsg('venue-add-msg','✅ Venue event added! Members will see this on their app.','success');
+    loadVenueEvents();
+  }catch(e){showMsg('venue-add-msg','Error: '+e.message,'error');}
+}
+
+async function loadVenueEvents(){
+  document.getElementById('venue-loading').style.display='block';
+  document.getElementById('venue-list').innerHTML='';
+  try{
+    const events=await sb(`mj_venue_events?club_id=eq.${club.id}&select=*&order=event_date.desc`);
+    document.getElementById('venue-loading').style.display='none';
+    if(!events.length){
+      document.getElementById('venue-list').innerHTML='<div class="empty-state"><div class="empty-icon">📍</div><p>No special venue events added yet.</p></div>';
+      return;
+    }
+    const today=new Date().toISOString().split('T')[0];
+    document.getElementById('venue-list').innerHTML=events.map(e=>{
+      const isPast=e.event_date<today;
+      const isToday=e.event_date===today;
+      return `<div class="slot-item" style="display:block;padding:14px;margin-bottom:10px;border-left:3px solid ${isToday?'var(--gold)':isPast?'var(--border)':'var(--green)'};">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div style="font-size:14px;font-weight:600;color:var(--gold-light);">📍 ${e.venue_name}</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${isToday?'var(--gold)':isPast?'var(--surface)':'#1a3a1a'};color:${isToday?'#0f0e17':isPast?'var(--muted)':'#58d68d'};">${isToday?'TODAY':isPast?'PAST':'UPCOMING'}</span>
+            <button class="btn btn-red btn-sm" onclick="deleteVenueEvent('${e.id}')">Delete</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">📅 ${e.event_date}</div>
+        <div style="font-size:12px;color:var(--text);margin-top:4px;">🏠 ${e.address}</div>
+        ${e.note?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">💬 ${e.note}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){document.getElementById('venue-loading').style.display='none';}
+}
+
+async function deleteVenueEvent(id){
+  if(!confirm('Delete this venue event?'))return;
+  try{
+    await fetch(`${SB_URL}/rest/v1/mj_venue_events?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+    loadVenueEvents();
+  }catch(e){alert('Error: '+e.message);}
+}
+
 async function updateCategory(memId, category){
   try{
     await sbPatch(`mj_members?id=eq.${memId}`,{category});
@@ -810,8 +884,9 @@ function switchTab(tabId){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-leaderboard','tab-settings'].indexOf(tabId);
+  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-venue','tab-leaderboard','tab-settings'].indexOf(tabId);
   if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
+  if(tabId==='tab-venue')loadVenueEvents();
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
 }
 

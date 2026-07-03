@@ -112,6 +112,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <!-- TAB 1: FIND & BOOK -->
   <div class="tab-content active" id="tab-availability">
     <div id="balance-display"></div>
+    <div id="venue-banner"></div>
     <div class="date-section">
       <div class="date-label">Select Date to Check Availability</div>
       <input type="date" class="date-input" id="avail-date"/>
@@ -293,6 +294,8 @@ async function loadAvailability(){
   if(!myClubIds.length){document.getElementById('avail-results').innerHTML='<div class="empty-state"><div class="empty-icon">🏯</div><p>Not a member of any club yet.<br/>Go to Discover tab first.</p></div>';return;}
   document.getElementById('avail-loading').style.display='block';
   document.getElementById('avail-results').innerHTML='';
+  // Load venue events for this date
+  loadVenueBanner(date);
   try{
     var d=new Date(date+'T00:00:00');
     var days=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
@@ -539,6 +542,7 @@ async function loadDiscover(){
     var mems=await sb('mj_members?player_id=eq.'+player.id+'&select=club_id,status');
     var mMap={};mems.forEach(function(m){mMap[m.club_id]=m.status;});
     document.getElementById('discover-loading').style.display='none';
+    var venueMap=await loadDiscoverVenueEvents(allClubs);
     var others=allClubs.filter(function(c){return !mMap[c.id]||mMap[c.id]==='rejected';});
     if(!others.length){document.getElementById('discover-list').innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div><p>You are a member of all available clubs!</p></div>';return;}
     document.getElementById('discover-list').innerHTML=others.map(function(club){
@@ -551,7 +555,12 @@ async function loadDiscover(){
         :status==='pending'
           ?'<span class="badge badge-pending">⏳ Request Pending</span>'
           :'<button class="btn btn-outline btn-sm" onclick="requestMembership(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+club.gender_condition+'\',this)">Request to Join</button>';
-      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+club.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(club.city||'N/A')+'</span></div>'+(club.address?'<div class="discover-meta">🏠 <span>'+club.address+'</span></div>':'')+'<div class="discover-meta">🀄 Tables: <span>'+club.total_tables+'</span></div>'+(club.email?'<div class="discover-meta">✉️ <span>'+club.email+'</span></div>':'')+'<div style="margin-top:12px;">'+actionBtn+'</div></div>';
+      var venueEvts=venueMap[club.id]||[];
+      var venueHtml=venueEvts.length?'<div style="margin-top:10px;background:#1a3a1a;border:1px solid #27ae60;border-radius:8px;padding:10px;">'
+        +'<div style="font-size:10px;color:#58d68d;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📍 Upcoming Special Venues</div>'
+        +venueEvts.map(function(ev){return '<div style="font-size:12px;color:var(--text);margin-bottom:3px;">📅 '+ev.event_date+' — <b>'+ev.venue_name+'</b></div>';}).join('')
+        +'</div>':'';
+      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+club.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(club.city||'N/A')+'</span></div>'+(club.address?'<div class="discover-meta">🏠 <span>'+club.address+'</span></div>':'')+'<div class="discover-meta">🀄 Tables: <span>'+club.total_tables+'</span></div>'+(club.email?'<div class="discover-meta">✉️ <span>'+club.email+'</span></div>':'')+'<div style="margin-top:12px;">'+actionBtn+'</div>'+venueHtml+'</div>';
     }).join('');
   }catch(e){document.getElementById('discover-loading').style.display='none';}
 }
@@ -566,6 +575,38 @@ async function requestMembership(clubId,clubName,genderCondition,btn){
     await tg('🀄 <b>New Membership Request</b>\n\nClub: <b>'+clubName+'</b>\nPlayer: <b>'+player.name+'</b>\nMobile: '+player.mobile+'\nEmail: '+player.email+'\nGender: '+player.gender+'\n\nApprove from Club Dashboard.');
     btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
   }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
+}
+
+async function loadVenueBanner(date){
+  try{
+    if(!myClubIds.length)return;
+    var events=await sb('mj_venue_events?club_id=in.('+myClubIds.join(',')+')'+'&event_date=eq.'+date+'&select=*');
+    if(!events.length){document.getElementById('venue-banner').innerHTML='';return;}
+    var html=events.map(function(e){
+      var club=myClubs.find(function(c){return c.id===e.club_id;});
+      return '<div style="background:linear-gradient(135deg,#1a3a1a,#1a2a1a);border:1px solid var(--green);border-radius:10px;padding:14px;margin-bottom:14px;">'
+        +'<div style="font-size:11px;color:#58d68d;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📍 Special Venue Today'+(club?' — '+club.club_name:'')+'</div>'
+        +'<div style="font-size:15px;font-weight:700;color:#e8e6f0;margin-bottom:4px;">'+e.venue_name+'</div>'
+        +'<div style="font-size:12px;color:var(--muted);">🏠 '+e.address+'</div>'
+        +(e.note?'<div style="font-size:12px;color:var(--muted);margin-top:3px;">💬 '+e.note+'</div>':'')
+        +'</div>';
+    }).join('');
+    document.getElementById('venue-banner').innerHTML=html;
+  }catch(e){document.getElementById('venue-banner').innerHTML='';}
+}
+
+async function loadDiscoverVenueEvents(clubs){
+  try{
+    if(!clubs.length)return{};
+    var today=new Date().toISOString().split('T')[0];
+    var future=new Date();future.setDate(future.getDate()+7);
+    var futureStr=future.toISOString().split('T')[0];
+    var ids=clubs.map(function(c){return c.id;});
+    var events=await sb('mj_venue_events?club_id=in.('+ids.join(',')+')'+'&event_date=gte.'+today+'&event_date=lte.'+futureStr+'&select=*&order=event_date.asc');
+    var map={};
+    events.forEach(function(e){if(!map[e.club_id])map[e.club_id]=[];map[e.club_id].push(e);});
+    return map;
+  }catch(e){return{};}
 }
 
 function logout(){localStorage.removeItem('sp_member');localStorage.removeItem('mj_active_club');window.location.href='/select-game.html?role=player';}
