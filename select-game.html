@@ -505,8 +505,9 @@ async function verifyPlayerOTP() {
       showMsg('p-otp-msg','✅ Welcome back! Taking you to clubs...','success');
       setTimeout(() => { window.location.href = '/mahjong/index.html'; }, 1200);
     } else {
-      // Send Telegram notification to admin for new registrations
-      if (currentMode === 'new') {
+      // Send Telegram notification ONLY for brand new registrations
+      // otp_verified was false before this call = first time verifying = new registration
+      if (currentMode === 'new' && !member.otp_verified) {
         await notifyAdmin(member);
       }
       showMsg('p-otp-msg','✅ OTP verified!','success');
