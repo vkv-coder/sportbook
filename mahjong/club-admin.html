@@ -18,9 +18,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
 .header-title{font-family:'Noto Serif Display',serif;font-size:17px;color:var(--gold);}
 .header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
-.nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;}
-.nav-tabs::-webkit-scrollbar{display:none;}
-.nav-tab{flex:0 0 auto;min-width:80px;padding:10px 10px;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;white-space:nowrap;text-align:center;}
+.nav-tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);}
+.nav-tabs{display:flex;background:transparent;border-bottom:1px solid var(--border);}
+.nav-tabs:last-child{border-bottom:none;}
+.nav-tab{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;white-space:nowrap;text-align:center;}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .nav-tab .tab-icon{display:block;font-size:16px;margin-bottom:2px;}
 .main{max-width:520px;margin:0 auto;padding:20px 16px 80px;}
@@ -146,15 +147,19 @@ select option{background:var(--surface);}
     </div>
   </div>
 
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('tab-overview')"><span class="tab-icon">📊</span>Overview</button>
-    <button class="nav-tab" onclick="switchTab('tab-members')"><span class="tab-icon">👥</span>Members</button>
-    <button class="nav-tab" onclick="switchTab('tab-sessions')"><span class="tab-icon">🀄</span>Tables</button>
-    <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👨‍👩‍👧‍👦</span>Groups</button>
-    <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
-    <button class="nav-tab" onclick="switchTab('tab-venue')"><span class="tab-icon">📍</span>Venues</button>
-    <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>Ranks</button>
-    <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
+  <div class="nav-tabs-wrap">
+    <div class="nav-tabs" id="nav-row-1">
+      <button class="nav-tab active" onclick="switchTab('tab-overview')"><span class="tab-icon">📊</span>Overview</button>
+      <button class="nav-tab" onclick="switchTab('tab-members')"><span class="tab-icon">👥</span>Members</button>
+      <button class="nav-tab" onclick="switchTab('tab-sessions')"><span class="tab-icon">🀄</span>Tables</button>
+      <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👨‍👩‍👧‍👦</span>Groups</button>
+    </div>
+    <div class="nav-tabs" id="nav-row-2">
+      <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
+      <button class="nav-tab" onclick="switchTab('tab-venue')"><span class="tab-icon">📍</span>Venues</button>
+      <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>Ranks</button>
+      <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
+    </div>
   </div>
 
   <div class="main">
