@@ -264,6 +264,13 @@ async function createRoom(){
   if(!clubId||!date||!tableNo||!p2||!p3||!p4){showMsg('create-msg','Please fill all fields.','error');return;}
   if(new Set([player.id,p2,p3,p4]).size<4){showMsg('create-msg','All 4 players must be different.','error');return;}
 
+  showMsg('create-msg','Verifying membership...','info');
+  // FIX: Check player is member of selected club before creating room
+  try{
+    const myMem=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&status=eq.approved&select=id');
+    if(!myMem.length){showMsg('create-msg','You are not an approved member of this club.','error');return;}
+  }catch(e){showMsg('create-msg','Error verifying membership: '+e.message,'error');return;}
+
   showMsg('create-msg','Creating room...','info');
   try{
     const room=await sb('mj_score_rooms','POST',{

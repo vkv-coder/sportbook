@@ -8,402 +8,99 @@
   <meta name="theme-color" content="#0f0e17" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
-
-    :root {
-      --bg: #0f0e17;
-      --surface: #1a1930;
-      --card: #22213a;
-      --border: #2e2d4a;
-      --gold: #c9a84c;
-      --gold-light: #e8c97a;
-      --red: #c0392b;
-      --green: #27ae60;
-      --blue: #2980b9;
-      --text: #e8e6f0;
-      --muted: #8b89a8;
-      --radius: 12px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
-
-    /* HEADER */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .header-title {
-      font-family: 'Noto Serif Display', serif;
-      font-size: 18px;
-      color: var(--gold);
-    }
-    .header-sub { font-size: 11px; color: var(--muted); }
-    .btn-logout {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .btn-logout:hover { border-color: var(--red); color: var(--red); }
-
-    /* NAV TABS */
-    .nav-tabs {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-    }
-    .nav-tab {
-      flex: 1;
-      min-width: 80px;
-      padding: 12px 8px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-      font-family: 'Inter', sans-serif;
-    }
-    .nav-tab.active {
-      color: var(--gold);
-      border-bottom-color: var(--gold);
-    }
-    .nav-tab .tab-icon { display: block; font-size: 18px; margin-bottom: 2px; }
-
-    /* MAIN */
-    .main { max-width: 480px; margin: 0 auto; padding: 20px 16px 80px; }
-
-    /* SCREENS */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* CLUB SELECTOR */
-    .club-selector {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .club-selector-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--gold-light);
-    }
-    .club-selector-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-
-    /* CARDS */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 14px;
-    }
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gold-light);
-      margin-bottom: 14px;
-    }
-
-    /* SLOT GRID */
-    .date-row {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 16px;
-    }
-    .date-chip {
-      flex-shrink: 0;
-      padding: 8px 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 12px;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.2s;
-    }
-    .date-chip .day { font-weight: 600; font-size: 13px; color: var(--text); display: block; }
-    .date-chip.selected {
-      background: var(--gold);
-      border-color: var(--gold);
-      color: #0f0e17;
-    }
-    .date-chip.selected .day { color: #0f0e17; }
-
-    /* TABLE GRID */
-    .slots-grid { display: flex; flex-direction: column; gap: 10px; }
-
-    .slot-row {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-    }
-    .slot-time {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--gold-light);
-      margin-bottom: 10px;
-    }
-    .tables-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .table-chip {
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid;
-      text-align: center;
-      min-width: 80px;
-    }
-    .table-chip .table-label { font-size: 11px; font-weight: 400; display: block; margin-top: 2px; }
-
-    .table-open {
-      background: #1a3a1a;
-      border-color: var(--green);
-      color: #58d68d;
-    }
-    .table-open:hover { background: var(--green); color: #fff; }
-
-    .table-filling {
-      background: #3a2a1a;
-      border-color: #e67e22;
-      color: #f0b27a;
-    }
-    .table-filling:hover { background: #e67e22; color: #fff; }
-
-    .table-full {
-      background: #2a1a1a;
-      border-color: #555;
-      color: #777;
-      cursor: not-allowed;
-    }
-
-    .table-mine {
-      background: #1a2a3a;
-      border-color: var(--blue);
-      color: #5dade2;
-      cursor: default;
-    }
-
-    /* FORM */
-    .form-group { margin-bottom: 14px; }
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    input, select {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 11px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus { border-color: var(--gold); }
-    select option { background: var(--surface); }
-
-    /* BUTTONS */
-    .btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-full { width: 100%; }
-    .btn-gold { background: var(--gold); color: #0f0e17; }
-    .btn-gold:hover { background: var(--gold-light); }
-    .btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
-    .btn-red { background: var(--red); color: #fff; }
-    .btn-sm { padding: 7px 14px; font-size: 12px; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* STATUS */
-    .status-box {
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 13px;
-      margin-bottom: 12px;
-      text-align: center;
-    }
-    .status-success { background: #1a3a1a; border: 1px solid var(--green); color: #58d68d; }
-    .status-error { background: #3a1a1a; border: 1px solid var(--red); color: #f1948a; }
-    .status-info { background: #1a2a3a; border: 1px solid var(--blue); color: #5dade2; }
-    .status-warn { background: #3a2a1a; border: 1px solid #e67e22; color: #f0b27a; }
-
-    /* BOOKINGS LIST */
-    .booking-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 10px;
-    }
-    .booking-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .booking-date { font-size: 14px; font-weight: 600; color: var(--gold-light); }
-    .booking-badge {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .badge-confirmed { background: #1a3a1a; color: #58d68d; }
-    .badge-cancelled { background: #2a1a1a; color: #777; }
-    .badge-full { background: #1a2e3a; color: #5dade2; }
-    .booking-meta { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-    .booking-meta span { color: var(--text); }
-
-    /* AVAILABILITY POSTS */
-    .avail-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .avail-info { font-size: 13px; color: var(--text); }
-    .avail-date { font-weight: 600; color: var(--gold-light); }
-    .avail-slot { color: var(--muted); font-size: 12px; margin-top: 3px; }
-    .avail-status {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .avail-open { background: #1a3a1a; color: #58d68d; }
-    .avail-matched { background: #1a2a3a; color: #5dade2; }
-    .avail-cancelled { background: #2a1a1a; color: #777; }
-
-    /* LOADING */
-    .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
-    .spinner {
-      width: 24px; height: 24px;
-      border: 2px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
-    .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
-    .empty-state p { font-size: 13px; line-height: 1.6; }
-
-    .section-label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    /* MODAL */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 200;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px 16px 0 0;
-      padding: 24px 20px;
-      width: 100%;
-      max-width: 480px;
-    }
-    .modal-title {
-      font-family: 'Noto Serif Display', serif;
-      font-size: 18px;
-      color: var(--gold);
-      margin-bottom: 6px;
-    }
-    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
-    .modal-actions .btn { flex: 1; }
-
-    /* LEGEND */
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .legend-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-    }
-    .dot-open { background: var(--green); }
-    .dot-filling { background: #e67e22; }
-    .dot-full { background: #555; }
-    .dot-mine { background: var(--blue); }
+    :root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+    .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .header-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);}
+    .header-sub{font-size:11px;color:var(--muted);}
+    .btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;}
+    .btn-logout:hover{border-color:var(--red);color:var(--red);}
+    .nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+    .nav-tab{flex:1;min-width:80px;padding:12px 8px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;font-family:'Inter',sans-serif;text-align:center;}
+    .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+    .nav-tab .tab-icon{display:block;font-size:18px;margin-bottom:2px;}
+    .main{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
+    .tab-content{display:none;}.tab-content.active{display:block;}
+    .club-selector{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+    .club-selector-name{font-size:15px;font-weight:600;color:var(--gold-light);}
+    .club-selector-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+    .card-title{font-size:14px;font-weight:600;color:var(--gold-light);margin-bottom:14px;}
+    .date-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;}
+    .date-chip{flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer;text-align:center;transition:all 0.2s;}
+    .date-chip .day{font-weight:600;font-size:13px;color:var(--text);display:block;}
+    .date-chip.selected{background:var(--gold);border-color:var(--gold);color:#0f0e17;}
+    .date-chip.selected .day{color:#0f0e17;}
+    .slots-grid{display:flex;flex-direction:column;gap:10px;}
+    .slot-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}
+    .slot-time{font-size:14px;font-weight:600;color:var(--gold-light);margin-bottom:10px;}
+    .tables-row{display:flex;flex-wrap:wrap;gap:8px;}
+    .table-chip{padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid;text-align:center;min-width:80px;}
+    .table-chip .table-label{font-size:11px;font-weight:400;display:block;margin-top:2px;}
+    .table-open{background:#1a3a1a;border-color:var(--green);color:#58d68d;}
+    .table-open:hover{background:var(--green);color:#fff;}
+    .table-filling{background:#3a2a1a;border-color:#e67e22;color:#f0b27a;}
+    .table-filling:hover{background:#e67e22;color:#fff;}
+    .table-full{background:#2a1a1a;border-color:#555;color:#777;cursor:not-allowed;}
+    .table-mine{background:#1a2a3a;border-color:var(--blue);color:#5dade2;cursor:default;}
+    .form-group{margin-bottom:14px;}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
+    input,select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;}
+    input:focus,select:focus{border-color:var(--gold);}
+    select option{background:var(--surface);}
+    .btn{padding:12px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;}
+    .btn-full{width:100%;}
+    .btn-gold{background:var(--gold);color:#0f0e17;}.btn-gold:hover{background:var(--gold-light);}
+    .btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+    .btn-red{background:var(--red);color:#fff;}
+    .btn-sm{padding:7px 14px;font-size:12px;}
+    .btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .status-box{border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px;text-align:center;}
+    .status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
+    .status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
+    .status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
+    .status-warn{background:#3a2a1a;border:1px solid #e67e22;color:#f0b27a;}
+    .booking-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+    .booking-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+    .booking-date{font-size:14px;font-weight:600;color:var(--gold-light);}
+    .booking-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
+    .badge-confirmed{background:#1a3a1a;color:#58d68d;}
+    .badge-cancelled{background:#2a1a1a;color:#777;}
+    .booking-meta{font-size:12px;color:var(--muted);margin-bottom:4px;}
+    .booking-meta span{color:var(--text);}
+    .avail-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+    .avail-info{font-size:13px;color:var(--text);}
+    .avail-date{font-weight:600;color:var(--gold-light);}
+    .avail-slot{color:var(--muted);font-size:12px;margin-top:3px;}
+    .avail-status{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
+    .avail-open{background:#1a3a1a;color:#58d68d;}
+    .avail-matched{background:#1a2a3a;color:#5dade2;}
+    .avail-cancelled{background:#2a1a1a;color:#777;}
+    .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+    .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+    .empty-state .empty-icon{font-size:40px;margin-bottom:12px;}
+    .empty-state p{font-size:13px;line-height:1.6;}
+    .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--card);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px 20px;width:100%;max-width:480px;}
+    .modal-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);margin-bottom:6px;}
+    .modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+    .modal-actions{display:flex;gap:10px;margin-top:16px;}
+    .modal-actions .btn{flex:1;}
+    .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+    .legend-dot{width:10px;height:10px;border-radius:50%;}
+    .dot-open{background:var(--green);}
+    .dot-filling{background:#e67e22;}
+    .dot-full{background:#555;}
+    .dot-mine{background:var(--blue);}
   </style>
 </head>
 <body>
-
 <div class="header">
   <div>
     <div class="header-title">🀄 My Dashboard</div>
@@ -413,77 +110,57 @@
 </div>
 
 <div class="nav-tabs">
-  <button class="nav-tab active" onclick="switchTab('tab-slots')">
-    <span class="tab-icon">🗓️</span>Book Seat
-  </button>
-  <button class="nav-tab" onclick="switchTab('tab-availability')">
-    <span class="tab-icon">📢</span>My Availability
-  </button>
-  <button class="nav-tab" onclick="switchTab('tab-bookings')">
-    <span class="tab-icon">📋</span>My Bookings
-  </button>
+  <button class="nav-tab active" onclick="switchTab('tab-slots')"><span class="tab-icon">🗓️</span>Book Seat</button>
+  <button class="nav-tab" onclick="switchTab('tab-availability')"><span class="tab-icon">📢</span>My Availability</button>
+  <button class="nav-tab" onclick="switchTab('tab-bookings')"><span class="tab-icon">📋</span>My Bookings</button>
 </div>
 
 <div class="main">
-
   <div class="club-selector">
     <div>
       <div class="club-selector-name" id="club-display-name">Loading club...</div>
       <div class="club-selector-sub" id="club-display-meta"></div>
     </div>
-    <a href="/mahjong/" style="font-size:12px; color:var(--muted); text-decoration:none;">Change →</a>
+    <a href="/mahjong/" style="font-size:12px;color:var(--muted);text-decoration:none;">Change →</a>
   </div>
 
-  <!-- ===== TAB 1: BOOK SEAT ===== -->
+  <!-- TAB 1: BOOK SEAT -->
   <div class="tab-content active" id="tab-slots">
     <div class="section-label">Select Date</div>
     <div class="date-row" id="date-row"></div>
-
     <div class="legend">
       <div class="legend-item"><div class="legend-dot dot-open"></div> Open</div>
       <div class="legend-item"><div class="legend-dot dot-filling"></div> Filling</div>
       <div class="legend-item"><div class="legend-dot dot-full"></div> Full</div>
       <div class="legend-item"><div class="legend-dot dot-mine"></div> My Booking</div>
     </div>
-
-    <div id="slots-loading" class="loading">
-      <div class="spinner"></div>Loading slots...
-    </div>
+    <div id="slots-loading" class="loading"><div class="spinner"></div>Loading slots...</div>
     <div class="slots-grid" id="slots-grid"></div>
   </div>
 
-  <!-- ===== TAB 2: POST AVAILABILITY ===== -->
+  <!-- TAB 2: POST AVAILABILITY -->
   <div class="tab-content" id="tab-availability">
     <div class="card">
       <div class="card-title">📢 Post Your Availability</div>
-      <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">
-        Let other members know when you're free to play. Admin will notify you when a table is ready.
-      </p>
-      <div class="form-group">
-        <label>Preferred Date</label>
-        <input type="date" id="avail-date" />
-      </div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Let other members know when you're free to play. Admin will notify you when a table is ready.</p>
+      <div class="form-group"><label>Preferred Date</label><input type="date" id="avail-date"/></div>
       <div class="form-group">
         <label>Preferred Time Slot</label>
-        <select id="avail-slot">
-          <option value="">Loading slots...</option>
-        </select>
+        <select id="avail-slot"><option value="">Loading slots...</option></select>
       </div>
       <div id="avail-msg"></div>
       <button class="btn btn-gold btn-full" onclick="postAvailability()">Post Availability</button>
     </div>
-
     <div class="section-label" style="margin-top:8px;">My Posted Availabilities</div>
     <div id="avail-list-loading" class="loading"><div class="spinner"></div>Loading...</div>
     <div id="avail-list"></div>
   </div>
 
-  <!-- ===== TAB 3: MY BOOKINGS ===== -->
+  <!-- TAB 3: MY BOOKINGS -->
   <div class="tab-content" id="tab-bookings">
     <div id="bookings-loading" class="loading"><div class="spinner"></div>Loading bookings...</div>
     <div id="bookings-list"></div>
   </div>
-
 </div>
 
 <!-- BOOK MODAL -->
@@ -501,506 +178,275 @@
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-  const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
-  const TELEGRAM_CHAT = '8507770594';
+const SUPABASE_URL='https://jqqnnkzozjskziaizajg.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+const TG_BOT='8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
+const TG_CHAT='8507770594';
 
-  let currentPlayer = null;
-  let currentClub = null;
-  let allSlots = [];
-  let selectedDate = '';
-  let pendingBooking = null;
+let currentPlayer=null,currentClub=null,allSlots=[],selectedDate='',pendingBooking=null;
 
-  // ─── INIT ───────────────────────────────────────────────────
-  window.addEventListener('DOMContentLoaded', async () => {
-    const saved = localStorage.getItem('mj_player');
-    const clubId = localStorage.getItem('mj_active_club');
+window.addEventListener('DOMContentLoaded',async()=>{
+  // FIX 1: Use correct localStorage key sp_member (not mj_player)
+  const saved=localStorage.getItem('sp_member');
+  const clubId=localStorage.getItem('mj_active_club');
+  if(!saved||!clubId){window.location.href='/mahjong/';return;}
+  currentPlayer=JSON.parse(saved);
+  document.getElementById('header-player-name').textContent=currentPlayer.name;
+  try{
+    const mem=await sb(`mj_members?player_id=eq.${currentPlayer.id}&club_id=eq.${clubId}&status=eq.approved&select=id`);
+    if(!mem.length){alert('Your membership is not approved for this club.');window.location.href='/mahjong/';return;}
+    const clubs=await sb(`mj_clubs?id=eq.${clubId}&select=*`);
+    currentClub=clubs[0];
+    document.getElementById('club-display-name').textContent='🏯 '+currentClub.club_name;
+    document.getElementById('club-display-meta').textContent=currentClub.total_tables+' tables · '+(currentClub.city||'');
+    allSlots=await sb(`mj_slots?club_id=eq.${clubId}&is_active=eq.true&select=*&order=start_time.asc`);
+    buildDateRow();
+    populateSlotSelect();
+    loadAvailabilityPosts();
+    loadMyBookings();
+  }catch(e){alert('Error loading dashboard: '+e.message);}
+});
 
-    if (!saved || !clubId) {
-      window.location.href = '/mahjong/';
-      return;
-    }
+async function sb(path,method='GET',body=null){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method,headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  if(!res.ok){const e=await res.json();throw new Error(e.message);}
+  return method==='DELETE'?null:res.json();
+}
+async function sbPatch(path,body){
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+async function tg(msg){
+  try{await fetch(`https://api.telegram.org/bot${TG_BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
+}
+function showMsg(elId,msg,type){document.getElementById(elId).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
 
-    currentPlayer = JSON.parse(saved);
-    document.getElementById('header-player-name').textContent = currentPlayer.name;
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx=['tab-slots','tab-availability','tab-bookings'].indexOf(tabId);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
 
-    // Verify membership is still approved
-    try {
-      const mem = await sb(`mj_members?player_id=eq.${currentPlayer.id}&club_id=eq.${clubId}&status=eq.approved&select=id`);
-      if (mem.length === 0) {
-        alert('Your membership is not approved for this club.');
-        window.location.href = '/mahjong/';
-        return;
+function buildDateRow(){
+  const row=document.getElementById('date-row');
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date();d.setDate(d.getDate()+i);
+    const dateStr=d.toISOString().split('T')[0];
+    const label=i===0?'Today':days[d.getDay()];
+    html+=`<div class="date-chip ${i===0?'selected':''}" onclick="selectDate('${dateStr}',this)"><span class="day">${label}</span>${d.getDate()} ${months[d.getMonth()]}</div>`;
+    if(i===0)selectedDate=dateStr;
+  }
+  row.innerHTML=html;
+  loadSlotsForDate(selectedDate);
+}
+
+function selectDate(dateStr,el){
+  document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDate=dateStr;
+  loadSlotsForDate(dateStr);
+}
+
+async function loadSlotsForDate(date){
+  document.getElementById('slots-loading').style.display='block';
+  document.getElementById('slots-grid').innerHTML='';
+  if(!allSlots.length){
+    document.getElementById('slots-loading').style.display='none';
+    document.getElementById('slots-grid').innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><p>No time slots configured for this club yet.</p></div>';
+    return;
+  }
+  const d=new Date(date+'T00:00:00');
+  const dayNames=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const dayName=dayNames[d.getDay()];
+  const daySlots=allSlots.filter(s=>!s.day_of_week||s.day_of_week.toLowerCase()===dayName||s.day_of_week==='all');
+  if(!daySlots.length){
+    document.getElementById('slots-loading').style.display='none';
+    document.getElementById('slots-grid').innerHTML='<div class="empty-state"><div class="empty-icon">🚫</div><p>No slots available on this day.</p></div>';
+    return;
+  }
+  try{
+    const bookings=await sb(`mj_bookings?club_id=eq.${currentClub.id}&booking_date=eq.${date}&status=eq.confirmed&select=*`);
+    document.getElementById('slots-loading').style.display='none';
+    let html='';
+    for(const slot of daySlots){
+      const slotBookings=bookings.filter(b=>b.slot_id===slot.id);
+      let tablesHtml='';
+      for(let t=1;t<=currentClub.total_tables;t++){
+        const tableBookings=slotBookings.filter(b=>b.table_number===t);
+        const count=tableBookings.length;
+        const isMine=tableBookings.some(b=>b.player_id===currentPlayer.id);
+        let chipClass='table-open';
+        let countLabel=`${count}/4 seats`;
+        let onClick=`openBookModal('${slot.id}',${t},${count},'${slot.start_time}–${slot.end_time}')`;
+        if(isMine){chipClass='table-mine';onClick='';}
+        else if(count>=4){chipClass='table-full';onClick='';}
+        else if(count>0){chipClass='table-filling';}
+        tablesHtml+=`<div class="table-chip ${chipClass}" ${onClick?`onclick="${onClick}"`:''}">Table ${t}<span class="table-label">${isMine?'✓ Booked':countLabel}</span></div>`;
       }
-
-      // Load club
-      const clubs = await sb(`mj_clubs?id=eq.${clubId}&select=*`);
-      currentClub = clubs[0];
-      document.getElementById('club-display-name').textContent = '🏯 ' + currentClub.club_name;
-      document.getElementById('club-display-meta').textContent =
-        `${currentClub.total_tables} tables · ${currentClub.city || ''}`;
-
-      // Load slots
-      allSlots = await sb(`mj_slots?club_id=eq.${clubId}&is_active=eq.true&select=*&order=start_time.asc`);
-
-      buildDateRow();
-      populateSlotSelect();
-      loadAvailabilityPosts();
-      loadMyBookings();
-
-    } catch (e) {
-      alert('Error loading dashboard: ' + e.message);
+      html+=`<div class="slot-row"><div class="slot-time">🕐 ${slot.start_time} – ${slot.end_time}</div><div class="tables-row">${tablesHtml}</div></div>`;
     }
-  });
-
-  // ─── SUPABASE HELPER ───────────────────────────────────────
-  async function sb(path, method = 'GET', body = null) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-      method,
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : ''
-      },
-      body: body ? JSON.stringify(body) : null
-    });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
-    return method === 'DELETE' ? null : res.json();
+    document.getElementById('slots-grid').innerHTML=html;
+  }catch(e){
+    document.getElementById('slots-loading').style.display='none';
+    document.getElementById('slots-grid').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;
   }
+}
 
-  async function sendTelegram(msg) {
-    try {
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
-      });
-    } catch(e) {}
-  }
+function openBookModal(slotId,tableNo,currentCount,timeLabel){
+  pendingBooking={slotId,tableNo,currentCount};
+  document.getElementById('book-modal-sub').textContent=`Table ${tableNo} · ${timeLabel} · ${selectedDate}`;
+  document.getElementById('book-modal-seats').innerHTML=`<div class="status-box status-info">${currentCount} of 4 seats booked. ${4-currentCount} seat(s) available.<br/>You will take 1 seat.</div>`;
+  document.getElementById('book-modal-msg').innerHTML='';
+  document.getElementById('book-confirm-btn').disabled=false;
+  document.getElementById('book-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('book-modal').classList.remove('open');pendingBooking=null;}
 
-  // ─── TABS ──────────────────────────────────────────────────
-  function switchTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    const idx = ['tab-slots','tab-availability','tab-bookings'].indexOf(tabId);
-    document.querySelectorAll('.nav-tab')[idx].classList.add('active');
-  }
-
-  // ─── DATE ROW ──────────────────────────────────────────────
-  function buildDateRow() {
-    const row = document.getElementById('date-row');
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    let html = '';
-
-    for (let i = 0; i < 7; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      const dateStr = d.toISOString().split('T')[0];
-      const label = i === 0 ? 'Today' : days[d.getDay()];
-      html += `
-        <div class="date-chip ${i === 0 ? 'selected' : ''}" onclick="selectDate('${dateStr}', this)">
-          <span class="day">${label}</span>
-          ${d.getDate()} ${months[d.getMonth()]}
-        </div>`;
-      if (i === 0) selectedDate = dateStr;
+async function confirmBooking(){
+  if(!pendingBooking)return;
+  const btn=document.getElementById('book-confirm-btn');
+  btn.disabled=true;btn.textContent='Booking...';
+  try{
+    const fresh=await sb(`mj_bookings?club_id=eq.${currentClub.id}&slot_id=eq.${pendingBooking.slotId}&table_number=eq.${pendingBooking.tableNo}&booking_date=eq.${selectedDate}&status=eq.confirmed&select=id,player_id`);
+    if(fresh.length>=4){
+      document.getElementById('book-modal-msg').innerHTML='<div class="status-box status-error">Sorry, this table just got full. Please choose another.</div>';
+      btn.disabled=false;btn.textContent='Confirm Booking';return;
     }
+    const alreadyBooked=await sb(`mj_bookings?player_id=eq.${currentPlayer.id}&slot_id=eq.${pendingBooking.slotId}&booking_date=eq.${selectedDate}&status=eq.confirmed&select=id`);
+    if(alreadyBooked.length>0){
+      document.getElementById('book-modal-msg').innerHTML='<div class="status-box status-warn">You already have a booking in this time slot.</div>';
+      btn.disabled=false;btn.textContent='Confirm Booking';return;
+    }
+    await sb('mj_bookings','POST',{club_id:currentClub.id,slot_id:pendingBooking.slotId,table_number:pendingBooking.tableNo,player_id:currentPlayer.id,booking_date:selectedDate,status:'confirmed'});
+    const newCount=fresh.length+1;
+    const sessions=await sb(`mj_table_sessions?club_id=eq.${currentClub.id}&slot_id=eq.${pendingBooking.slotId}&table_number=eq.${pendingBooking.tableNo}&booking_date=eq.${selectedDate}&select=*`);
+    const allPlayerIds=[...fresh.map(b=>b.player_id),currentPlayer.id];
+    const sessionData={player1_id:allPlayerIds[0]||null,player2_id:allPlayerIds[1]||null,player3_id:allPlayerIds[2]||null,player4_id:allPlayerIds[3]||null,status:newCount>=4?'full':'filling'};
+    if(sessions.length>0){
+      await sbPatch(`mj_table_sessions?id=eq.${sessions[0].id}`,sessionData);
+    }else{
+      await sb('mj_table_sessions','POST',{club_id:currentClub.id,slot_id:pendingBooking.slotId,table_number:pendingBooking.tableNo,booking_date:selectedDate,...sessionData});
+    }
+    if(newCount>=4){
+      const slotInfo=allSlots.find(s=>s.id===pendingBooking.slotId);
+      await tg(`🀄 <b>TABLE FULL — Action Required</b>\n\nClub: <b>${currentClub.club_name}</b>\nTable: <b>${pendingBooking.tableNo}</b>\nDate: <b>${selectedDate}</b>\nTime: <b>${slotInfo?slotInfo.start_time+'–'+slotInfo.end_time:''}</b>\n\nAll 4 seats booked. Please notify members from Club Admin Dashboard.`);
+    }
+    document.getElementById('book-modal-msg').innerHTML=`<div class="status-box status-success">✅ Seat booked successfully!${newCount>=4?' Table is now FULL — admin notified.':''}</div>`;
+    btn.textContent='Booked!';
+    setTimeout(()=>{closeModal();loadSlotsForDate(selectedDate);loadMyBookings();},1800);
+  }catch(e){
+    document.getElementById('book-modal-msg').innerHTML=`<div class="status-box status-error">Error: ${e.message}</div>`;
+    btn.disabled=false;btn.textContent='Confirm Booking';
+  }
+}
 
-    row.innerHTML = html;
+function populateSlotSelect(){
+  const sel=document.getElementById('avail-slot');
+  if(!allSlots.length){sel.innerHTML='<option value="">No slots available</option>';return;}
+  sel.innerHTML='<option value="">Select a time slot</option>'+allSlots.map(s=>`<option value="${s.id}">${s.start_time} – ${s.end_time} (${s.day_of_week||'All days'})</option>`).join('');
+}
+
+async function postAvailability(){
+  const date=document.getElementById('avail-date').value;
+  const slotId=document.getElementById('avail-slot').value;
+  if(!date||!slotId){showMsg('avail-msg','Please select date and time slot.','error');return;}
+  showMsg('avail-msg','Posting...','info');
+  try{
+    const existing=await sb(`mj_availability_posts?player_id=eq.${currentPlayer.id}&club_id=eq.${currentClub.id}&preferred_date=eq.${date}&preferred_slot_id=eq.${slotId}&status=eq.open&select=id`);
+    if(existing.length>0){showMsg('avail-msg','You already posted availability for this slot.','warn');return;}
+    await sb('mj_availability_posts','POST',{club_id:currentClub.id,player_id:currentPlayer.id,preferred_date:date,preferred_slot_id:slotId,status:'open'});
+    showMsg('avail-msg','✅ Availability posted! Admin will contact you when a table fills up.','success');
+    document.getElementById('avail-date').value='';
+    document.getElementById('avail-slot').value='';
+    loadAvailabilityPosts();
+  }catch(e){showMsg('avail-msg','Error: '+e.message,'error');}
+}
+
+async function loadAvailabilityPosts(){
+  document.getElementById('avail-list-loading').style.display='block';
+  document.getElementById('avail-list').innerHTML='';
+  try{
+    const posts=await sb(`mj_availability_posts?player_id=eq.${currentPlayer.id}&club_id=eq.${currentClub.id}&select=*&order=preferred_date.desc`);
+    document.getElementById('avail-list-loading').style.display='none';
+    if(!posts.length){document.getElementById('avail-list').innerHTML='<div class="empty-state"><div class="empty-icon">📢</div><p>No availability posted yet.</p></div>';return;}
+    document.getElementById('avail-list').innerHTML=posts.map(p=>{
+      const slot=allSlots.find(s=>s.id===p.preferred_slot_id);
+      const slotLabel=slot?`${slot.start_time} – ${slot.end_time}`:'Unknown slot';
+      const statusClass=p.status==='open'?'avail-open':p.status==='matched'?'avail-matched':'avail-cancelled';
+      return `<div class="avail-item"><div class="avail-info"><div class="avail-date">📅 ${p.preferred_date}</div><div class="avail-slot">🕐 ${slotLabel}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;"><span class="avail-status ${statusClass}">${p.status}</span>${p.status==='open'?`<button class="btn btn-sm btn-red" onclick="cancelAvailPost('${p.id}')">Cancel</button>`:''}</div></div>`;
+    }).join('');
+  }catch(e){document.getElementById('avail-list-loading').style.display='none';}
+}
+
+async function cancelAvailPost(postId){
+  if(!confirm('Cancel this availability post?'))return;
+  try{
+    await sbPatch(`mj_availability_posts?id=eq.${postId}`,{status:'cancelled'});
+    loadAvailabilityPosts();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function loadMyBookings(){
+  document.getElementById('bookings-loading').style.display='block';
+  document.getElementById('bookings-list').innerHTML='';
+  try{
+    const bookings=await sb(`mj_bookings?player_id=eq.${currentPlayer.id}&club_id=eq.${currentClub.id}&select=*&order=booking_date.desc,created_at.desc`);
+    document.getElementById('bookings-loading').style.display='none';
+    if(!bookings.length){document.getElementById('bookings-list').innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>No bookings yet.</p></div>';return;}
+    document.getElementById('bookings-list').innerHTML=bookings.map(b=>{
+      const slot=allSlots.find(s=>s.id===b.slot_id);
+      const slotLabel=slot?`${slot.start_time} – ${slot.end_time}`:'Unknown slot';
+      const badgeClass=b.status==='confirmed'?'badge-confirmed':'badge-cancelled';
+      return `<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 ${b.booking_date}</div><span class="booking-badge ${badgeClass}">${b.status}</span></div><div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div><div class="booking-meta">🕐 Time: <span>${slotLabel}</span></div>${b.status==='confirmed'?`<div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelBooking('${b.id}','${b.slot_id}',${b.table_number},'${b.booking_date}')">Cancel Booking</button></div>`:''}</div>`;
+    }).join('');
+  }catch(e){document.getElementById('bookings-loading').style.display='none';}
+}
+
+// FIX 2: cancelBooking now triggers waitlist auto-assign
+async function cancelBooking(bookingId,slotId,tableNo,date){
+  if(!confirm('Cancel this booking?'))return;
+  try{
+    await sbPatch(`mj_bookings?id=eq.${bookingId}`,{status:'cancelled'});
+    await sbPatch(`mj_table_sessions?club_id=eq.${currentClub.id}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`,{status:'filling'});
+    // FIX: Trigger waitlist processing after cancellation
+    await processWaitlist(currentClub.id,slotId,tableNo,date);
+    loadMyBookings();
     loadSlotsForDate(selectedDate);
-  }
+  }catch(e){alert('Error: '+e.message);}
+}
 
-  function selectDate(dateStr, el) {
-    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedDate = dateStr;
-    loadSlotsForDate(dateStr);
-  }
-
-  // ─── LOAD SLOTS ────────────────────────────────────────────
-  async function loadSlotsForDate(date) {
-    document.getElementById('slots-loading').style.display = 'block';
-    document.getElementById('slots-grid').innerHTML = '';
-
-    if (!allSlots.length) {
-      document.getElementById('slots-loading').style.display = 'none';
-      document.getElementById('slots-grid').innerHTML =
-        `<div class="empty-state"><div class="empty-icon">🕐</div><p>No time slots configured for this club yet.</p></div>`;
+// Waitlist auto-assign (same logic as mahjong/index.html)
+async function processWaitlist(clubId,slotId,tableNo,date){
+  try{
+    const waiting=await sb(`mj_waitlist?club_id=eq.${clubId}&slot_id=eq.${slotId}&booking_date=eq.${date}&status=eq.waiting&order=created_at.asc&select=*`);
+    if(!waiting.length)return;
+    const next=waiting[0];
+    const mem=await sb(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}&select=slot_balance`);
+    const bal=mem[0]?mem[0].slot_balance||0:0;
+    if(bal<=0){
+      await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'no_balance'});
+      await processWaitlist(clubId,slotId,tableNo,date);
       return;
     }
+    await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed'});
+    await sbPatch(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}`,{slot_balance:bal-1});
+    await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'assigned'});
+    const pinfo=await sb(`sp_members?id=eq.${next.player_id}&select=name,mobile,whatsapp`);
+    const p=pinfo[0]||{};
+    await tg(`🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub: <b>${clubId}</b>\nPlayer: <b>${p.name||'Member'}</b>\nMobile: ${p.mobile||'—'}\nTable: ${tableNo}\nDate: ${date}\n\n⚡ Please inform the player their seat is confirmed!`);
+  }catch(e){}
+}
 
-    // Filter slots by day of week
-    const d = new Date(date + 'T00:00:00');
-    const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-    const dayName = dayNames[d.getDay()];
-
-    const daySlots = allSlots.filter(s =>
-      !s.day_of_week || s.day_of_week.toLowerCase() === dayName || s.day_of_week === 'all'
-    );
-
-    if (!daySlots.length) {
-      document.getElementById('slots-loading').style.display = 'none';
-      document.getElementById('slots-grid').innerHTML =
-        `<div class="empty-state"><div class="empty-icon">🚫</div><p>No slots available on this day.</p></div>`;
-      return;
-    }
-
-    try {
-      // Get all bookings for this club on this date
-      const bookings = await sb(
-        `mj_bookings?club_id=eq.${currentClub.id}&booking_date=eq.${date}&status=eq.confirmed&select=*`
-      );
-
-      document.getElementById('slots-loading').style.display = 'none';
-
-      let html = '';
-      for (const slot of daySlots) {
-        const slotBookings = bookings.filter(b => b.slot_id === slot.id);
-        let tablesHtml = '';
-
-        for (let t = 1; t <= currentClub.total_tables; t++) {
-          const tableBookings = slotBookings.filter(b => b.table_number === t);
-          const count = tableBookings.length;
-          const isMine = tableBookings.some(b => b.player_id === currentPlayer.id);
-
-          let chipClass = 'table-open';
-          let countLabel = `${count}/4 seats`;
-          let onClick = `openBookModal('${slot.id}', ${t}, ${count}, '${slot.start_time}–${slot.end_time}')`;
-
-          if (isMine) {
-            chipClass = 'table-mine';
-            onClick = '';
-          } else if (count >= 4) {
-            chipClass = 'table-full';
-            onClick = '';
-          } else if (count > 0) {
-            chipClass = 'table-filling';
-          }
-
-          tablesHtml += `
-            <div class="table-chip ${chipClass}" ${onClick ? `onclick="${onClick}"` : ''}>
-              Table ${t}
-              <span class="table-label">${isMine ? '✓ Booked' : countLabel}</span>
-            </div>`;
-        }
-
-        html += `
-          <div class="slot-row">
-            <div class="slot-time">🕐 ${slot.start_time} – ${slot.end_time}</div>
-            <div class="tables-row">${tablesHtml}</div>
-          </div>`;
-      }
-
-      document.getElementById('slots-grid').innerHTML = html;
-
-    } catch (e) {
-      document.getElementById('slots-loading').style.display = 'none';
-      document.getElementById('slots-grid').innerHTML =
-        `<div class="status-box status-error">Error loading slots: ${e.message}</div>`;
-    }
-  }
-
-  // ─── BOOK MODAL ────────────────────────────────────────────
-  function openBookModal(slotId, tableNo, currentCount, timeLabel) {
-    pendingBooking = { slotId, tableNo, currentCount };
-    document.getElementById('book-modal-sub').textContent =
-      `Table ${tableNo} · ${timeLabel} · ${selectedDate}`;
-    document.getElementById('book-modal-seats').innerHTML =
-      `<div class="status-box status-info">
-        ${currentCount} of 4 seats booked. ${4 - currentCount} seat(s) available.
-        <br/>You will take 1 seat.
-      </div>`;
-    document.getElementById('book-modal-msg').innerHTML = '';
-    document.getElementById('book-confirm-btn').disabled = false;
-    document.getElementById('book-modal').classList.add('open');
-  }
-
-  function closeModal() {
-    document.getElementById('book-modal').classList.remove('open');
-    pendingBooking = null;
-  }
-
-  async function confirmBooking() {
-    if (!pendingBooking) return;
-
-    const btn = document.getElementById('book-confirm-btn');
-    btn.disabled = true;
-    btn.textContent = 'Booking...';
-
-    try {
-      // Double-check seat count
-      const fresh = await sb(
-        `mj_bookings?club_id=eq.${currentClub.id}&slot_id=eq.${pendingBooking.slotId}&table_number=eq.${pendingBooking.tableNo}&booking_date=eq.${selectedDate}&status=eq.confirmed&select=id,player_id`
-      );
-
-      if (fresh.length >= 4) {
-        document.getElementById('book-modal-msg').innerHTML =
-          `<div class="status-box status-error">Sorry, this table just got full. Please choose another.</div>`;
-        btn.disabled = false; btn.textContent = 'Confirm Booking';
-        return;
-      }
-
-      // Check player not already booked at same slot same date
-      const alreadyBooked = await sb(
-        `mj_bookings?player_id=eq.${currentPlayer.id}&slot_id=eq.${pendingBooking.slotId}&booking_date=eq.${selectedDate}&status=eq.confirmed&select=id`
-      );
-      if (alreadyBooked.length > 0) {
-        document.getElementById('book-modal-msg').innerHTML =
-          `<div class="status-box status-warn">You already have a booking in this time slot.</div>`;
-        btn.disabled = false; btn.textContent = 'Confirm Booking';
-        return;
-      }
-
-      // Create booking
-      await sb('mj_bookings', 'POST', {
-        club_id: currentClub.id,
-        slot_id: pendingBooking.slotId,
-        table_number: pendingBooking.tableNo,
-        player_id: currentPlayer.id,
-        booking_date: selectedDate,
-        status: 'confirmed'
-      });
-
-      const newCount = fresh.length + 1;
-
-      // Update/create table session
-      const sessions = await sb(
-        `mj_table_sessions?club_id=eq.${currentClub.id}&slot_id=eq.${pendingBooking.slotId}&table_number=eq.${pendingBooking.tableNo}&booking_date=eq.${selectedDate}&select=*`
-      );
-
-      const allPlayerIds = [...fresh.map(b => b.player_id), currentPlayer.id];
-      const sessionData = {
-        player1_id: allPlayerIds[0] || null,
-        player2_id: allPlayerIds[1] || null,
-        player3_id: allPlayerIds[2] || null,
-        player4_id: allPlayerIds[3] || null,
-        status: newCount >= 4 ? 'full' : 'filling'
-      };
-
-      if (sessions.length > 0) {
-        await fetch(`${SUPABASE_URL}/rest/v1/mj_table_sessions?id=eq.${sessions[0].id}`, {
-          method: 'PATCH',
-          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(sessionData)
-        });
-      } else {
-        await sb('mj_table_sessions', 'POST', {
-          club_id: currentClub.id,
-          slot_id: pendingBooking.slotId,
-          table_number: pendingBooking.tableNo,
-          booking_date: selectedDate,
-          ...sessionData
-        });
-      }
-
-      // Notify admin if table is full
-      if (newCount >= 4) {
-        const slotInfo = allSlots.find(s => s.id === pendingBooking.slotId);
-        await sendTelegram(
-          `🀄 <b>TABLE FULL — Action Required</b>\n\n` +
-          `Club: <b>${currentClub.club_name}</b>\n` +
-          `Table: <b>${pendingBooking.tableNo}</b>\n` +
-          `Date: <b>${selectedDate}</b>\n` +
-          `Time: <b>${slotInfo ? slotInfo.start_time + '–' + slotInfo.end_time : ''}</b>\n\n` +
-          `All 4 seats are booked. Please notify the members via WhatsApp or email from your Club Admin Dashboard.`
-        );
-      }
-
-      document.getElementById('book-modal-msg').innerHTML =
-        `<div class="status-box status-success">✅ Seat booked successfully!${newCount >= 4 ? ' Table is now FULL — admin has been notified.' : ''}</div>`;
-      btn.textContent = 'Booked!';
-
-      setTimeout(() => {
-        closeModal();
-        loadSlotsForDate(selectedDate);
-        loadMyBookings();
-      }, 1800);
-
-    } catch (e) {
-      document.getElementById('book-modal-msg').innerHTML =
-        `<div class="status-box status-error">Error: ${e.message}</div>`;
-      btn.disabled = false; btn.textContent = 'Confirm Booking';
-    }
-  }
-
-  // ─── POST AVAILABILITY ─────────────────────────────────────
-  function populateSlotSelect() {
-    const sel = document.getElementById('avail-slot');
-    if (!allSlots.length) {
-      sel.innerHTML = '<option value="">No slots available</option>';
-      return;
-    }
-    sel.innerHTML = '<option value="">Select a time slot</option>' +
-      allSlots.map(s => `<option value="${s.id}">${s.start_time} – ${s.end_time} (${s.day_of_week || 'All days'})</option>`).join('');
-  }
-
-  async function postAvailability() {
-    const date = document.getElementById('avail-date').value;
-    const slotId = document.getElementById('avail-slot').value;
-
-    if (!date || !slotId) {
-      showMsg('avail-msg', 'Please select date and time slot.', 'error'); return;
-    }
-
-    showMsg('avail-msg', 'Posting...', 'info');
-
-    try {
-      // Check duplicate
-      const existing = await sb(
-        `mj_availability_posts?player_id=eq.${currentPlayer.id}&club_id=eq.${currentClub.id}&preferred_date=eq.${date}&preferred_slot_id=eq.${slotId}&status=eq.open&select=id`
-      );
-      if (existing.length > 0) {
-        showMsg('avail-msg', 'You already posted availability for this slot.', 'warn'); return;
-      }
-
-      await sb('mj_availability_posts', 'POST', {
-        club_id: currentClub.id,
-        player_id: currentPlayer.id,
-        preferred_date: date,
-        preferred_slot_id: slotId,
-        status: 'open'
-      });
-
-      showMsg('avail-msg', '✅ Availability posted! Admin will contact you when a table fills up.', 'success');
-      document.getElementById('avail-date').value = '';
-      document.getElementById('avail-slot').value = '';
-      loadAvailabilityPosts();
-
-    } catch (e) {
-      showMsg('avail-msg', 'Error: ' + e.message, 'error');
-    }
-  }
-
-  async function loadAvailabilityPosts() {
-    document.getElementById('avail-list-loading').style.display = 'block';
-    document.getElementById('avail-list').innerHTML = '';
-
-    try {
-      const posts = await sb(
-        `mj_availability_posts?player_id=eq.${currentPlayer.id}&club_id=eq.${currentClub.id}&select=*&order=preferred_date.desc`
-      );
-
-      document.getElementById('avail-list-loading').style.display = 'none';
-
-      if (!posts.length) {
-        document.getElementById('avail-list').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">📢</div><p>No availability posted yet.<br/>Let the club know when you're free!</p></div>`;
-        return;
-      }
-
-      document.getElementById('avail-list').innerHTML = posts.map(p => {
-        const slot = allSlots.find(s => s.id === p.preferred_slot_id);
-        const slotLabel = slot ? `${slot.start_time} – ${slot.end_time}` : 'Unknown slot';
-        const statusClass = p.status === 'open' ? 'avail-open' : p.status === 'matched' ? 'avail-matched' : 'avail-cancelled';
-
-        return `
-          <div class="avail-item">
-            <div class="avail-info">
-              <div class="avail-date">📅 ${p.preferred_date}</div>
-              <div class="avail-slot">🕐 ${slotLabel}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-              <span class="avail-status ${statusClass}">${p.status}</span>
-              ${p.status === 'open' ? `<button class="btn btn-sm btn-red" onclick="cancelAvailPost('${p.id}')">Cancel</button>` : ''}
-            </div>
-          </div>`;
-      }).join('');
-
-    } catch (e) {
-      document.getElementById('avail-list-loading').style.display = 'none';
-      document.getElementById('avail-list').innerHTML =
-        `<div class="status-box status-error">Error: ${e.message}</div>`;
-    }
-  }
-
-  async function cancelAvailPost(postId) {
-    if (!confirm('Cancel this availability post?')) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_availability_posts?id=eq.${postId}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelled' })
-      });
-      loadAvailabilityPosts();
-    } catch (e) { alert('Error: ' + e.message); }
-  }
-
-  // ─── MY BOOKINGS ───────────────────────────────────────────
-  async function loadMyBookings() {
-    document.getElementById('bookings-loading').style.display = 'block';
-    document.getElementById('bookings-list').innerHTML = '';
-
-    try {
-      const bookings = await sb(
-        `mj_bookings?player_id=eq.${currentPlayer.id}&club_id=eq.${currentClub.id}&select=*&order=booking_date.desc,created_at.desc`
-      );
-
-      document.getElementById('bookings-loading').style.display = 'none';
-
-      if (!bookings.length) {
-        document.getElementById('bookings-list').innerHTML =
-          `<div class="empty-state"><div class="empty-icon">📋</div><p>No bookings yet.<br/>Go to Book Seat tab to reserve your spot!</p></div>`;
-        return;
-      }
-
-      document.getElementById('bookings-list').innerHTML = bookings.map(b => {
-        const slot = allSlots.find(s => s.id === b.slot_id);
-        const slotLabel = slot ? `${slot.start_time} – ${slot.end_time}` : 'Unknown slot';
-        const badgeClass = b.status === 'confirmed' ? 'badge-confirmed' : 'badge-cancelled';
-
-        return `
-          <div class="booking-item">
-            <div class="booking-header">
-              <div class="booking-date">📅 ${b.booking_date}</div>
-              <span class="booking-badge ${badgeClass}">${b.status}</span>
-            </div>
-            <div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div>
-            <div class="booking-meta">🕐 Time: <span>${slotLabel}</span></div>
-            ${b.status === 'confirmed' ? `<div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelBooking('${b.id}', '${b.slot_id}', ${b.table_number}, '${b.booking_date}')">Cancel Booking</button></div>` : ''}
-          </div>`;
-      }).join('');
-
-    } catch (e) {
-      document.getElementById('bookings-loading').style.display = 'none';
-      document.getElementById('bookings-list').innerHTML =
-        `<div class="status-box status-error">Error: ${e.message}</div>`;
-    }
-  }
-
-  async function cancelBooking(bookingId, slotId, tableNo, date) {
-    if (!confirm('Cancel this booking?')) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_bookings?id=eq.${bookingId}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'cancelled' })
-      });
-
-      // Update table session status back to filling
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_table_sessions?club_id=eq.${currentClub.id}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`, {
-        method: 'PATCH',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'filling' })
-      });
-
-      loadMyBookings();
-      loadSlotsForDate(selectedDate);
-    } catch (e) { alert('Error: ' + e.message); }
-  }
-
-  // ─── HELPERS ───────────────────────────────────────────────
-  function showMsg(elId, msg, type) {
-    document.getElementById(elId).innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
-  }
-
-  function logout() {
-    localStorage.removeItem('mj_player');
-    localStorage.removeItem('mj_active_club');
-    window.location.href = '/mahjong/';
-  }
+// FIX 3: logout uses correct key sp_member
+function logout(){
+  localStorage.removeItem('sp_member');
+  localStorage.removeItem('mj_active_club');
+  window.location.href='/mahjong/';
+}
 </script>
 </body>
 </html>
