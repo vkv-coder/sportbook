@@ -151,6 +151,7 @@ select option{background:var(--surface);}
     <button class="nav-tab" onclick="switchTab('tab-sessions')"><span class="tab-icon">🀄</span>Tables</button>
     <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👨‍👩‍👧‍👦</span>Groups</button>
     <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
+    <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>Ranks</button>
     <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
   </div>
 
@@ -232,6 +233,13 @@ select option{background:var(--surface);}
       <div class="section-label">Current Slots</div>
       <div id="slots-loading-admin" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="slots-list"></div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="tab-content" id="tab-leaderboard">
+      <div class="section-label">🏆 Club Leaderboard</div>
+      <div id="lb-loading-admin" class="loading"><div class="spinner"></div>Loading...</div>
+      <div id="lb-content-admin"></div>
     </div>
 
     <!-- SETTINGS -->
@@ -454,6 +462,16 @@ async function loadApprovedMembers(){
           </div>
         </div>
         <div class="member-actions" style="margin-top:6px;">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Category:</label>
+            <select onchange="updateCategory('${m.id}',this.value)" style="flex:1;padding:6px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;">
+              <option value="beginner" ${(m.category||'beginner')==='beginner'?'selected':''}>🟢 Beginner</option>
+              <option value="moderate" ${m.category==='moderate'?'selected':''}>🟡 Moderate</option>
+              <option value="pro" ${m.category==='pro'?'selected':''}>🔴 Pro</option>
+            </select>
+          </div>
+        </div>
+        <div class="member-actions" style="margin-top:6px;">
           <a href="https://wa.me/91${p.whatsapp||p.mobile}?text=Hi%20${encodeURIComponent(p.name)}%21%20Your%20SportBook%20membership%20is%20active.%20Book%20your%20Mahjong%20slots%20now%21%20%F0%9F%80%84" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;">💬 WhatsApp</a>
           <button class="btn btn-red btn-sm" onclick="updateMember('${m.id}','rejected','${p.name}')">Remove</button>
         </div>
@@ -664,12 +682,84 @@ async function reassignPlayer(el){
   }catch(e){alert('Error: '+e.message);}
 }
 
+async function updateCategory(memId, category){
+  try{
+    await sbPatch(`mj_members?id=eq.${memId}`,{category});
+    toast('Category updated!');
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function loadLeaderboardAdmin(){
+  document.getElementById('lb-loading-admin').style.display='block';
+  document.getElementById('lb-content-admin').innerHTML='';
+  try{
+    const rooms=await sb(`mj_score_rooms?club_id=eq.${club.id}&status=eq.confirmed&select=id,player1_id,player2_id,player3_id,player4_id`);
+    if(!rooms.length){
+      document.getElementById('lb-loading-admin').style.display='none';
+      document.getElementById('lb-content-admin').innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>No confirmed games yet.</p></div>';
+      return;
+    }
+    const roomIds=rooms.map(r=>r.id);
+    const entries=await sb(`mj_score_entries?room_id=in.(${roomIds.join(',')})&select=*`);
+    const members=await sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=player_id,category`);
+    const catMap={};members.forEach(m=>{catMap[m.player_id]=m.category||'beginner';});
+    const playerIds=[...new Set(entries.map(e=>e.player_id))];
+    const players=await sb(`sp_members?id=in.(${playerIds.join(',')})&select=id,name`);
+    const pMap={};players.forEach(p=>{pMap[p.id]=p;});
+    const stats={};
+    entries.forEach(e=>{
+      if(!stats[e.player_id]){stats[e.player_id]={total:0,games:0};}
+      stats[e.player_id].total+=e.final_points;
+      stats[e.player_id].games+=1;
+    });
+    const allPlayers=Object.keys(stats).map(pid=>({
+      pid,name:pMap[pid]?pMap[pid].name:'Unknown',
+      total:stats[pid].total,games:stats[pid].games,
+      avg:Math.round(stats[pid].total/stats[pid].games),
+      category:catMap[pid]||'beginner'
+    }));
+    const pro=allPlayers.filter(p=>p.category==='pro').sort((a,b)=>b.avg-a.avg);
+    const moderate=allPlayers.filter(p=>p.category==='moderate').sort((a,b)=>b.avg-a.avg);
+    const beginner=allPlayers.filter(p=>p.category==='beginner').sort((a,b)=>b.avg-a.avg);
+    const medals=['🥇','🥈','🥉'];
+    function renderLB(list,title,icon){
+      if(!list.length)return '';
+      return '<div style="margin-bottom:20px;">'
+        +'<div style="font-size:13px;font-weight:600;color:var(--gold-light);margin-bottom:10px;">'+icon+' '+title+'</div>'
+        +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">'
+        +list.map((p,i)=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);">'
+          +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">'+(i<3?medals[i]:(i+1))+'</span>'
+          +'<div><div style="font-size:13px;font-weight:600;color:var(--text);">'+p.name+'</div>'
+          +'<div style="font-size:11px;color:var(--muted);">'+p.games+' games · '+p.total.toLocaleString()+' total</div></div></div>'
+          +'<div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--gold);">'+p.avg.toLocaleString()+'</div>'
+          +'<div style="font-size:10px;color:var(--muted);">avg/game</div></div>'
+          +'</div>').join('')
+        +'</div></div>';
+    }
+    document.getElementById('lb-loading-admin').style.display='none';
+    document.getElementById('lb-content-admin').innerHTML=
+      renderLB(pro,'Pro Players','🔴')+
+      renderLB(moderate,'Moderate Players','🟡')+
+      renderLB(beginner,'Beginner Players','🟢');
+  }catch(e){
+    document.getElementById('lb-loading-admin').style.display='none';
+    document.getElementById('lb-content-admin').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
+  }
+}
+
 function switchTab(tabId){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-settings'].indexOf(tabId);
+  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-leaderboard','tab-settings'].indexOf(tabId);
+  if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+function toast(msg){
+  let t=document.getElementById('admin-toast');
+  if(!t){t=document.createElement('div');t.id='admin-toast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:white;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';setTimeout(()=>{t.style.opacity='0';},2500);
 }
 
 window.addEventListener('DOMContentLoaded',()=>{

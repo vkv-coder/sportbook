@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard — Mahjong SportBook</title>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0f0e17" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;--pro:#e74c3c;--moderate:#f39c12;--beginner:#27ae60;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);}
+.header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.main{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
+.club-selector{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;}
+.club-selector label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.club-selector select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;}
+.club-selector select:focus{border-color:var(--gold);}
+select option{background:var(--surface);}
+
+/* CATEGORY SECTION */
+.category-section{margin-bottom:24px;}
+.category-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;margin-bottom:12px;}
+.cat-pro{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);}
+.cat-moderate{background:rgba(243,156,18,0.15);border:1px solid rgba(243,156,18,0.3);}
+.cat-beginner{background:rgba(39,174,96,0.15);border:1px solid rgba(39,174,96,0.3);}
+.category-icon{font-size:20px;}
+.category-title{font-family:'Noto Serif Display',serif;font-size:16px;font-weight:700;}
+.cat-pro .category-title{color:#e74c3c;}
+.cat-moderate .category-title{color:#f39c12;}
+.cat-beginner .category-title{color:#27ae60;}
+.category-count{font-size:11px;color:var(--muted);margin-left:auto;}
+
+/* LEADERBOARD TABLE */
+.lb-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.lb-table th{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.lb-table th:last-child{text-align:right;}
+.lb-table th:nth-child(3),.lb-table th:nth-child(4){text-align:center;}
+.lb-row{background:var(--surface);border-radius:8px;margin-bottom:4px;}
+.lb-row.highlight{background:#22213a;border:1px solid var(--gold);}
+.lb-row td{padding:12px 10px;font-size:13px;}
+.lb-rank{font-weight:700;font-size:16px;color:var(--muted);width:36px;}
+.lb-rank.gold{color:#f1c40f;}
+.lb-rank.silver{color:#bdc3c7;}
+.lb-rank.bronze{color:#e67e22;}
+.lb-name{font-weight:600;color:var(--text);}
+.lb-name-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.lb-center{text-align:center;color:var(--muted);}
+.lb-avg{text-align:right;font-weight:700;color:var(--gold);}
+
+.loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:30px 20px;color:var(--muted);}
+.empty-state .empty-icon{font-size:32px;margin-bottom:8px;}
+.empty-state p{font-size:12px;line-height:1.6;}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.stat-number{font-size:22px;font-weight:700;color:var(--gold);}
+.stat-label{font-size:10px;color:var(--muted);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">🏆 Leaderboard</div>
+    <div class="header-sub" id="header-sub">Mahjong SportBook</div>
+  </div>
+  <a href="/mahjong/index.html" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;border-radius:6px;font-size:11px;text-decoration:none;">← Back</a>
+</div>
+
+<div class="main">
+
+  <div class="club-selector">
+    <label>Select Club</label>
+    <select id="club-select" onchange="loadLeaderboard()">
+      <option value="">Select a club...</option>
+    </select>
+  </div>
+
+  <div id="lb-loading" style="display:none;" class="loading"><div class="spinner"></div>Loading leaderboard...</div>
+  <div id="lb-content" style="display:none;">
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number" id="stat-players">—</div><div class="stat-label">Players</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-games">—</div><div class="stat-label">Games</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-top">—</div><div class="stat-label">Top Avg</div></div>
+    </div>
+
+    <!-- PRO -->
+    <div class="category-section" id="section-pro">
+      <div class="category-header cat-pro">
+        <span class="category-icon">🔴</span>
+        <span class="category-title">Pro Players</span>
+        <span class="category-count" id="count-pro"></span>
+      </div>
+      <div id="lb-pro"></div>
+    </div>
+
+    <!-- MODERATE -->
+    <div class="category-section" id="section-moderate">
+      <div class="category-header cat-moderate">
+        <span class="category-icon">🟡</span>
+        <span class="category-title">Moderate Players</span>
+        <span class="category-count" id="count-moderate"></span>
+      </div>
+      <div id="lb-moderate"></div>
+    </div>
+
+    <!-- BEGINNER -->
+    <div class="category-section" id="section-beginner">
+      <div class="category-header cat-beginner">
+        <span class="category-icon">🟢</span>
+        <span class="category-title">Beginner Players</span>
+        <span class="category-count" id="count-beginner"></span>
+      </div>
+      <div id="lb-beginner"></div>
+    </div>
+
+  </div>
+
+  <div id="lb-empty" class="empty-state" style="display:none;">
+    <div class="empty-icon">🏆</div>
+    <p>No confirmed games yet for this club.<br/>Scores will appear here once players confirm their game results.</p>
+  </div>
+
+</div>
+
+<script>
+const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+let player=null, myClubs=[];
+
+window.addEventListener('DOMContentLoaded', async()=>{
+  const saved=localStorage.getItem('sp_member');
+  if(!saved){window.location.href='/select-game.html?role=player';return;}
+  player=JSON.parse(saved);
+  document.getElementById('header-sub').textContent=player.name;
+  await loadClubs();
+});
+
+async function sb(path){
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  if(!res.ok){const e=await res.json();throw new Error(e.message);}
+  return res.json();
+}
+
+async function loadClubs(){
+  const mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
+  const ids=mems.map(m=>m.club_id);
+  if(!ids.length)return;
+  myClubs=await sb('mj_clubs?id=in.('+ids.join(',')+')'+'&status=eq.active&select=id,club_name');
+  const sel=document.getElementById('club-select');
+  sel.innerHTML='<option value="">Select a club...</option>'+myClubs.map(c=>'<option value="'+c.id+'">'+c.club_name+'</option>').join('');
+  if(myClubs.length===1){sel.value=myClubs[0].id;loadLeaderboard();}
+}
+
+async function loadLeaderboard(){
+  const clubId=document.getElementById('club-select').value;
+  if(!clubId)return;
+
+  document.getElementById('lb-loading').style.display='block';
+  document.getElementById('lb-content').style.display='none';
+  document.getElementById('lb-empty').style.display='none';
+
+  try{
+    // Get all confirmed rooms for this club
+    const rooms=await sb('mj_score_rooms?club_id=eq.'+clubId+'&status=eq.confirmed&select=id,player1_id,player2_id,player3_id,player4_id');
+    if(!rooms.length){
+      document.getElementById('lb-loading').style.display='none';
+      document.getElementById('lb-empty').style.display='block';
+      return;
+    }
+
+    // Get all score entries for confirmed rooms
+    const roomIds=rooms.map(r=>r.id);
+    const entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=*');
+
+    // Get all members of this club with category
+    const members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&select=player_id,category');
+    const catMap={};members.forEach(m=>{catMap[m.player_id]=m.category||'beginner';});
+
+    // Get player names
+    const playerIds=[...new Set(entries.map(e=>e.player_id))];
+    const players=await sb('sp_members?id=in.('+playerIds.join(',')+')'+'&select=id,name');
+    const pMap={};players.forEach(p=>{pMap[p.id]=p;});
+
+    // Aggregate stats per player
+    const stats={};
+    entries.forEach(e=>{
+      if(!stats[e.player_id]){stats[e.player_id]={total:0,games:0};}
+      stats[e.player_id].total+=e.final_points;
+      stats[e.player_id].games+=1;
+    });
+
+    // Build player rows
+    const allPlayers=Object.keys(stats).map(pid=>({
+      pid,
+      name:pMap[pid]?pMap[pid].name:'Unknown',
+      total:stats[pid].total,
+      games:stats[pid].games,
+      avg:Math.round(stats[pid].total/stats[pid].games),
+      category:catMap[pid]||'beginner',
+      isMe:pid===player.id
+    }));
+
+    // Split by category and sort by avg desc
+    const pro=allPlayers.filter(p=>p.category==='pro').sort((a,b)=>b.avg-a.avg);
+    const moderate=allPlayers.filter(p=>p.category==='moderate').sort((a,b)=>b.avg-a.avg);
+    const beginner=allPlayers.filter(p=>p.category==='beginner').sort((a,b)=>b.avg-a.avg);
+
+    // Stats
+    const topAvg=allPlayers.length?Math.max(...allPlayers.map(p=>p.avg)):0;
+    document.getElementById('stat-players').textContent=allPlayers.length;
+    document.getElementById('stat-games').textContent=rooms.length;
+    document.getElementById('stat-top').textContent=topAvg.toLocaleString();
+
+    // Render each category
+    renderCategory(pro,'lb-pro','count-pro','section-pro');
+    renderCategory(moderate,'lb-moderate','count-moderate','section-moderate');
+    renderCategory(beginner,'lb-beginner','count-beginner','section-beginner');
+
+    document.getElementById('lb-loading').style.display='none';
+    document.getElementById('lb-content').style.display='block';
+
+  }catch(e){
+    document.getElementById('lb-loading').style.display='none';
+    document.getElementById('lb-empty').style.display='block';
+  }
+}
+
+function renderCategory(list, elId, countId, sectionId){
+  document.getElementById(countId).textContent=list.length+' players';
+  if(!list.length){
+    document.getElementById(sectionId).style.display='none';
+    return;
+  }
+  document.getElementById(sectionId).style.display='block';
+  const medals=['🥇','🥈','🥉'];
+  const rankColors=['gold','silver','bronze'];
+  document.getElementById(elId).innerHTML=
+    '<table class="lb-table">'
+    +'<thead><tr><th>#</th><th>Player</th><th>Games</th><th>Total Pts</th><th>Avg/Game</th></tr></thead>'
+    +'<tbody>'
+    +list.map((p,i)=>{
+      const rankLabel=i<3?medals[i]:(i+1);
+      const rankClass=i<3?rankColors[i]:'';
+      return '<tr class="lb-row'+(p.isMe?' highlight':'')+'">'
+        +'<td class="lb-rank '+rankClass+'">'+rankLabel+'</td>'
+        +'<td><div class="lb-name">'+p.name+(p.isMe?' 👤':'')+'</div>'
+        +'<div class="lb-name-sub">'+p.games+' games played</div></td>'
+        +'<td class="lb-center">'+p.games+'</td>'
+        +'<td class="lb-center">'+p.total.toLocaleString()+'</td>'
+        +'<td class="lb-avg">'+p.avg.toLocaleString()+'</td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table>';
+}
+</script>
+</body>
+</html>

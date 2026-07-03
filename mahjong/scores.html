@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Score Entry — Mahjong SportBook</title>
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0f0e17" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);}
+.header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.main{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+.card-title{font-size:14px;font-weight:600;color:var(--gold-light);margin-bottom:14px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.form-group input,.form-group select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);}
+select option{background:var(--surface);}
+.btn{padding:11px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.btn-full{width:100%;}
+.btn-gold{background:var(--gold);color:#0f0e17;}.btn-gold:hover{background:var(--gold-light);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+.status-box{border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:12px;text-align:center;}
+.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
+.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
+.status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
+.status-warn{background:#3a2a1a;border:1px solid var(--orange);color:#f0b27a;}
+.loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:13px;line-height:1.6;}
+.section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;margin-top:16px;}
+
+/* SCORE ENTRY */
+.player-score-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.player-score-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.player-score-name{font-size:14px;font-weight:600;color:var(--gold-light);}
+.player-score-you{font-size:10px;background:var(--gold);color:#0f0e17;padding:2px 8px;border-radius:20px;font-weight:700;}
+.score-input{width:100%;background:var(--card);border:2px solid var(--border);color:var(--text);padding:12px 14px;border-radius:8px;font-size:18px;font-weight:700;font-family:'Inter',sans-serif;outline:none;text-align:center;}
+.score-input:focus{border-color:var(--gold);}
+.score-diff{font-size:12px;text-align:center;margin-top:6px;font-weight:600;}
+.score-diff.positive{color:#58d68d;}
+.score-diff.negative{color:#f1948a;}
+.score-diff.neutral{color:var(--muted);}
+
+/* CONFIRMATION */
+.confirm-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.confirm-player{font-size:14px;font-weight:600;color:var(--text);}
+.confirm-points{font-size:16px;font-weight:700;color:var(--gold);}
+.confirm-status{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
+.confirm-yes{background:#1a3a1a;color:#58d68d;}
+.confirm-no{background:#3a2a1a;color:#f0b27a;}
+
+/* ROOM LIST */
+.room-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s;}
+.room-item:hover{border-color:var(--gold);}
+.room-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.room-title{font-size:14px;font-weight:600;color:var(--gold-light);}
+.room-meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
+.badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
+.badge-open{background:#3a2a1a;color:#f0b27a;}
+.badge-confirmed{background:#1a3a1a;color:#58d68d;}
+.badge-reset{background:#3a1a1a;color:#f1948a;}
+
+/* TABS */
+.nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);}
+.nav-tab{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab-content{display:none;}.tab-content.active{display:block;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">🎯 Score Entry</div>
+    <div class="header-sub" id="header-sub">Mahjong SportBook</div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="/mahjong/index.html" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;border-radius:6px;font-size:11px;text-decoration:none;">← Back</a>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <button class="nav-tab active" onclick="switchTab('tab-rooms')">My Rooms</button>
+  <button class="nav-tab" onclick="switchTab('tab-create')">+ Create Room</button>
+</div>
+
+<div class="main">
+
+  <!-- TAB: MY ROOMS -->
+  <div class="tab-content active" id="tab-rooms">
+    <div id="rooms-loading" class="loading"><div class="spinner"></div>Loading rooms...</div>
+    <div id="rooms-list"></div>
+  </div>
+
+  <!-- TAB: CREATE ROOM -->
+  <div class="tab-content" id="tab-create">
+    <div class="card">
+      <div class="card-title">🎮 Create Score Room</div>
+      <div class="form-group">
+        <label>Select Club</label>
+        <select id="room-club"></select>
+      </div>
+      <div class="form-group">
+        <label>Game Date</label>
+        <input type="date" id="room-date"/>
+      </div>
+      <div class="form-group">
+        <label>Table Number</label>
+        <input type="number" id="room-table" placeholder="e.g. 1" min="1"/>
+      </div>
+      <div class="section-label">Add 3 Other Players</div>
+      <div class="form-group">
+        <label>Player 2</label>
+        <select id="room-p2"><option value="">Select player</option></select>
+      </div>
+      <div class="form-group">
+        <label>Player 3</label>
+        <select id="room-p3"><option value="">Select player</option></select>
+      </div>
+      <div class="form-group">
+        <label>Player 4</label>
+        <select id="room-p4"><option value="">Select player</option></select>
+      </div>
+      <div id="create-msg"></div>
+      <button class="btn btn-gold btn-full" onclick="createRoom()">Create Room →</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- SCORE ENTRY PANEL (shown when room is opened) -->
+<div id="score-panel" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto;">
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;">
+    <div>
+      <div style="font-family:'Noto Serif Display',serif;font-size:17px;color:var(--gold);" id="score-panel-title">Score Room</div>
+      <div style="font-size:11px;color:var(--muted);" id="score-panel-sub"></div>
+    </div>
+    <button onclick="closeScorePanel()" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">✕ Close</button>
+  </div>
+
+  <div style="max-width:480px;margin:0 auto;padding:20px 16px 80px;">
+
+    <!-- SCORE ENTRY (leader only, status=open) -->
+    <div id="entry-section">
+      <div class="card">
+        <div class="card-title">📝 Enter Final Points</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Each player starts with <span style="color:var(--gold);font-weight:700;">35,000</span> points. Enter their final balance.</div>
+        <div id="score-rows"></div>
+        <div id="entry-msg"></div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="btn btn-gold btn-full" onclick="submitScores()" id="submit-scores-btn">Submit Scores →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION SECTION (all players, status=pending_confirm) -->
+    <div id="confirm-section" style="display:none;">
+      <div class="card">
+        <div class="card-title">✅ Confirm Scores</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Review the scores below. By confirming, you agree all scores are correct.</div>
+        <div id="confirm-rows"></div>
+        <div style="margin-top:6px;padding:10px;background:var(--surface);border-radius:8px;font-size:11px;color:var(--muted);margin-bottom:14px;">
+          ⚠️ Once you confirm, scores lock for you. If a change is needed after all confirm, any player can Reset and all must re-confirm.
+        </div>
+        <div id="confirm-msg"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-red" style="flex:1;" onclick="resetRoom()">🔄 Reset All</button>
+          <button class="btn btn-green" style="flex:1;" id="confirm-btn" onclick="confirmScores()">✅ I Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINAL RESULT (status=confirmed) -->
+    <div id="result-section" style="display:none;">
+      <div class="card">
+        <div class="card-title">🏆 Final Results</div>
+        <div id="result-rows"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+let player=null, myClubs=[], clubMembers={}, currentRoom=null, currentEntries=[];
+
+window.addEventListener('DOMContentLoaded', async()=>{
+  const saved=localStorage.getItem('sp_member');
+  if(!saved){window.location.href='/select-game.html?role=player';return;}
+  player=JSON.parse(saved);
+  document.getElementById('header-sub').textContent=player.name;
+  await loadMyClubs();
+  loadRooms();
+});
+
+async function sb(path,method='GET',body=null){
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  if(!res.ok){const e=await res.json();throw new Error(e.message||JSON.stringify(e));}
+  return method==='DELETE'?null:res.json();
+}
+async function sbPatch(path,body){
+  return fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+function showMsg(id,msg,type){document.getElementById(id).innerHTML='<div class="status-box status-'+type+'">'+msg+'</div>';}
+
+function switchTab(tabId){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  const idx=['tab-rooms','tab-create'].indexOf(tabId);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+async function loadMyClubs(){
+  const mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
+  const ids=mems.map(m=>m.club_id);
+  if(!ids.length)return;
+  myClubs=await sb('mj_clubs?id=in.('+ids.join(',')+')'+'&status=eq.active&select=id,club_name,total_tables');
+  const sel=document.getElementById('room-club');
+  sel.innerHTML='<option value="">Select club</option>'+myClubs.map(c=>'<option value="'+c.id+'">'+c.club_name+'</option>').join('');
+  sel.onchange=async function(){
+    await loadClubMembers(sel.value);
+  };
+}
+
+async function loadClubMembers(clubId){
+  if(!clubId)return;
+  const mems=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&player_id=neq.'+player.id+'&select=player_id');
+  const ids=mems.map(m=>m.player_id);
+  if(!ids.length){clubMembers[clubId]=[];return;}
+  const players=await sb('sp_members?id=in.('+ids.join(',')+')'+'&select=id,name,mobile');
+  clubMembers[clubId]=players;
+  const opts='<option value="">Select player</option>'+players.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.mobile+')</option>').join('');
+  document.getElementById('room-p2').innerHTML=opts;
+  document.getElementById('room-p3').innerHTML=opts;
+  document.getElementById('room-p4').innerHTML=opts;
+}
+
+async function createRoom(){
+  const clubId=document.getElementById('room-club').value;
+  const date=document.getElementById('room-date').value;
+  const tableNo=parseInt(document.getElementById('room-table').value);
+  const p2=document.getElementById('room-p2').value;
+  const p3=document.getElementById('room-p3').value;
+  const p4=document.getElementById('room-p4').value;
+
+  if(!clubId||!date||!tableNo||!p2||!p3||!p4){showMsg('create-msg','Please fill all fields.','error');return;}
+  if(new Set([player.id,p2,p3,p4]).size<4){showMsg('create-msg','All 4 players must be different.','error');return;}
+
+  showMsg('create-msg','Creating room...','info');
+  try{
+    const room=await sb('mj_score_rooms','POST',{
+      club_id:clubId,session_date:date,table_number:tableNo,
+      created_by:player.id,
+      player1_id:player.id,player2_id:p2,player3_id:p3,player4_id:p4,
+      status:'open'
+    });
+    showMsg('create-msg','✅ Room created! Go to My Rooms to enter scores.','success');
+    setTimeout(()=>{switchTab('tab-rooms');loadRooms();},1500);
+  }catch(e){showMsg('create-msg','Error: '+e.message,'error');}
+}
+
+async function loadRooms(){
+  document.getElementById('rooms-loading').style.display='block';
+  document.getElementById('rooms-list').innerHTML='';
+  try{
+    // Rooms where player is any of the 4 players
+    const rooms=await sb('mj_score_rooms?or=(player1_id.eq.'+player.id+',player2_id.eq.'+player.id+',player3_id.eq.'+player.id+',player4_id.eq.'+player.id+')&order=created_at.desc&select=*');
+    document.getElementById('rooms-loading').style.display='none';
+    if(!rooms.length){
+      document.getElementById('rooms-list').innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div><p>No score rooms yet.<br/>Create one after your game ends.</p></div>';
+      return;
+    }
+    const clubIds=[...new Set(rooms.map(r=>r.club_id))];
+    const clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name');
+    const cMap={};clubs.forEach(c=>{cMap[c.id]=c;});
+    document.getElementById('rooms-list').innerHTML=rooms.map(r=>{
+      const club=cMap[r.club_id];
+      const badgeClass=r.status==='confirmed'?'badge-confirmed':r.status==='reset'?'badge-reset':'badge-open';
+      const badgeLabel=r.status==='confirmed'?'✅ Confirmed':r.status==='reset'?'🔄 Reset':'⏳ Pending';
+      const isLeader=r.created_by===player.id;
+      return '<div class="room-item" onclick="openRoom(\''+r.id+'\')">'
+        +'<div class="room-header"><div class="room-title">Table '+r.table_number+' · '+(club?club.club_name:'—')+'</div><span class="badge '+badgeClass+'">'+badgeLabel+'</span></div>'
+        +'<div class="room-meta">📅 '+r.session_date+'</div>'
+        +(isLeader?'<div class="room-meta" style="color:var(--gold);font-size:11px;">👑 You created this room</div>':'')
+        +'</div>';
+    }).join('');
+  }catch(e){document.getElementById('rooms-loading').style.display='none';}
+}
+
+async function openRoom(roomId){
+  try{
+    const rooms=await sb('mj_score_rooms?id=eq.'+roomId+'&select=*');
+    currentRoom=rooms[0];
+    const pids=[currentRoom.player1_id,currentRoom.player2_id,currentRoom.player3_id,currentRoom.player4_id];
+    const players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name');
+    const pMap={};players.forEach(p=>{pMap[p.id]=p;});
+    const clubs=await sb('mj_clubs?id=eq.'+currentRoom.club_id+'&select=club_name');
+    const clubName=clubs[0]?clubs[0].club_name:'';
+
+    document.getElementById('score-panel-title').textContent='Table '+currentRoom.table_number+' · '+clubName;
+    document.getElementById('score-panel-sub').textContent=currentRoom.session_date;
+
+    // Hide all sections first
+    document.getElementById('entry-section').style.display='none';
+    document.getElementById('confirm-section').style.display='none';
+    document.getElementById('result-section').style.display='none';
+
+    if(currentRoom.status==='open'){
+      // Only leader can enter scores
+      if(currentRoom.created_by===player.id){
+        document.getElementById('entry-section').style.display='block';
+        document.getElementById('score-rows').innerHTML=pids.map(pid=>{
+          const p=pMap[pid];
+          const isMe=pid===player.id;
+          return '<div class="player-score-row">'
+            +'<div class="player-score-header"><div class="player-score-name">'+( p?p.name:'Unknown')+'</div>'+(isMe?'<span class="player-score-you">YOU</span>':'')+'</div>'
+            +'<input class="score-input" type="number" id="score-'+pid+'" value="35000" min="0" oninput="updateDiff(\''+pid+'\')" />'
+            +'<div class="score-diff neutral" id="diff-'+pid+'">± 0</div>'
+            +'</div>';
+        }).join('');
+      } else {
+        document.getElementById('entry-section').style.display='block';
+        document.getElementById('score-rows').innerHTML='<div class="status-box status-info">⏳ Waiting for room leader to enter scores...</div>';
+        document.getElementById('submit-scores-btn').style.display='none';
+      }
+    } else if(currentRoom.status==='pending_confirm'||currentRoom.status==='reset'){
+      // Show confirmation section
+      const entries=await sb('mj_score_entries?room_id=eq.'+roomId+'&select=*');
+      const confirms=await sb('mj_score_confirmations?room_id=eq.'+roomId+'&select=*');
+      currentEntries=entries;
+      document.getElementById('confirm-section').style.display='block';
+      const myConfirm=confirms.find(c=>c.player_id===player.id);
+
+      document.getElementById('confirm-rows').innerHTML=pids.map(pid=>{
+        const p=pMap[pid];
+        const entry=entries.find(e=>e.player_id===pid);
+        const conf=confirms.find(c=>c.player_id===pid);
+        const diff=(entry?entry.final_points:35000)-35000;
+        const diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
+        const diffColor=diff>0?'#58d68d':diff<0?'#f1948a':'var(--muted)';
+        return '<div class="confirm-row">'
+          +'<div><div class="confirm-player">'+(p?p.name:'—')+(pid===player.id?' (You)':'')+'</div>'
+          +'<div style="font-size:11px;color:'+diffColor+';margin-top:2px;">'+diffStr+' points</div></div>'
+          +'<div style="text-align:right;">'
+          +'<div class="confirm-points">'+(entry?entry.final_points.toLocaleString():'—')+'</div>'
+          +'<span class="confirm-status '+(conf?'confirm-yes':'confirm-no')+'">'+(conf?'✅ Confirmed':'⏳ Pending')+'</span>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+
+      if(myConfirm){
+        document.getElementById('confirm-btn').disabled=true;
+        document.getElementById('confirm-btn').textContent='✅ You Confirmed';
+      }
+    } else if(currentRoom.status==='confirmed'){
+      // Show final results
+      const entries=await sb('mj_score_entries?room_id=eq.'+roomId+'&select=*');
+      entries.sort((a,b)=>b.final_points-a.final_points);
+      document.getElementById('result-section').style.display='block';
+      const medals=['🥇','🥈','🥉','4️⃣'];
+      document.getElementById('result-rows').innerHTML=entries.map((e,i)=>{
+        const p=pMap[e.player_id];
+        const diff=e.final_points-35000;
+        const diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
+        const diffColor=diff>0?'#58d68d':diff<0?'#f1948a':'var(--muted)';
+        return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'
+          +'<div style="display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">'+medals[i]+'</div>'
+          +'<div><div style="font-size:14px;font-weight:600;color:var(--gold-light);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div>'
+          +'<div style="font-size:11px;color:'+diffColor+';">'+diffStr+' points</div></div></div>'
+          +'<div style="font-size:20px;font-weight:700;color:var(--gold);">'+e.final_points.toLocaleString()+'</div>'
+          +'</div>';
+      }).join('');
+    }
+
+    document.getElementById('score-panel').style.display='block';
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function updateDiff(pid){
+  const val=parseInt(document.getElementById('score-'+pid).value)||0;
+  const diff=val-35000;
+  const el=document.getElementById('diff-'+pid);
+  el.textContent=(diff>0?'+':'')+diff.toLocaleString()+' points';
+  el.className='score-diff '+(diff>0?'positive':diff<0?'negative':'neutral');
+}
+
+async function submitScores(){
+  const pids=[currentRoom.player1_id,currentRoom.player2_id,currentRoom.player3_id,currentRoom.player4_id];
+  const scores=[];
+  for(const pid of pids){
+    const val=parseInt(document.getElementById('score-'+pid).value);
+    if(isNaN(val)||val<0){showMsg('entry-msg','Enter valid scores for all players.','error');return;}
+    scores.push({pid,val});
+  }
+  showMsg('entry-msg','Submitting...','info');
+  try{
+    // Delete any existing entries for this room
+    await fetch(SB_URL+'/rest/v1/mj_score_entries?room_id=eq.'+currentRoom.id,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    // Insert new entries
+    for(const s of scores){
+      await sb('mj_score_entries','POST',{room_id:currentRoom.id,player_id:s.pid,starting_points:35000,final_points:s.val});
+    }
+    // Update room status to pending_confirm
+    await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'pending_confirm'});
+    showMsg('entry-msg','✅ Scores submitted! All 4 players must now confirm.','success');
+    setTimeout(()=>openRoom(currentRoom.id),1500);
+  }catch(e){showMsg('entry-msg','Error: '+e.message,'error');}
+}
+
+async function confirmScores(){
+  try{
+    // Check not already confirmed
+    const existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
+    if(existing.length>0){showMsg('confirm-msg','You have already confirmed.','warn');return;}
+    // Add confirmation
+    await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:player.id});
+    // Check if all 4 confirmed
+    const allConfirms=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=id');
+    if(allConfirms.length>=4){
+      await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
+    }
+    openRoom(currentRoom.id);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function resetRoom(){
+  if(!confirm('Reset all confirmations? All 4 players will need to confirm again.'))return;
+  try{
+    await fetch(SB_URL+'/rest/v1/mj_score_confirmations?room_id=eq.'+currentRoom.id,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'open'});
+    openRoom(currentRoom.id);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+function closeScorePanel(){
+  document.getElementById('score-panel').style.display='none';
+  currentRoom=null;
+  loadRooms();
+}
+</script>
+</body>
+</html>
