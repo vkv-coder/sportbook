@@ -247,6 +247,7 @@ async function loadMyClubs(){
       renderBalanceBar();return;
     }
     myClubs=await sb('mj_clubs?id=in.('+myClubIds.join(',')+')'+'&status=eq.active&select=*&order=club_name.asc');
+    myClubIds=myClubs.map(function(c){return c.id;});
     for(var i=0;i<myClubs.length;i++){
       var slots=await sb('mj_slots?club_id=eq.'+myClubs[i].id+'&is_active=eq.true&select=*&order=start_time.asc');
       slotsCache[myClubs[i].id]=slots;
