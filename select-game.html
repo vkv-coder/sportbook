@@ -16,25 +16,21 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;}
 
-/* HEADER */
 header{background:var(--white);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 0 var(--border);}
 .logo{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--blue);}
 .logo span{color:var(--text);}
 .back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
 .back-btn:hover{border-color:var(--blue);color:var(--blue);}
 
-/* HERO */
 .hero{background:linear-gradient(135deg,#1A6BFF 0%,#0D3FA6 100%);padding:32px 20px 40px;text-align:center;}
 .role-badge{display:inline-block;background:rgba(255,255,255,0.15);color:white;font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;margin-bottom:14px;letter-spacing:0.5px;}
 .hero h1{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:white;margin-bottom:8px;}
 .hero p{font-size:14px;color:rgba(255,255,255,0.8);}
 
-/* GAMES GRID */
 .games-section{padding:28px 20px;flex:1;}
 .games-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;text-align:center;}
 .games-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:420px;margin:0 auto;}
 
-/* GAME CARD */
 .game-card{background:var(--white);border-radius:16px;padding:20px 16px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.07);cursor:pointer;border:2px solid transparent;transition:all 0.2s;position:relative;}
 .game-card.active{border-color:var(--gold);background:linear-gradient(135deg,#0f0e17,#1a1930);}
 .game-card.active:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(201,168,76,0.25);}
@@ -48,7 +44,6 @@ header{background:var(--white);padding:14px 20px;display:flex;align-items:center
 .soon-tag{position:absolute;top:10px;right:10px;background:#F3F4F6;color:var(--muted);font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;}
 .active-tag{position:absolute;top:10px;right:10px;background:var(--gold);color:#0f0e17;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;letter-spacing:0.5px;}
 
-/* COMING SOON POPUP */
 .coming-soon-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:20px;}
 .coming-soon-overlay.open{display:flex;}
 .coming-soon-box{background:white;border-radius:20px;padding:32px 24px;text-align:center;max-width:300px;width:100%;}
@@ -57,13 +52,21 @@ header{background:var(--white);padding:14px 20px;display:flex;align-items:center
 .coming-soon-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
 .coming-soon-btn{background:var(--blue);color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
 
-/* MAHJONG PANEL */
+/* APPROVAL PENDING OVERLAY */
+.approval-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.approval-overlay.open{display:flex;}
+.approval-box{background:white;border-radius:20px;padding:32px 24px;text-align:center;max-width:340px;width:100%;}
+.approval-icon{font-size:52px;margin-bottom:16px;}
+.approval-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:10px;}
+.approval-sub{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;}
+.approval-email{font-size:12px;color:#1A6BFF;margin-bottom:20px;}
+.approval-btn{background:#111827;color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;width:100%;}
+
 .mahjong-panel{display:none;max-width:420px;margin:20px auto 0;background:linear-gradient(135deg,#0f0e17,#1a1930);border-radius:16px;padding:24px 20px;border:1px solid #2e2d4a;}
 .mahjong-panel.open{display:block;}
 .panel-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--gold);margin-bottom:6px;}
 .panel-sub{font-size:13px;color:#8b89a8;margin-bottom:20px;}
 
-/* OWNER OPTIONS */
 .owner-options{display:flex;flex-direction:column;gap:12px;}
 .owner-option{background:#22213a;border:1px solid #2e2d4a;border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;text-decoration:none;}
 .owner-option:hover{border-color:var(--gold);transform:translateY(-1px);}
@@ -72,7 +75,6 @@ header{background:var(--white);padding:14px 20px;display:flex;align-items:center
 .option-desc{font-size:12px;color:#8b89a8;margin-top:2px;}
 .option-arrow{margin-left:auto;color:var(--gold);font-size:18px;}
 
-/* PLAYER LOGIN FORM */
 .form-group{margin-bottom:14px;}
 .form-group label{display:block;font-size:11px;font-weight:600;color:#8b89a8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
 .form-group input, .form-group select{width:100%;background:#22213a;border:1px solid #2e2d4a;color:#e8e6f0;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;}
@@ -121,38 +123,33 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
 <div class="games-section">
   <div class="games-label">Available Games</div>
   <div class="games-grid">
-
     <div class="game-card active" onclick="selectGame('mahjong')">
       <span class="active-tag">LIVE</span>
       <span class="game-icon">🀄</span>
       <div class="game-name">Mahjong</div>
       <div class="game-desc">Club membership · 4-player tables</div>
     </div>
-
     <div class="game-card soon" onclick="showComingSoon('Badminton')">
       <span class="soon-tag">SOON</span>
       <span class="game-icon">🏸</span>
       <div class="game-name">Badminton</div>
       <div class="game-desc">Court booking · slot guaranteed</div>
     </div>
-
     <div class="game-card soon" onclick="showComingSoon('Tennis')">
       <span class="soon-tag">SOON</span>
       <span class="game-icon">🎾</span>
       <div class="game-name">Tennis</div>
       <div class="game-desc">Court booking · coaching available</div>
     </div>
-
     <div class="game-card soon" onclick="showComingSoon('Swimming')">
       <span class="soon-tag">SOON</span>
       <span class="game-icon">🏊</span>
       <div class="game-name">Swimming</div>
       <div class="game-desc">Lane booking · timed slots</div>
     </div>
-
   </div>
 
-  <!-- MAHJONG PANEL — shown after clicking Mahjong -->
+  <!-- MAHJONG PANEL -->
   <div class="mahjong-panel" id="mahjong-panel">
 
     <!-- PLAYER VIEW -->
@@ -165,12 +162,12 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
         <button class="tab-btn" onclick="switchPlayerTab('returning')">Returning Player</button>
       </div>
 
-      <!-- STEP 1: REGISTER FORM -->
+      <!-- STEP 1: FORM -->
       <div class="step active" id="player-step1">
         <div id="new-tab">
-          <div class="form-group"><label>Full Name</label><input type="text" id="p-name" placeholder="Your name" /></div>
-          <div class="form-group"><label>Mobile Number</label><input type="tel" id="p-mobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric" /></div>
-          <div class="form-group"><label>Email Address</label><input type="email" id="p-email" placeholder="For booking confirmations" /></div>
+          <div class="form-group"><label>Full Name</label><input type="text" id="p-name" placeholder="Your name"/></div>
+          <div class="form-group"><label>Mobile Number</label><input type="tel" id="p-mobile" placeholder="10-digit mobile" maxlength="10" inputmode="numeric"/></div>
+          <div class="form-group"><label>Email Address</label><input type="email" id="p-email" placeholder="For booking confirmations"/></div>
           <div class="form-group">
             <label>Gender</label>
             <select id="p-gender">
@@ -179,14 +176,14 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
               <option value="female">Female</option>
             </select>
           </div>
-          <div class="form-group"><label>WhatsApp Number <span style="color:#f1948a;">*</span></label><input type="tel" id="p-whatsapp" placeholder="10-digit WhatsApp number" maxlength="10" inputmode="numeric" /></div>
-          <div class="form-group"><label>Telegram ID <span style="color:var(--muted);font-weight:400;">(optional)</span></label><input type="text" id="p-telegram" placeholder="e.g. @yourname or your Telegram ID" /></div>
+          <div class="form-group"><label>WhatsApp Number <span style="color:#f1948a;">*</span></label><input type="tel" id="p-whatsapp" placeholder="10-digit WhatsApp number" maxlength="10" inputmode="numeric"/></div>
+          <div class="form-group"><label>Telegram ID <span style="color:#8b89a8;font-weight:400;">(optional)</span></label><input type="text" id="p-telegram" placeholder="e.g. @yourname or your Telegram ID"/></div>
           <div id="p-reg-msg"></div>
           <button class="btn-gold" onclick="sendPlayerOTP('new')">Send OTP →</button>
         </div>
 
         <div id="returning-tab" style="display:none;">
-          <div class="form-group"><label>Mobile Number</label><input type="tel" id="p-login-mobile" placeholder="Your registered mobile" maxlength="10" inputmode="numeric" /></div>
+          <div class="form-group"><label>Mobile Number</label><input type="tel" id="p-login-mobile" placeholder="Your registered mobile" maxlength="10" inputmode="numeric"/></div>
           <div id="p-login-msg"></div>
           <button class="btn-gold" onclick="sendPlayerOTP('returning')">Send OTP →</button>
         </div>
@@ -199,7 +196,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
           <div class="otp-code" id="p-otp-shown">----</div>
         </div>
         <div class="otp-note">In production this will be sent via SMS</div>
-        <div class="form-group"><label>Enter OTP</label><input type="number" id="p-otp-input" placeholder="4-digit OTP" /></div>
+        <div class="form-group"><label>Enter OTP</label><input type="number" id="p-otp-input" placeholder="4-digit OTP"/></div>
         <div id="p-otp-msg"></div>
         <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
         <button class="link-btn" onclick="goPlayerBack()">← Go Back</button>
@@ -232,7 +229,6 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
         <button onclick="showOwnerForgot()" style="background:none;border:none;color:#c9a84c;font-size:13px;cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif;">Forgot Password?</button>
       </div>
 
-      <!-- FORGOT PASSWORD PANEL -->
       <div id="owner-forgot-panel" style="display:none;margin-top:16px;">
         <div style="background:#22213a;border:1px solid #2e2d4a;border-radius:12px;padding:16px;">
           <div style="font-size:14px;font-weight:600;color:#e8c97a;margin-bottom:12px;">🔑 Reset Password</div>
@@ -274,6 +270,17 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
   </div>
 </div>
 
+<!-- APPROVAL PENDING POPUP -->
+<div class="approval-overlay" id="approval-overlay">
+  <div class="approval-box">
+    <div class="approval-icon">⏳</div>
+    <div class="approval-title">Registration Successful!</div>
+    <div class="approval-sub">Your account is under review by the SportBook admin. You will be notified within <strong>24 hours</strong> once your account is approved.</div>
+    <div class="approval-email">Support: vkvcoder.support@gmail.com</div>
+    <button class="approval-btn" onclick="closeApprovalOverlay()">Got it!</button>
+  </div>
+</div>
+
 <footer>© 2026 SportBook · Vadodara · All rights reserved</footer>
 
 <script>
@@ -284,7 +291,6 @@ let currentRole = 'player';
 let currentOTP = '';
 let currentMode = 'new';
 
-// ── INIT ──────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   currentRole = params.get('role') || 'player';
@@ -300,49 +306,47 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // Auto-check if player already logged in
-  const saved = localStorage.getItem('mj_player');
+  const saved = localStorage.getItem('sp_member');
   if (saved && currentRole === 'player') {
-    window.location.href = '/mahjong/index.html';
+    const member = JSON.parse(saved);
+    if (member.status === 'active') {
+      window.location.href = '/mahjong/index.html';
+    }
   }
 });
 
-// ── GAME SELECTION ────────────────────────────────────────────
 function selectGame(game) {
   if (game !== 'mahjong') { showComingSoon(game); return; }
   document.getElementById('mahjong-panel').classList.add('open');
   document.getElementById('player-view').style.display = currentRole === 'player' ? 'block' : 'none';
-  document.getElementById('owner-view').style.display = currentRole === 'owner' ? 'block' : 'none';
+  document.getElementById('owner-view').style.display  = currentRole === 'owner'  ? 'block' : 'none';
   document.getElementById('mahjong-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// ── COMING SOON ───────────────────────────────────────────────
 function showComingSoon(game) {
   document.getElementById('coming-soon-game').textContent = game + ' — Coming Soon!';
   document.getElementById('coming-soon-overlay').classList.add('open');
 }
-function closeComingSoon() {
-  document.getElementById('coming-soon-overlay').classList.remove('open');
-}
+function closeComingSoon() { document.getElementById('coming-soon-overlay').classList.remove('open'); }
+function closeApprovalOverlay() { document.getElementById('approval-overlay').classList.remove('open'); }
 
-// ── PLAYER TABS ───────────────────────────────────────────────
 function switchPlayerTab(tab) {
   currentMode = tab;
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active', (i === 0 && tab === 'new') || (i === 1 && tab === 'returning'));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0 && tab==='new') || (i===1 && tab==='returning'));
   });
-  document.getElementById('new-tab').style.display = tab === 'new' ? 'block' : 'none';
-  document.getElementById('returning-tab').style.display = tab === 'returning' ? 'block' : 'none';
+  document.getElementById('new-tab').style.display       = tab==='new'       ? 'block' : 'none';
+  document.getElementById('returning-tab').style.display = tab==='returning' ? 'block' : 'none';
 }
 
-// ── SUPABASE HELPER ───────────────────────────────────────────
-async function sb(path, method = 'GET', body = null) {
+async function sb(path, method='GET', body=null) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method,
     headers: {
       'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${SUPABASE_KEY}`,
       'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : ''
+      'Prefer': method==='POST' ? 'return=representation' : ''
     },
     body: body ? JSON.stringify(body) : null
   });
@@ -351,7 +355,6 @@ async function sb(path, method = 'GET', body = null) {
 }
 
 function generateOTP() { return Math.floor(1000 + Math.random() * 9000).toString(); }
-
 function showMsg(elId, msg, type) {
   document.getElementById(elId).innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
 }
@@ -361,42 +364,48 @@ async function sendPlayerOTP(mode) {
   currentMode = mode;
 
   if (mode === 'new') {
-    const name   = document.getElementById('p-name').value.trim();
-    const mobile = document.getElementById('p-mobile').value.trim();
-    const email  = document.getElementById('p-email').value.trim();
-    const gender = document.getElementById('p-gender').value;
+    const name     = document.getElementById('p-name').value.trim();
+    const mobile   = document.getElementById('p-mobile').value.trim();
+    const email    = document.getElementById('p-email').value.trim();
+    const gender   = document.getElementById('p-gender').value;
     const whatsapp = document.getElementById('p-whatsapp').value.trim();
     const telegram = document.getElementById('p-telegram').value.trim();
 
-    if (!name || !mobile || !email || !gender) { showMsg('p-reg-msg', 'Please fill all fields.', 'error'); return; }
-    if (mobile.length !== 10) { showMsg('p-reg-msg', 'Enter valid 10-digit mobile.', 'error'); return; }
+    if (!name||!mobile||!email||!gender) { showMsg('p-reg-msg','Please fill all fields.','error'); return; }
+    if (mobile.length!==10) { showMsg('p-reg-msg','Enter valid 10-digit mobile.','error'); return; }
 
-    showMsg('p-reg-msg', 'Checking...', 'info');
+    showMsg('p-reg-msg','Checking...','info');
 
     try {
-      const existing = await sb(`mj_players?mobile=eq.${mobile}&select=id`);
-      if (existing.length > 0) { showMsg('p-reg-msg', 'Mobile already registered. Use Returning Player tab.', 'warn'); return; }
+      const existing = await sb(`sp_members?mobile=eq.${mobile}&select=id`);
+      if (existing.length > 0) { showMsg('p-reg-msg','Mobile already registered. Use Returning Player tab.','warn'); return; }
 
       currentOTP = generateOTP();
-      await sb('mj_players', 'POST', { name, mobile, email, gender, whatsapp, telegram_id: telegram, otp: currentOTP, otp_verified: false });
+      await sb('sp_members', 'POST', {
+        name, mobile, email, gender, whatsapp,
+        telegram_id: telegram,
+        otp: currentOTP,
+        otp_verified: false,
+        status: 'pending'
+      });
 
       document.getElementById('p-otp-shown').textContent = currentOTP;
       showStep('player-step2');
 
-    } catch(e) { showMsg('p-reg-msg', 'Error: ' + e.message, 'error'); }
+    } catch(e) { showMsg('p-reg-msg','Error: '+e.message,'error'); }
 
   } else {
     const mobile = document.getElementById('p-login-mobile').value.trim();
-    if (mobile.length !== 10) { showMsg('p-login-msg', 'Enter valid 10-digit mobile.', 'error'); return; }
+    if (mobile.length!==10) { showMsg('p-login-msg','Enter valid 10-digit mobile.','error'); return; }
 
-    showMsg('p-login-msg', 'Checking...', 'info');
+    showMsg('p-login-msg','Checking...','info');
 
     try {
-      const players = await sb(`mj_players?mobile=eq.${mobile}&select=id`);
-      if (!players.length) { showMsg('p-login-msg', 'Mobile not found. Please register first.', 'error'); return; }
+      const players = await sb(`sp_members?mobile=eq.${mobile}&select=id`);
+      if (!players.length) { showMsg('p-login-msg','Mobile not found. Please register first.','error'); return; }
 
       currentOTP = generateOTP();
-      await fetch(`${SUPABASE_URL}/rest/v1/mj_players?mobile=eq.${mobile}`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/sp_members?mobile=eq.${mobile}`, {
         method: 'PATCH',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ otp: currentOTP })
@@ -405,36 +414,47 @@ async function sendPlayerOTP(mode) {
       document.getElementById('p-otp-shown').textContent = currentOTP;
       showStep('player-step2');
 
-    } catch(e) { showMsg('p-login-msg', 'Error: ' + e.message, 'error'); }
+    } catch(e) { showMsg('p-login-msg','Error: '+e.message,'error'); }
   }
 }
 
 // ── VERIFY OTP ────────────────────────────────────────────────
 async function verifyPlayerOTP() {
   const entered = document.getElementById('p-otp-input').value.trim();
-  if (entered !== currentOTP) { showMsg('p-otp-msg', 'Incorrect OTP. Try again.', 'error'); return; }
+  if (entered !== currentOTP) { showMsg('p-otp-msg','Incorrect OTP. Try again.','error'); return; }
 
-  showMsg('p-otp-msg', 'Verifying...', 'info');
+  showMsg('p-otp-msg','Verifying...','info');
 
   try {
-    const mobile = currentMode === 'new'
+    const mobile = currentMode==='new'
       ? document.getElementById('p-mobile').value.trim()
       : document.getElementById('p-login-mobile').value.trim();
 
-    await fetch(`${SUPABASE_URL}/rest/v1/mj_players?mobile=eq.${mobile}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/sp_members?mobile=eq.${mobile}`, {
       method: 'PATCH',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ otp_verified: true })
     });
 
-    const players = await sb(`mj_players?mobile=eq.${mobile}&select=*`);
-    const player = players[0];
-    localStorage.setItem('mj_player', JSON.stringify(player));
+    const members = await sb(`sp_members?mobile=eq.${mobile}&select=*`);
+    const member  = members[0];
 
-    showMsg('p-otp-msg', '✅ Verified! Taking you to clubs...', 'success');
-    setTimeout(() => { window.location.href = '/mahjong/index.html'; }, 1200);
+    // Save to localStorage
+    localStorage.setItem('sp_member', JSON.stringify(member));
 
-  } catch(e) { showMsg('p-otp-msg', 'Error: ' + e.message, 'error'); }
+    if (member.status === 'active') {
+      // Already approved — go straight in
+      showMsg('p-otp-msg','✅ Welcome back! Taking you to clubs...','success');
+      setTimeout(() => { window.location.href = '/mahjong/index.html'; }, 1200);
+    } else {
+      // Pending approval — show 24hr message
+      showMsg('p-otp-msg','✅ OTP verified!','success');
+      setTimeout(() => {
+        document.getElementById('approval-overlay').classList.add('open');
+      }, 600);
+    }
+
+  } catch(e) { showMsg('p-otp-msg','Error: '+e.message,'error'); }
 }
 
 function showStep(stepId) {
@@ -444,7 +464,13 @@ function showStep(stepId) {
 
 function showOwnerForgot() {
   const panel = document.getElementById('owner-forgot-panel');
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+}
+
+function goPlayerBack() {
+  showStep('player-step1');
+  document.getElementById('p-otp-input').value = '';
+  document.getElementById('p-otp-msg').innerHTML = '';
 }
 
 let forgotOTP = '';
@@ -452,32 +478,26 @@ let forgotClubData = null;
 
 async function sendForgotOTP() {
   const email = document.getElementById('forgot-email').value.trim();
-  if (!email) { document.getElementById('forgot-msg1').innerHTML = '<div class="status-box status-error">Enter your registered email.</div>'; return; }
-  document.getElementById('forgot-msg1').innerHTML = '<div class="status-box status-info">Checking...</div>';
+  if (!email) { document.getElementById('forgot-msg1').innerHTML='<div class="status-box status-error">Enter your registered email.</div>'; return; }
+  document.getElementById('forgot-msg1').innerHTML='<div class="status-box status-info">Checking...</div>';
   try {
-    const clubs = await sb('mj_clubs?email=eq.' + encodeURIComponent(email) + '&select=id,club_name,whatsapp_no,admin_password', 'GET');
-    if (!clubs.length) { document.getElementById('forgot-msg1').innerHTML = '<div class="status-box status-error">Email not found. Please check and try again.</div>'; return; }
+    const clubs = await sb('mj_clubs?email=eq.'+encodeURIComponent(email)+'&select=id,club_name,whatsapp_no,admin_password');
+    if (!clubs.length) { document.getElementById('forgot-msg1').innerHTML='<div class="status-box status-error">Email not found. Please check and try again.</div>'; return; }
     forgotClubData = clubs[0];
-    forgotOTP = Math.floor(1000 + Math.random() * 9000).toString();
+    forgotOTP = Math.floor(1000+Math.random()*9000).toString();
     document.getElementById('forgot-otp-shown').textContent = forgotOTP;
     document.getElementById('forgot-msg1').innerHTML = '';
     document.getElementById('forgot-step1').style.display = 'none';
     document.getElementById('forgot-step2').style.display = 'block';
-  } catch(e) { document.getElementById('forgot-msg1').innerHTML = '<div class="status-box status-error">Error: ' + e.message + '</div>'; }
+  } catch(e) { document.getElementById('forgot-msg1').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>'; }
 }
 
-async function verifyForgotOTP() {
+function verifyForgotOTP() {
   const entered = document.getElementById('forgot-otp-input').value.trim();
-  if (entered !== forgotOTP) { document.getElementById('forgot-msg2').innerHTML = '<div class="status-box status-error">Incorrect OTP. Try again.</div>'; return; }
+  if (entered !== forgotOTP) { document.getElementById('forgot-msg2').innerHTML='<div class="status-box status-error">Incorrect OTP. Try again.</div>'; return; }
   document.getElementById('forgot-step2').style.display = 'none';
   document.getElementById('forgot-password-text').textContent = forgotClubData.admin_password;
   document.getElementById('forgot-step3').style.display = 'block';
-}
-
-function goPlayerBack() {
-  showStep('player-step1');
-  document.getElementById('p-otp-input').value = '';
-  document.getElementById('p-otp-msg').innerHTML = '';
 }
 </script>
 </body>

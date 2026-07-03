@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
-:root{--blue:#1A6BFF;--green:#00B87A;--red:#EF4444;--gold:#c9a84c;--bg:#F4F6FB;--white:#fff;--text:#111827;--muted:#6B7280;--border:#E5E7EB;--radius:14px;}
+:root{--blue:#1A6BFF;--green:#00B87A;--red:#EF4444;--gold:#c9a84c;--purple:#7C3AED;--bg:#F4F6FB;--white:#fff;--text:#111827;--muted:#6B7280;--border:#E5E7EB;--radius:14px;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;}
 nav{background:#111;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
@@ -25,6 +25,7 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 .btn-green{background:var(--green);}
 .btn-red{background:var(--red);}
 .btn-gold{background:var(--gold);color:#111;}
+.btn-purple{background:var(--purple);}
 .err{color:var(--red);font-size:13px;text-align:center;margin-top:8px;}
 
 /* DASHBOARD */
@@ -39,10 +40,11 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 .section-tab{padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.2s;}
 .section-tab.active{background:var(--blue);border-color:var(--blue);color:white;}
 .section-tab.gold.active{background:var(--gold);border-color:var(--gold);color:#111;}
+.section-tab.purple.active{background:var(--purple);border-color:var(--purple);color:white;}
 .section-screen{display:none;}.section-screen.active{display:block;}
 
 /* INNER TABS */
-.tabs{display:flex;gap:8px;margin-bottom:20px;}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
 .tab{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;}
 .tab.active{background:var(--blue);border-color:var(--blue);color:white;}
 .screen{display:none;}.screen.active{display:block;}
@@ -63,7 +65,15 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 .approved-badge{background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
 .pending-badge{background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
 .paused-badge{background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
-.gold-badge{background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.purple-badge{background:#EDE9FE;color:#5B21B6;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+
+/* MEMBER CARDS */
+.member-card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);border-left:4px solid var(--purple);}
+.member-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px;}
+.member-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
+.member-detail{font-size:12px;color:var(--muted);line-height:1.8;}
+.member-detail span{color:var(--text);font-weight:500;}
+.member-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
 
 /* MAHJONG CLUB CARDS */
 .mj-card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);border-left:4px solid var(--gold);}
@@ -81,6 +91,7 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;}
 .notice{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;font-size:13px;color:#1E40AF;margin-bottom:16px;line-height:1.5;}
 .notice-gold{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;font-size:13px;color:#92400E;margin-bottom:16px;line-height:1.5;}
+.notice-purple{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px 14px;font-size:13px;color:#5B21B6;margin-bottom:16px;line-height:1.5;}
 
 .empty{text-align:center;padding:40px;color:var(--muted);}
 .loader{text-align:center;padding:30px;color:var(--muted);}
@@ -115,24 +126,23 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 
     <!-- SECTION TABS -->
     <div class="section-tabs" style="margin-bottom:24px;margin-top:4px;">
-      <button class="section-tab active" onclick="showSection('court')">🏸 Court Sports</button>
-      <button class="section-tab gold" onclick="showSection('mahjong')">🀄 Mahjong Clubs</button>
+      <button class="section-tab active"   onclick="showSection('court')">🏸 Court Sports</button>
+      <button class="section-tab gold"     onclick="showSection('mahjong')">🀄 Mahjong Clubs</button>
+      <button class="section-tab purple"   onclick="showSection('members')">🎮 Site Members</button>
     </div>
 
-    <!-- ══ COURT SPORTS SECTION ══════════════════════════════ -->
+    <!-- ══ COURT SPORTS SECTION ══ -->
     <div class="section-screen active" id="section-court">
       <div class="stats-row" id="statsRow">
         <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Owners</div></div>
         <div class="stat-card"><div class="stat-val" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
         <div class="stat-card"><div class="stat-val" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
       </div>
-
       <div class="tabs">
         <button class="tab active" onclick="showTab('pending')">⏳ Pending</button>
         <button class="tab" onclick="showTab('approved')">✅ Approved</button>
         <button class="tab" onclick="showTab('add')">➕ Add Owner</button>
       </div>
-
       <div class="screen active" id="screen-pending">
         <div id="pendingOwners"><div class="loader">Loading...</div></div>
       </div>
@@ -160,7 +170,7 @@ main{padding:24px;max-width:700px;margin:0 auto;}
       </div>
     </div>
 
-    <!-- ══ MAHJONG SECTION ════════════════════════════════════ -->
+    <!-- ══ MAHJONG SECTION ══ -->
     <div class="section-screen" id="section-mahjong">
       <div class="section-header">
         <div class="section-header-icon">🀄</div>
@@ -169,28 +179,44 @@ main{padding:24px;max-width:700px;margin:0 auto;}
           <div class="section-header-sub">Approve, pause or remove clubs from the network</div>
         </div>
       </div>
-
       <div class="stats-row">
         <div class="stat-card"><div class="stat-val" id="mj-stat-total">—</div><div class="stat-label">Total Clubs</div></div>
         <div class="stat-card"><div class="stat-val" id="mj-stat-active">—</div><div class="stat-label">Active</div></div>
         <div class="stat-card"><div class="stat-val" id="mj-stat-pending">—</div><div class="stat-label">Pending</div></div>
       </div>
-
       <div class="tabs" id="mj-tabs">
         <button class="tab active" onclick="showMjTab('mj-pending')">⏳ Pending</button>
         <button class="tab" onclick="showMjTab('mj-active')">✅ Active</button>
         <button class="tab" onclick="showMjTab('mj-paused')">⏸ Paused</button>
       </div>
+      <div class="screen active" id="mj-pending"><div id="mj-pending-list"><div class="loader">Loading...</div></div></div>
+      <div class="screen" id="mj-active"><div id="mj-active-list"><div class="loader">Loading...</div></div></div>
+      <div class="screen" id="mj-paused"><div id="mj-paused-list"><div class="loader">Loading...</div></div></div>
+    </div>
 
-      <div class="screen active" id="mj-pending">
-        <div id="mj-pending-list"><div class="loader">Loading...</div></div>
+    <!-- ══ SITE MEMBERS SECTION ══ -->
+    <div class="section-screen" id="section-members">
+      <div class="section-header">
+        <div class="section-header-icon">🎮</div>
+        <div>
+          <div class="section-header-title">Site Members</div>
+          <div class="section-header-sub">Approve players before they can join any club on SportBook</div>
+        </div>
       </div>
-      <div class="screen" id="mj-active">
-        <div id="mj-active-list"><div class="loader">Loading...</div></div>
+      <div class="notice-purple">
+        Every new player who registers on SportBook needs your approval first. Once approved, they can browse games and request to join any club.
       </div>
-      <div class="screen" id="mj-paused">
-        <div id="mj-paused-list"><div class="loader">Loading...</div></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-val" id="sm-stat-total">—</div><div class="stat-label">Total Members</div></div>
+        <div class="stat-card"><div class="stat-val" id="sm-stat-active">—</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-val" id="sm-stat-pending">—</div><div class="stat-label">Pending</div></div>
       </div>
+      <div class="tabs" id="sm-tabs">
+        <button class="tab active" onclick="showSmTab('sm-pending')">⏳ Pending</button>
+        <button class="tab" onclick="showSmTab('sm-active')">✅ Active</button>
+      </div>
+      <div class="screen active" id="sm-pending"><div id="sm-pending-list"><div class="loader">Loading...</div></div></div>
+      <div class="screen" id="sm-active"><div id="sm-active-list"><div class="loader">Loading...</div></div></div>
     </div>
 
   </main>
@@ -202,7 +228,7 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const ADMIN_PIN    = 'sportbook@admin2026';
+const ADMIN_PIN = 'sportbook@admin2026';
 const TELEGRAM_BOT  = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
 const TELEGRAM_CHAT = '8507770594';
 
@@ -222,7 +248,7 @@ function toast(msg) {
   setTimeout(()=>el.classList.remove('show'), 2800);
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────
+// ── LOGIN ──────────────────────────────────────────────────────
 function adminLogin() {
   const pin = document.getElementById('adminPin').value;
   if (pin !== ADMIN_PIN) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
@@ -231,6 +257,7 @@ function adminLogin() {
   document.getElementById('navRight').textContent = 'Admin: Vijay';
   loadAll();
   loadMjClubs();
+  loadSiteMembers();
 }
 document.getElementById('adminPin').addEventListener('keypress', e => { if (e.key==='Enter') adminLogin(); });
 
@@ -239,11 +266,13 @@ function showSection(s) {
   document.querySelectorAll('.section-screen').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.section-tab').forEach(el=>el.classList.remove('active'));
   document.getElementById('section-'+s).classList.add('active');
-  const idx = s==='court' ? 0 : 1;
-  document.querySelectorAll('.section-tab')[idx].classList.add('active');
+  const tabs = document.querySelectorAll('.section-tab');
+  if (s==='court') tabs[0].classList.add('active');
+  else if (s==='mahjong') tabs[1].classList.add('active');
+  else if (s==='members') tabs[2].classList.add('active');
 }
 
-// ── COURT TABS ────────────────────────────────────────────────
+// ── COURT TABS ─────────────────────────────────────────────────
 function showTab(t) {
   document.querySelectorAll('#section-court .tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#section-court .screen').forEach(s=>s.classList.remove('active'));
@@ -251,7 +280,7 @@ function showTab(t) {
   document.getElementById('screen-'+t).classList.add('active');
 }
 
-// ── MAHJONG TABS ──────────────────────────────────────────────
+// ── MAHJONG TABS ───────────────────────────────────────────────
 function showMjTab(t) {
   document.querySelectorAll('#mj-tabs .tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('#section-mahjong .screen').forEach(s=>s.classList.remove('active'));
@@ -259,7 +288,15 @@ function showMjTab(t) {
   document.getElementById(t).classList.add('active');
 }
 
-// ── LOAD COURT OWNERS ─────────────────────────────────────────
+// ── SITE MEMBERS TABS ──────────────────────────────────────────
+function showSmTab(t) {
+  document.querySelectorAll('#sm-tabs .tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#section-members .screen').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`#sm-tabs .tab[onclick="showSmTab('${t}')"]`).classList.add('active');
+  document.getElementById(t).classList.add('active');
+}
+
+// ── LOAD COURT OWNERS ──────────────────────────────────────────
 async function loadAll() {
   const { data } = await sb.from('sz_owners').select('*').order('created_at',{ascending:false});
   const all      = data || [];
@@ -354,11 +391,11 @@ async function addOwner() {
   showTab('approved');
 }
 
-// ── MAHJONG CLUBS ─────────────────────────────────────────────
+// ── MAHJONG CLUBS ──────────────────────────────────────────────
 async function loadMjClubs() {
-  const { data } = await fetch(`${SUPABASE_URL}/rest/v1/mj_clubs?select=*&order=created_at.desc`, {
+  const data = await fetch(`${SUPABASE_URL}/rest/v1/mj_clubs?select=*&order=created_at.desc`, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  }).then(r=>r.json()).then(d=>({data:d})).catch(()=>({data:[]}));
+  }).then(r=>r.json()).catch(()=>[]);
 
   const all     = data || [];
   const pending = all.filter(c=>c.status==='pending');
@@ -381,9 +418,7 @@ function renderMjClubs(list, elId, status) {
     el.innerHTML = `<div class="empty">${msgs[status]||'No clubs.'}</div>`;
     return;
   }
-
   const genderLabel = g => g==='male'?'👨 Male Only': g==='female'?'👩 Female Only':'👥 Mixed';
-
   el.innerHTML = list.map(c=>{
     const date = new Date(c.created_at).toLocaleDateString('en-IN');
     let actions = '';
@@ -402,13 +437,10 @@ function renderMjClubs(list, elId, status) {
         <button class="action-btn approve-btn" onclick="updateMjClub('${c.id}','active','${(c.club_name||'').replace(/'/g,"\\'")}','','')">▶ Re-activate</button>
         <button class="action-btn reject-btn"  onclick="updateMjClub('${c.id}','deleted','${(c.club_name||'').replace(/'/g,"\\'")}','','')">🗑 Delete</button>`;
     }
-
     return `
       <div class="mj-card">
         <div class="mj-card-header">
-          <div>
-            <div class="mj-club-name">🏯 ${c.club_name||'—'}</div>
-          </div>
+          <div><div class="mj-club-name">🏯 ${c.club_name||'—'}</div></div>
           <div class="mj-actions">${actions}</div>
         </div>
         <div class="mj-detail">
@@ -424,28 +456,93 @@ function renderMjClubs(list, elId, status) {
 }
 
 async function updateMjClub(id, newStatus, clubName, ownerName, whatsapp) {
-  const actionLabel = newStatus==='active'?'approve': newStatus==='paused'?'pause':'delete';
-  if (!confirm(`${actionLabel} "${clubName}"?`)) return;
-
+  if (!confirm(`${newStatus==='active'?'Approve':newStatus==='paused'?'Pause':'Delete'} "${clubName}"?`)) return;
   await fetch(`${SUPABASE_URL}/rest/v1/mj_clubs?id=eq.${id}`, {
     method: 'PATCH',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json'
-    },
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ status: newStatus })
   });
-
   toast(`${clubName} → ${newStatus}`);
-
   if (newStatus==='active' && ownerName) {
-    await notifyTelegram(
-      `🀄 <b>Mahjong Club Approved</b>\n\nClub: <b>${clubName}</b>\nOwner: ${ownerName}\nWhatsApp: ${whatsapp}\n\nThey can now login at sportbook.in/mahjong/club-admin.html`
-    );
+    await notifyTelegram(`🀄 <b>Mahjong Club Approved</b>\n\nClub: <b>${clubName}</b>\nOwner: ${ownerName}\nWhatsApp: ${whatsapp}\n\nThey can now login at sportbook.in/mahjong/club-admin.html`);
   }
-
   loadMjClubs();
+}
+
+// ── SITE MEMBERS ───────────────────────────────────────────────
+async function loadSiteMembers() {
+  const data = await fetch(`${SUPABASE_URL}/rest/v1/sp_members?select=*&order=created_at.desc`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  }).then(r=>r.json()).catch(()=>[]);
+
+  const all     = data || [];
+  const pending = all.filter(m=>m.status==='pending');
+  const active  = all.filter(m=>m.status==='active');
+
+  document.getElementById('sm-stat-total').textContent   = all.length;
+  document.getElementById('sm-stat-active').textContent  = active.length;
+  document.getElementById('sm-stat-pending').textContent = pending.length;
+
+  renderSiteMembers(pending, 'sm-pending-list', 'pending');
+  renderSiteMembers(active,  'sm-active-list',  'active');
+}
+
+function renderSiteMembers(list, elId, status) {
+  const el = document.getElementById(elId);
+  if (!list.length) {
+    const msgs = { pending:'🎉 No pending member approvals!', active:'No active members yet.' };
+    el.innerHTML = `<div class="empty">${msgs[status]||'No members.'}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(m=>{
+    const date = new Date(m.created_at).toLocaleDateString('en-IN');
+    let actions = '';
+    if (status==='pending') {
+      actions = `
+        <button class="action-btn approve-btn" onclick="updateSiteMember('${m.id}','active','${(m.name||'').replace(/'/g,"\\'")}','${m.mobile||''}','${m.email||''}')">✅ Approve</button>
+        <button class="action-btn reject-btn"  onclick="deleteSiteMember('${m.id}','${(m.name||'').replace(/'/g,"\\'")}')">❌ Reject</button>`;
+    } else {
+      actions = `
+        <span class="approved-badge">✅ Active</span>
+        <button class="action-btn reject-btn" onclick="deleteSiteMember('${m.id}','${(m.name||'').replace(/'/g,"\\'")}')">🗑 Remove</button>`;
+    }
+    return `
+      <div class="member-card">
+        <div class="member-card-header">
+          <div><div class="member-name">👤 ${m.name||'—'}</div></div>
+          <div class="member-actions">${actions}</div>
+        </div>
+        <div class="member-detail">
+          📱 Mobile: <span>${m.mobile||'—'}</span><br>
+          ✉️ Email: <span>${m.email||'—'}</span><br>
+          👤 Gender: <span>${m.gender||'—'}</span><br>
+          💬 WhatsApp: <span>${m.whatsapp||'—'}</span><br>
+          🕐 Registered: <span>${date}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function updateSiteMember(id, newStatus, name, mobile, email) {
+  if (!confirm(`Approve "${name}" as a SportBook member?`)) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/sp_members?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: newStatus })
+  });
+  toast(`✅ ${name} approved as SportBook member!`);
+  await notifyTelegram(`🎮 <b>New Member Approved</b>\n\n👤 ${name}\n📱 ${mobile}\n📧 ${email}\n\nThey can now browse and join clubs on sportbook.in`);
+  loadSiteMembers();
+}
+
+async function deleteSiteMember(id, name) {
+  if (!confirm(`Reject and remove "${name}" from SportBook?`)) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/sp_members?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  toast(`${name} removed.`);
+  loadSiteMembers();
 }
 </script>
 </body>
