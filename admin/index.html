@@ -14,8 +14,6 @@ nav{background:#111;padding:14px 24px;display:flex;align-items:center;justify-co
 .logo{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:white;}
 .logo span{color:var(--green);}
 main{padding:24px;max-width:700px;margin:0 auto;}
-
-/* LOGIN */
 .login-card{background:white;border-radius:var(--radius);padding:32px;margin-top:60px;box-shadow:0 2px 16px rgba(0,0,0,0.08);max-width:360px;margin-left:auto;margin-right:auto;}
 .login-title{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center;}
 .form-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:12px;transition:border-color 0.2s;}
@@ -27,77 +25,61 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 .btn-gold{background:var(--gold);color:#111;}
 .btn-purple{background:var(--purple);}
 .err{color:var(--red);font-size:13px;text-align:center;margin-top:8px;}
-
-/* DASHBOARD */
 .sec-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;}
 .stats-row{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;}
 .stat-card{background:white;border-radius:var(--radius);padding:16px 20px;flex:1;min-width:80px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
 .stat-val{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--text);}
 .stat-label{font-size:12px;color:var(--muted);}
-
-/* SECTION TABS */
 .section-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
 .section-tab{padding:9px 16px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.2s;}
 .section-tab.active{background:var(--blue);border-color:var(--blue);color:white;}
 .section-tab.gold.active{background:var(--gold);border-color:var(--gold);color:#111;}
 .section-tab.purple.active{background:var(--purple);border-color:var(--purple);color:white;}
 .section-screen{display:none;}.section-screen.active{display:block;}
-
-/* INNER TABS */
 .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
 .tab{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;}
 .tab.active{background:var(--blue);border-color:var(--blue);color:white;}
 .screen{display:none;}.screen.active{display:block;}
-
-/* OWNER CARDS */
 .owner-card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
 .owner-info .name{font-size:16px;font-weight:700;color:var(--text);}
 .owner-info .venue{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--blue);margin-bottom:4px;}
 .owner-info .detail{font-size:12px;color:var(--muted);line-height:1.6;}
 .owner-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
-.action-btn{padding:8px 16px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.action-btn{padding:8px 16px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;text-align:center;text-decoration:none;display:block;}
 .approve-btn{background:#D1FAE5;color:#065F46;}
 .approve-btn:hover{background:var(--green);color:white;}
 .reject-btn{background:#FEE2E2;color:#991B1B;}
 .reject-btn:hover{background:var(--red);color:white;}
 .pause-btn{background:#FEF3C7;color:#92400E;}
 .pause-btn:hover{background:#F59E0B;color:white;}
-.approved-badge{background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+.wa-btn{background:#25d366;color:white;}
+.wa-btn:hover{background:#1da851;color:white;}
+.approved-badge{background:#D1FAE5;color:#065F46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;display:inline-block;}
 .pending-badge{background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
 .paused-badge{background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
-.purple-badge{background:#EDE9FE;color:#5B21B6;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
-
-/* MEMBER CARDS */
 .member-card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);border-left:4px solid var(--purple);}
 .member-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px;}
 .member-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--text);}
 .member-detail{font-size:12px;color:var(--muted);line-height:1.8;}
 .member-detail span{color:var(--text);font-weight:500;}
 .member-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
-
-/* MAHJONG CLUB CARDS */
 .mj-card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);border-left:4px solid var(--gold);}
 .mj-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px;}
 .mj-club-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#0f0e17;}
 .mj-detail{font-size:12px;color:var(--muted);line-height:1.8;}
 .mj-detail span{color:var(--text);font-weight:500;}
 .mj-actions{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
-
-/* FORM */
 .form-card{background:white;border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
 .form-row{display:flex;gap:10px;margin-bottom:12px;}
 .form-row input,.form-row select{flex:1;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}
 .form-row input:focus,.form-row select:focus{border-color:var(--green);}
 .form-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;}
 .notice{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:12px 14px;font-size:13px;color:#1E40AF;margin-bottom:16px;line-height:1.5;}
-.notice-gold{background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;font-size:13px;color:#92400E;margin-bottom:16px;line-height:1.5;}
 .notice-purple{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px 14px;font-size:13px;color:#5B21B6;margin-bottom:16px;line-height:1.5;}
-
 .empty{text-align:center;padding:40px;color:var(--muted);}
 .loader{text-align:center;padding:30px;color:var(--muted);}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:white;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;}
 .toast.show{opacity:1;}
-
 .section-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
 .section-header-icon{font-size:24px;}
 .section-header-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--text);}
@@ -113,9 +95,9 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="login-title">🔐 Admin Login</div>
+    <div class="login-title">Admin Login</div>
     <input class="form-input" type="password" id="adminPin" placeholder="Enter admin PIN">
-    <button class="btn btn-blue" onclick="adminLogin()">Login →</button>
+    <button class="btn btn-blue" onclick="adminLogin()">Login</button>
     <div class="err" id="loginErr"></div>
   </div>
 </div>
@@ -123,96 +105,82 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 <!-- DASHBOARD -->
 <div id="dashboard" style="display:none;">
   <main>
-
-    <!-- SECTION TABS -->
     <div class="section-tabs" style="margin-bottom:24px;margin-top:4px;">
-      <button class="section-tab active"   onclick="showSection('court')">🏸 Court Sports</button>
-      <button class="section-tab gold"     onclick="showSection('mahjong')">🀄 Mahjong Clubs</button>
-      <button class="section-tab purple"   onclick="showSection('members')">🎮 Site Members</button>
+      <button class="section-tab active" onclick="showSection('court')">Court Sports</button>
+      <button class="section-tab gold"   onclick="showSection('mahjong')">Mahjong Clubs</button>
+      <button class="section-tab purple" onclick="showSection('members')">Site Members</button>
     </div>
 
-    <!-- ══ COURT SPORTS SECTION ══ -->
+    <!-- COURT SPORTS -->
     <div class="section-screen active" id="section-court">
-      <div class="stats-row" id="statsRow">
-        <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total Owners</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-approved">—</div><div class="stat-label">Approved</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-val" id="stat-total">-</div><div class="stat-label">Total Owners</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-approved">-</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card"><div class="stat-val" id="stat-pending">-</div><div class="stat-label">Pending</div></div>
       </div>
       <div class="tabs">
-        <button class="tab active" onclick="showTab('pending')">⏳ Pending</button>
-        <button class="tab" onclick="showTab('approved')">✅ Approved</button>
-        <button class="tab" onclick="showTab('add')">➕ Add Owner</button>
+        <button class="tab active" onclick="showTab('pending')">Pending</button>
+        <button class="tab" onclick="showTab('approved')">Approved</button>
+        <button class="tab" onclick="showTab('add')">Add Owner</button>
       </div>
-      <div class="screen active" id="screen-pending">
-        <div id="pendingOwners"><div class="loader">Loading...</div></div>
-      </div>
-      <div class="screen" id="screen-approved">
-        <div id="approvedOwners"><div class="loader">Loading...</div></div>
-      </div>
+      <div class="screen active" id="screen-pending"><div id="pendingOwners"><div class="loader">Loading...</div></div></div>
+      <div class="screen" id="screen-approved"><div id="approvedOwners"><div class="loader">Loading...</div></div></div>
       <div class="screen" id="screen-add">
         <div class="notice">Add a new owner directly — they can login immediately without registering.</div>
         <div class="form-card">
-          <div class="form-label">Owner Name</div>
-          <div class="form-row"><input id="add-name" placeholder="Rajesh Patel"></div>
-          <div class="form-label">Venue Name</div>
-          <div class="form-row"><input id="add-venue" placeholder="Smash Arena"></div>
-          <div class="form-label">City / Area</div>
-          <div class="form-row"><input id="add-city" placeholder="Fatehgunj, Vadodara"></div>
-          <div class="form-label">Mobile Number</div>
-          <div class="form-row"><input id="add-phone" placeholder="98765 43210" maxlength="10" inputmode="numeric"></div>
-          <div class="form-label">Email Address</div>
-          <div class="form-row"><input id="add-email" type="email" placeholder="owner@email.com"></div>
-          <div class="form-label">Password (they'll use this to login)</div>
-          <div class="form-row"><input id="add-pass" placeholder="Min 6 characters"></div>
-          <button class="btn btn-green" onclick="addOwner()">➕ Add Owner & Create Venue</button>
+          <div class="form-label">Owner Name</div><div class="form-row"><input id="add-name" placeholder="Rajesh Patel"></div>
+          <div class="form-label">Venue Name</div><div class="form-row"><input id="add-venue" placeholder="Smash Arena"></div>
+          <div class="form-label">City / Area</div><div class="form-row"><input id="add-city" placeholder="Fatehgunj, Vadodara"></div>
+          <div class="form-label">Mobile Number</div><div class="form-row"><input id="add-phone" placeholder="98765 43210" maxlength="10" inputmode="numeric"></div>
+          <div class="form-label">Email Address</div><div class="form-row"><input id="add-email" type="email" placeholder="owner@email.com"></div>
+          <div class="form-label">Password</div><div class="form-row"><input id="add-pass" placeholder="Min 6 characters"></div>
+          <button class="btn btn-green" onclick="addOwner()">Add Owner</button>
           <div class="err" id="addErr" style="margin-top:8px;"></div>
         </div>
       </div>
     </div>
 
-    <!-- ══ MAHJONG SECTION ══ -->
+    <!-- MAHJONG CLUBS -->
     <div class="section-screen" id="section-mahjong">
       <div class="section-header">
         <div class="section-header-icon">🀄</div>
         <div>
           <div class="section-header-title">Mahjong Clubs</div>
-          <div class="section-header-sub">Approve, pause or remove clubs from the network</div>
+          <div class="section-header-sub">Approve, pause or remove clubs</div>
         </div>
       </div>
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-val" id="mj-stat-total">—</div><div class="stat-label">Total Clubs</div></div>
-        <div class="stat-card"><div class="stat-val" id="mj-stat-active">—</div><div class="stat-label">Active</div></div>
-        <div class="stat-card"><div class="stat-val" id="mj-stat-pending">—</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-val" id="mj-stat-total">-</div><div class="stat-label">Total Clubs</div></div>
+        <div class="stat-card"><div class="stat-val" id="mj-stat-active">-</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-val" id="mj-stat-pending">-</div><div class="stat-label">Pending</div></div>
       </div>
       <div class="tabs" id="mj-tabs">
-        <button class="tab active" onclick="showMjTab('mj-pending')">⏳ Pending</button>
-        <button class="tab" onclick="showMjTab('mj-active')">✅ Active</button>
-        <button class="tab" onclick="showMjTab('mj-paused')">⏸ Paused</button>
+        <button class="tab active" onclick="showMjTab('mj-pending')">Pending</button>
+        <button class="tab" onclick="showMjTab('mj-active')">Active</button>
+        <button class="tab" onclick="showMjTab('mj-paused')">Paused</button>
       </div>
       <div class="screen active" id="mj-pending"><div id="mj-pending-list"><div class="loader">Loading...</div></div></div>
       <div class="screen" id="mj-active"><div id="mj-active-list"><div class="loader">Loading...</div></div></div>
       <div class="screen" id="mj-paused"><div id="mj-paused-list"><div class="loader">Loading...</div></div></div>
     </div>
 
-    <!-- ══ SITE MEMBERS SECTION ══ -->
+    <!-- SITE MEMBERS -->
     <div class="section-screen" id="section-members">
       <div class="section-header">
         <div class="section-header-icon">🎮</div>
         <div>
           <div class="section-header-title">Site Members</div>
-          <div class="section-header-sub">Approve players before they can join any club on SportBook</div>
+          <div class="section-header-sub">Approve players before they can join any club</div>
         </div>
       </div>
-      <div class="notice-purple">
-        Every new player who registers on SportBook needs your approval first. Once approved, they can browse games and request to join any club.
-      </div>
+      <div class="notice-purple">Every new player who registers needs your approval first. Once approved they can browse and join clubs.</div>
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-val" id="sm-stat-total">—</div><div class="stat-label">Total Members</div></div>
-        <div class="stat-card"><div class="stat-val" id="sm-stat-active">—</div><div class="stat-label">Active</div></div>
-        <div class="stat-card"><div class="stat-val" id="sm-stat-pending">—</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-val" id="sm-stat-total">-</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-val" id="sm-stat-active">-</div><div class="stat-label">Active</div></div>
+        <div class="stat-card"><div class="stat-val" id="sm-stat-pending">-</div><div class="stat-label">Pending</div></div>
       </div>
       <div style="text-align:right;margin-bottom:12px;">
-        <button onclick="exportMembersCSV()" style="background:#00B87A;color:white;border:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Download Members CSV</button>
+        <button onclick="exportMembersCSV()" style="background:var(--green);color:white;border:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Download Members CSV</button>
       </div>
       <div class="tabs" id="sm-tabs">
         <button class="tab active" onclick="showSmTab('sm-pending')">Pending</button>
@@ -221,39 +189,39 @@ main{padding:24px;max-width:700px;margin:0 auto;}
       <div class="screen active" id="sm-pending"><div id="sm-pending-list"><div class="loader">Loading...</div></div></div>
       <div class="screen" id="sm-active"><div id="sm-active-list"><div class="loader">Loading...</div></div></div>
     </div>
-
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const ADMIN_PIN = 'sportbook@admin2026';
-const TELEGRAM_BOT  = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
-const TELEGRAM_CHAT = '8507770594';
+var SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
+var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+var ADMIN_PIN = 'sportbook@admin2026';
+var TELEGRAM_BOT  = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
+var TELEGRAM_CHAT = '8507770594';
+
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function(){ el.classList.remove('show'); }, 2800);
+}
 
 async function notifyTelegram(msg) {
   try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' })
+    await fetch('https://api.telegram.org/bot' + TELEGRAM_BOT + '/sendMessage', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML'})
     });
   } catch(e) {}
 }
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 2800);
-}
-
-// ── LOGIN ──────────────────────────────────────────────────────
+// LOGIN
 function adminLogin() {
-  const pin = document.getElementById('adminPin').value;
+  var pin = document.getElementById('adminPin').value;
   if (pin !== ADMIN_PIN) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
@@ -262,329 +230,279 @@ function adminLogin() {
   loadMjClubs();
   loadSiteMembers();
 }
-document.getElementById('adminPin').addEventListener('keypress', e => { if (e.key==='Enter') adminLogin(); });
+document.getElementById('adminPin').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') adminLogin();
+});
 
-// ── SECTION TABS ──────────────────────────────────────────────
+// SECTION TABS
 function showSection(s) {
-  document.querySelectorAll('.section-screen').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.section-tab').forEach(el=>el.classList.remove('active'));
-  document.getElementById('section-'+s).classList.add('active');
-  const tabs = document.querySelectorAll('.section-tab');
-  if (s==='court') tabs[0].classList.add('active');
-  else if (s==='mahjong') tabs[1].classList.add('active');
-  else if (s==='members') tabs[2].classList.add('active');
+  document.querySelectorAll('.section-screen').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.section-tab').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('section-' + s).classList.add('active');
+  var tabs = document.querySelectorAll('.section-tab');
+  if (s === 'court') tabs[0].classList.add('active');
+  else if (s === 'mahjong') tabs[1].classList.add('active');
+  else if (s === 'members') tabs[2].classList.add('active');
 }
 
-// ── COURT TABS ─────────────────────────────────────────────────
 function showTab(t) {
-  document.querySelectorAll('#section-court .tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('#section-court .screen').forEach(s=>s.classList.remove('active'));
-  document.querySelector(`#section-court .tab[onclick="showTab('${t}')"]`).classList.add('active');
-  document.getElementById('screen-'+t).classList.add('active');
+  document.querySelectorAll('#section-court .tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('#section-court .screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelector('#section-court .tab[onclick="showTab(\'' + t + '\')"]').classList.add('active');
+  document.getElementById('screen-' + t).classList.add('active');
 }
 
-// ── MAHJONG TABS ───────────────────────────────────────────────
 function showMjTab(t) {
-  document.querySelectorAll('#mj-tabs .tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('#section-mahjong .screen').forEach(s=>s.classList.remove('active'));
-  document.querySelector(`#mj-tabs .tab[onclick="showMjTab('${t}')"]`).classList.add('active');
+  document.querySelectorAll('#mj-tabs .tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('#section-mahjong .screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelector('#mj-tabs .tab[onclick="showMjTab(\'' + t + '\')"]').classList.add('active');
   document.getElementById(t).classList.add('active');
 }
 
-// ── SITE MEMBERS TABS ──────────────────────────────────────────
 function showSmTab(t) {
-  document.querySelectorAll('#sm-tabs .tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('#section-members .screen').forEach(s=>s.classList.remove('active'));
-  document.querySelector(`#sm-tabs .tab[onclick="showSmTab('${t}')"]`).classList.add('active');
+  document.querySelectorAll('#sm-tabs .tab').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('#section-members .screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelector('#sm-tabs .tab[onclick="showSmTab(\'' + t + '\')"]').classList.add('active');
   document.getElementById(t).classList.add('active');
 }
 
-// ── LOAD COURT OWNERS ──────────────────────────────────────────
+// COURT OWNERS
 async function loadAll() {
-  const { data } = await sb.from('sz_owners').select('*').order('created_at',{ascending:false});
-  const all      = data || [];
-  const pending  = all.filter(o=>!o.is_approved);
-  const approved = all.filter(o=>o.is_approved);
+  var res = await sb.from('sz_owners').select('*').order('created_at', {ascending: false});
+  var all = res.data || [];
+  var pending  = all.filter(function(o){ return !o.is_approved; });
+  var approved = all.filter(function(o){ return  o.is_approved; });
   document.getElementById('stat-total').textContent    = all.length;
   document.getElementById('stat-approved').textContent = approved.length;
   document.getElementById('stat-pending').textContent  = pending.length;
-  renderOwners(pending,'pendingOwners',false);
-  renderOwners(approved,'approvedOwners',true);
+  renderOwners(pending,  'pendingOwners',  false);
+  renderOwners(approved, 'approvedOwners', true);
 }
 
 function renderOwners(list, elId, isApproved) {
-  const el = document.getElementById(elId);
+  var el = document.getElementById(elId);
   if (!list.length) {
-    el.innerHTML = `<div class="empty">${isApproved?'✅ No approved owners yet':'🎉 No pending approvals!'}</div>`;
+    el.innerHTML = '<div class="empty">' + (isApproved ? 'No approved owners yet' : 'No pending approvals!') + '</div>';
     return;
   }
-  el.innerHTML = list.map(o=>`
-    <div class="owner-card" id="ocard-${o.id}">
-      <div class="owner-info">
-        <div class="venue">${o.venue_name||'—'}</div>
-        <div class="name">👤 ${o.owner_name||'—'}</div>
-        <div class="detail">
-          📱 ${o.phone||'—'} · 📧 ${o.email||'—'}<br>
-          📍 ${o.city||'—'}<br>
-          🕐 ${new Date(o.created_at).toLocaleDateString('en-IN')}
-          ${o.zone_id?`<br>🏟️ Zone: ${o.zone_id.slice(0,8)}...`:'<br>🏟️ No zone yet'}
-        </div>
-      </div>
-      <div class="owner-actions">
-        ${isApproved
-          ? `<span class="approved-badge">✅ Approved</span>
-             <button class="action-btn reject-btn" onclick="revokeOwner('${o.id}')">Revoke</button>`
-          : `<button class="action-btn approve-btn" onclick="approveOwner('${o.id}','${(o.venue_name||'').replace(/'/g,"\\'")}','${(o.owner_name||'').replace(/'/g,"\\'")}','${o.phone||''}','${o.email||''}')">✅ Approve</button>
-             <button class="action-btn reject-btn" onclick="deleteOwner('${o.id}')">❌ Reject</button>`
-        }
-      </div>
-    </div>`).join('');
+  el.innerHTML = list.map(function(o) {
+    var date = new Date(o.created_at).toLocaleDateString('en-IN');
+    return '<div class="owner-card">'
+      + '<div class="owner-info">'
+      + '<div class="venue">' + (o.venue_name||'-') + '</div>'
+      + '<div class="name">' + (o.owner_name||'-') + '</div>'
+      + '<div class="detail">' + (o.phone||'-') + ' &middot; ' + (o.email||'-') + '<br>' + (o.city||'-') + '<br>' + date + '</div>'
+      + '</div>'
+      + '<div class="owner-actions">'
+      + (isApproved
+        ? '<span class="approved-badge">Approved</span><button class="action-btn reject-btn" onclick="revokeOwner(\'' + o.id + '\')">Revoke</button>'
+        : '<button class="action-btn approve-btn" onclick="approveOwner(\'' + o.id + '\',\'' + (o.venue_name||'').replace(/'/g,"\\'") + '\',\'' + (o.owner_name||'').replace(/'/g,"\\'") + '\',\'' + (o.phone||'') + '\',\'' + (o.email||'') + '\')">Approve</button>'
+          + '<button class="action-btn reject-btn" onclick="deleteOwner(\'' + o.id + '\')">Reject</button>')
+      + '</div></div>';
+  }).join('');
 }
 
 async function approveOwner(id, venue, ownerName, phone, email) {
-  const { error } = await sb.from('sz_owners').update({is_approved:true}).eq('id',id);
-  if (error) { toast('Error: '+error.message); return; }
-  toast(`✅ ${venue} approved!`);
-  await notifyTelegram(`✅ <b>OWNER APPROVED</b>\n\n🏟️ ${venue}\n👤 ${ownerName}\n📱 ${phone}\n📧 ${email}\n\nThey can now login at sportbook.in`);
+  await sb.from('sz_owners').update({is_approved: true}).eq('id', id);
+  toast(venue + ' approved!');
+  await notifyTelegram('OWNER APPROVED: ' + venue + ' | ' + ownerName + ' | ' + phone);
   loadAll();
 }
-
 async function revokeOwner(id) {
-  if (!confirm('Revoke access for this owner?')) return;
-  await sb.from('sz_owners').update({is_approved:false}).eq('id',id);
+  if (!confirm('Revoke access?')) return;
+  await sb.from('sz_owners').update({is_approved: false}).eq('id', id);
   toast('Access revoked');
   loadAll();
 }
-
 async function deleteOwner(id) {
-  if (!confirm('Reject and delete this owner registration?')) return;
-  await sb.from('sz_owners').delete().eq('id',id);
-  toast('Owner rejected and removed');
+  if (!confirm('Reject and delete?')) return;
+  await sb.from('sz_owners').delete().eq('id', id);
+  toast('Owner removed');
   loadAll();
 }
-
 async function addOwner() {
-  const name  = document.getElementById('add-name').value.trim();
-  const venue = document.getElementById('add-venue').value.trim();
-  const city  = document.getElementById('add-city').value.trim();
-  const phone = document.getElementById('add-phone').value.trim();
-  const email = document.getElementById('add-email').value.trim();
-  const pass  = document.getElementById('add-pass').value.trim();
-  if (!name||!venue||!city||!phone||!email||!pass) { document.getElementById('addErr').textContent='Please fill all fields'; return; }
-  if (phone.length!==10) { document.getElementById('addErr').textContent='Enter valid 10-digit mobile'; return; }
-  if (pass.length<6)     { document.getElementById('addErr').textContent='Password min 6 characters'; return; }
-  document.getElementById('addErr').textContent='';
-  const { data: zone, error: zErr } = await sb.from('sz_zones').insert({
-    name:venue, city:city.split(',').pop().trim(),
-    address:city, sports:[], is_active:true,
-    open_time:'06:00:00', close_time:'22:00:00',
-    slot_duration:60, grace_minutes:15
-  }).select().single();
-  if (zErr) { document.getElementById('addErr').textContent='Error creating venue: '+zErr.message; return; }
-  const { error: oErr } = await sb.from('sz_owners').insert({
-    owner_name:name, venue_name:venue,
-    city, phone, email, password:pass,
-    zone_id:zone.id, is_approved:true
-  });
-  if (oErr) { document.getElementById('addErr').textContent='Error creating owner: '+oErr.message; return; }
-  toast(`✅ ${venue} added!`);
-  await notifyTelegram(`➕ <b>OWNER ADDED BY ADMIN</b>\n\n🏟️ ${venue}\n👤 ${name}\n📱 ${phone}\n📧 ${email}`);
-  ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(id=>{ document.getElementById(id).value=''; });
+  var name  = document.getElementById('add-name').value.trim();
+  var venue = document.getElementById('add-venue').value.trim();
+  var city  = document.getElementById('add-city').value.trim();
+  var phone = document.getElementById('add-phone').value.trim();
+  var email = document.getElementById('add-email').value.trim();
+  var pass  = document.getElementById('add-pass').value.trim();
+  if (!name||!venue||!city||!phone||!email||!pass) { document.getElementById('addErr').textContent='Fill all fields'; return; }
+  if (phone.length !== 10) { document.getElementById('addErr').textContent='10-digit mobile required'; return; }
+  if (pass.length < 6)     { document.getElementById('addErr').textContent='Min 6 char password'; return; }
+  document.getElementById('addErr').textContent = '';
+  var zRes = await sb.from('sz_zones').insert({name:venue, city:city.split(',').pop().trim(), address:city, sports:[], is_active:true, open_time:'06:00:00', close_time:'22:00:00', slot_duration:60, grace_minutes:15}).select().single();
+  if (zRes.error) { document.getElementById('addErr').textContent = 'Error: ' + zRes.error.message; return; }
+  var oRes = await sb.from('sz_owners').insert({owner_name:name, venue_name:venue, city, phone, email, password:pass, zone_id:zRes.data.id, is_approved:true});
+  if (oRes.error) { document.getElementById('addErr').textContent = 'Error: ' + oRes.error.message; return; }
+  toast(venue + ' added!');
+  ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(function(id){ document.getElementById(id).value=''; });
   loadAll();
   showTab('approved');
 }
 
-// ── MAHJONG CLUBS ──────────────────────────────────────────────
+// MAHJONG CLUBS
 async function loadMjClubs() {
-  const data = await fetch(`${SUPABASE_URL}/rest/v1/mj_clubs?select=*&order=created_at.desc`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  }).then(r=>r.json()).catch(()=>[]);
-
-  const all     = data || [];
-  const pending = all.filter(c=>c.status==='pending');
-  const active  = all.filter(c=>c.status==='active');
-  const paused  = all.filter(c=>c.status==='paused');
-
+  var resp = await fetch(SUPABASE_URL + '/rest/v1/mj_clubs?select=*&order=created_at.desc', {
+    headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
+  });
+  var all = await resp.json();
+  var pending = all.filter(function(c){ return c.status === 'pending'; });
+  var active  = all.filter(function(c){ return c.status === 'active';  });
+  var paused  = all.filter(function(c){ return c.status === 'paused';  });
   document.getElementById('mj-stat-total').textContent   = all.length;
   document.getElementById('mj-stat-active').textContent  = active.length;
   document.getElementById('mj-stat-pending').textContent = pending.length;
-
   renderMjClubs(pending, 'mj-pending-list', 'pending');
   renderMjClubs(active,  'mj-active-list',  'active');
   renderMjClubs(paused,  'mj-paused-list',  'paused');
 }
 
 function renderMjClubs(list, elId, status) {
-  const el = document.getElementById(elId);
+  var el = document.getElementById(elId);
   if (!list.length) {
-    const msgs = { pending:'🎉 No pending club approvals!', active:'No active clubs yet.', paused:'No paused clubs.' };
-    el.innerHTML = `<div class="empty">${msgs[status]||'No clubs.'}</div>`;
+    var msgs = {pending:'No pending approvals!', active:'No active clubs.', paused:'No paused clubs.'};
+    el.innerHTML = '<div class="empty">' + (msgs[status]||'No clubs.') + '</div>';
     return;
   }
-  const genderLabel = g => g==='male'?'👨 Male Only': g==='female'?'👩 Female Only':'👥 Mixed';
-  el.innerHTML = list.map(c=>{
-    const date = new Date(c.created_at).toLocaleDateString('en-IN');
-    let actions = '';
-    if (status==='pending') {
-      actions = `
-        <button class="action-btn approve-btn" onclick="updateMjClub('${c.id}','active','${(c.club_name||'').replace(/'/g,"\\'")}','${c.owner_name||''}','${c.whatsapp_no||''}')">✅ Approve</button>
-        <button class="action-btn reject-btn"  onclick="updateMjClub('${c.id}','deleted','${(c.club_name||'').replace(/'/g,"\\'")}','','')">❌ Reject</button>`;
-    } else if (status==='active') {
-      actions = `
-        <span class="approved-badge">✅ Active</span>
-        <button class="action-btn pause-btn"  onclick="updateMjClub('${c.id}','paused','${(c.club_name||'').replace(/'/g,"\\'")}','','')">⏸ Pause</button>
-        <button class="action-btn reject-btn" onclick="updateMjClub('${c.id}','deleted','${(c.club_name||'').replace(/'/g,"\\'")}','','')">🗑 Delete</button>`;
-    } else if (status==='paused') {
-      actions = `
-        <span class="paused-badge">⏸ Paused</span>
-        <button class="action-btn approve-btn" onclick="updateMjClub('${c.id}','active','${(c.club_name||'').replace(/'/g,"\\'")}','','')">▶ Re-activate</button>
-        <button class="action-btn reject-btn"  onclick="updateMjClub('${c.id}','deleted','${(c.club_name||'').replace(/'/g,"\\'")}','','')">🗑 Delete</button>`;
+  el.innerHTML = list.map(function(c) {
+    var date = new Date(c.created_at).toLocaleDateString('en-IN');
+    var gL = c.gender_condition === 'male' ? 'Male Only' : c.gender_condition === 'female' ? 'Female Only' : 'Mixed';
+    var actions = '';
+    var cName = (c.club_name||'').replace(/'/g,"\\'");
+    if (status === 'pending') {
+      actions = '<button class="action-btn approve-btn" onclick="updateMjClub(\'' + c.id + '\',\'active\',\'' + cName + '\',\'' + (c.owner_name||'') + '\',\'' + (c.whatsapp_no||'') + '\')">Approve</button>'
+              + '<button class="action-btn reject-btn" onclick="updateMjClub(\'' + c.id + '\',\'deleted\',\'' + cName + '\',\'\',\'\')">Reject</button>';
+    } else if (status === 'active') {
+      actions = '<span class="approved-badge">Active</span>'
+              + '<button class="action-btn pause-btn" onclick="updateMjClub(\'' + c.id + '\',\'paused\',\'' + cName + '\',\'\',\'\')">Pause</button>'
+              + '<button class="action-btn reject-btn" onclick="updateMjClub(\'' + c.id + '\',\'deleted\',\'' + cName + '\',\'\',\'\')">Delete</button>';
+    } else {
+      actions = '<span class="paused-badge">Paused</span>'
+              + '<button class="action-btn approve-btn" onclick="updateMjClub(\'' + c.id + '\',\'active\',\'' + cName + '\',\'\',\'\')">Re-activate</button>'
+              + '<button class="action-btn reject-btn" onclick="updateMjClub(\'' + c.id + '\',\'deleted\',\'' + cName + '\',\'\',\'\')">Delete</button>';
     }
-    return `
-      <div class="mj-card">
-        <div class="mj-card-header">
-          <div><div class="mj-club-name">🏯 ${c.club_name||'—'}</div></div>
-          <div class="mj-actions">${actions}</div>
-        </div>
-        <div class="mj-detail">
-          👤 Owner: <span>${c.owner_name||'—'}</span><br>
-          📍 City: <span>${c.city||'—'}</span><br>
-          🀄 Tables: <span>${c.total_tables||'—'}</span> &nbsp;|&nbsp; ${genderLabel(c.gender_condition)}<br>
-          📱 WhatsApp: <span>${c.whatsapp_no||'—'}</span><br>
-          ✉️ Email: <span>${c.email||'—'}</span><br>
-          🕐 Registered: <span>${date}</span>
-        </div>
-      </div>`;
+    return '<div class="mj-card">'
+      + '<div class="mj-card-header"><div><div class="mj-club-name">' + (c.club_name||'-') + '</div></div><div class="mj-actions">' + actions + '</div></div>'
+      + '<div class="mj-detail">'
+      + 'Owner: <span>' + (c.owner_name||'-') + '</span><br>'
+      + 'City: <span>' + (c.city||'-') + '</span><br>'
+      + 'Tables: <span>' + (c.total_tables||'-') + '</span> | ' + gL + '<br>'
+      + 'WhatsApp: <span>' + (c.whatsapp_no||'-') + '</span><br>'
+      + 'Email: <span>' + (c.email||'-') + '</span><br>'
+      + 'Registered: <span>' + date + '</span>'
+      + '</div></div>';
   }).join('');
 }
 
 async function updateMjClub(id, newStatus, clubName, ownerName, whatsapp) {
-  if (!confirm(`${newStatus==='active'?'Approve':newStatus==='paused'?'Pause':'Delete'} "${clubName}"?`)) return;
-  await fetch(`${SUPABASE_URL}/rest/v1/mj_clubs?id=eq.${id}`, {
+  var label = newStatus === 'active' ? 'Approve' : newStatus === 'paused' ? 'Pause' : 'Delete';
+  if (!confirm(label + ' "' + clubName + '"?')) return;
+  await fetch(SUPABASE_URL + '/rest/v1/mj_clubs?id=eq.' + id, {
     method: 'PATCH',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status: newStatus })
+    headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
+    body: JSON.stringify({status: newStatus})
   });
-  toast(`${clubName} → ${newStatus}`);
-  if (newStatus==='active' && ownerName) {
-    await notifyTelegram(`🀄 <b>Mahjong Club Approved</b>\n\nClub: <b>${clubName}</b>\nOwner: ${ownerName}\nWhatsApp: ${whatsapp}\n\nThey can now login at sportbook.in/mahjong/club-admin.html`);
+  toast(clubName + ' -> ' + newStatus);
+  if (newStatus === 'active' && ownerName) {
+    await notifyTelegram('Mahjong Club Approved: ' + clubName + ' | ' + ownerName + ' | ' + whatsapp);
   }
   loadMjClubs();
 }
 
-// ── SITE MEMBERS ───────────────────────────────────────────────
+// SITE MEMBERS
 async function loadSiteMembers() {
-  const data = await fetch(`${SUPABASE_URL}/rest/v1/sp_members?select=*&order=created_at.desc`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  }).then(r=>r.json()).catch(()=>[]);
-
-  const all     = data || [];
-  const pending = all.filter(m=>m.status==='pending');
-  const active  = all.filter(m=>m.status==='active');
-
+  var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc', {
+    headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
+  });
+  var all = await resp.json();
+  var pending = all.filter(function(m){ return m.status === 'pending'; });
+  var active  = all.filter(function(m){ return m.status === 'active';  });
   document.getElementById('sm-stat-total').textContent   = all.length;
   document.getElementById('sm-stat-active').textContent  = active.length;
   document.getElementById('sm-stat-pending').textContent = pending.length;
-
   renderSiteMembers(pending, 'sm-pending-list', 'pending');
   renderSiteMembers(active,  'sm-active-list',  'active');
 }
 
 function renderSiteMembers(list, elId, status) {
-  const el = document.getElementById(elId);
+  var el = document.getElementById(elId);
   if (!list.length) {
-    const msgs = { pending:'🎉 No pending member approvals!', active:'No active members yet.' };
-    el.innerHTML = `<div class="empty">${msgs[status]||'No members.'}</div>`;
+    el.innerHTML = '<div class="empty">' + (status === 'pending' ? 'No pending approvals!' : 'No active members yet.') + '</div>';
     return;
   }
-  el.innerHTML = list.map(m=>{
-    const date = new Date(m.created_at).toLocaleDateString('en-IN');
-    let actions = '';
-    if (status==='pending') {
-      actions = '<button class="action-btn approve-btn" onclick="updateSiteMember(\'' + m.id + '\',\'active\',\'' + (m.name||'').replace(/'/g,"\\'") + '\',\'' + (m.mobile||'') + '\',\'' + (m.email||'') + '\')">Approve</button>'
-              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + (m.name||'') + '" onclick="deleteSiteM(this)">Reject</button>';
+  el.innerHTML = list.map(function(m) {
+    var date = m.created_at ? new Date(m.created_at).toLocaleDateString('en-IN') : '-';
+    var mobile = m.mobile || '';
+    var name = m.name || '-';
+    var waText = 'Hi ' + name + '! Your SportBook account has been approved. Login at sportbook.in and join Mahjong clubs. Welcome!';
+    var waLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText);
+    var actions = '';
+    if (status === 'pending') {
+      actions = '<button class="action-btn approve-btn" data-id="' + m.id + '" data-mobile="' + mobile + '" data-name="' + name + '" data-email="' + (m.email||'') + '" onclick="approveMember(this)">Approve</button>'
+              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="deleteSiteM(this)">Reject</button>';
     } else {
       actions = '<span class="approved-badge">Active</span>'
-              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + (m.name||'') + '" onclick="deleteSiteM(this)">Remove</button>';
+              + '<a href="' + waLink + '" target="_blank" class="action-btn wa-btn">WhatsApp</a>'
+              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="deleteSiteM(this)">Remove</button>';
     }
-    return `
-      <div class="member-card">
-        <div class="member-card-header">
-          <div><div class="member-name">👤 ${m.name||'—'}</div></div>
-          <div class="member-actions">${actions}</div>
-        </div>
-        <div class="member-detail">
-          📱 Mobile: <span>${m.mobile||'—'}</span><br>
-          ✉️ Email: <span>${m.email||'—'}</span><br>
-          👤 Gender: <span>${m.gender||'—'}</span><br>
-          💬 WhatsApp: <span>${m.whatsapp||'—'}</span><br>
-          🕐 Registered: <span>${date}</span>
-        </div>
-      </div>`;
+    return '<div class="member-card">'
+      + '<div class="member-card-header"><div><div class="member-name">' + name + '</div></div><div class="member-actions">' + actions + '</div></div>'
+      + '<div class="member-detail">'
+      + 'Mobile: <span>' + mobile + '</span><br>'
+      + 'Email: <span>' + (m.email||'-') + '</span><br>'
+      + 'Gender: <span>' + (m.gender||'-') + '</span><br>'
+      + 'WhatsApp: <span>' + (m.whatsapp||'-') + '</span><br>'
+      + 'Registered: <span>' + date + '</span>'
+      + '</div></div>';
   }).join('');
 }
 
-async function updateSiteMember(id, newStatus, name, mobile, email) {
+async function approveMember(btn) {
+  var id     = btn.getAttribute('data-id');
+  var name   = btn.getAttribute('data-name');
+  var mobile = btn.getAttribute('data-mobile');
+  var email  = btn.getAttribute('data-email');
   if (!confirm('Approve ' + name + ' as a SportBook member?')) return;
   await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
     method: 'PATCH',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status: newStatus })
+    headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
+    body: JSON.stringify({status: 'active'})
   });
   toast(name + ' approved!');
   await notifyTelegram('New Member Approved: ' + name + ' | ' + mobile + ' | ' + email);
-  // Open WhatsApp to notify player their account is approved
-  var waMsg = encodeURIComponent('Hi ' + name + '! Your SportBook account has been approved. You can now login at sportbook.in and join Mahjong clubs. Welcome!');
-  window.open('https://wa.me/91' + mobile + '?text=' + waMsg, '_blank');
+  // Open WhatsApp to notify player
+  var waText = 'Hi ' + name + '! Your SportBook account has been approved. Login at sportbook.in and join Mahjong clubs. Welcome!';
+  window.open('https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText), '_blank');
   loadSiteMembers();
 }
 
 async function deleteSiteM(btn) {
-  var id = btn.getAttribute('data-id');
+  var id   = btn.getAttribute('data-id');
   var name = btn.getAttribute('data-name');
   if (!confirm('Remove ' + name + ' from SportBook?')) return;
-  try {
-    await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'DELETE',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      }
-    });
-    toast(name + ' removed.');
-    loadSiteMembers();
-  } catch(e) {
-    toast('Error: ' + e.message);
-  }
+  await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
+    method: 'DELETE',
+    headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'}
+  });
+  toast(name + ' removed.');
+  loadSiteMembers();
 }
 
-async function deleteSiteMember(id, name) {
-  var btn = {getAttribute: function(k){ return k==='data-id'?id:name; }};
-  deleteSiteM(btn);
-}
-
+// CSV EXPORT
 async function exportMembersCSV() {
   try {
-    var url = SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc';
-    var resp = await fetch(url, {
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY
-      }
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc', {
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
     });
     var data = await resp.json();
     if (!data || !data.length) { toast('No members found.'); return; }
     var cols = 'Name,Mobile,Email,Gender,WhatsApp,Telegram,Status,Registered';
     var rows = data.map(function(m) {
       var d = m.created_at ? new Date(m.created_at).toLocaleDateString('en-IN') : '';
-      return [
-        m.name||'', m.mobile||'', m.email||'', m.gender||'',
-        m.whatsapp||'', m.telegram_id||'', m.status||'', d
-      ].map(function(v) {
-        return '"' + String(v).replace(/"/g, '""') + '"';
-      }).join(',');
+      return [m.name||'', m.mobile||'', m.email||'', m.gender||'', m.whatsapp||'', m.telegram_id||'', m.status||'', d]
+        .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; })
+        .join(',');
     });
     var csv = cols + '\r\n' + rows.join('\r\n');
     var blob = new Blob([csv], {type: 'text/csv'});
@@ -595,9 +513,7 @@ async function exportMembersCSV() {
     a.click();
     document.body.removeChild(a);
     toast('Downloaded!');
-  } catch(e) {
-    toast('Error: ' + e.message);
-  }
+  } catch(e) { toast('Error: ' + e.message); }
 }
 </script>
 </body>
