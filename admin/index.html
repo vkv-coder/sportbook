@@ -525,14 +525,17 @@ function renderSiteMembers(list, elId, status) {
 }
 
 async function updateSiteMember(id, newStatus, name, mobile, email) {
-  if (!confirm(`Approve "${name}" as a SportBook member?`)) return;
-  await fetch(`${SUPABASE_URL}/rest/v1/sp_members?id=eq.${id}`, {
+  if (!confirm('Approve ' + name + ' as a SportBook member?')) return;
+  await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
     method: 'PATCH',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ status: newStatus })
   });
-  toast(`✅ ${name} approved as SportBook member!`);
-  await notifyTelegram(`🎮 <b>New Member Approved</b>\n\n👤 ${name}\n📱 ${mobile}\n📧 ${email}\n\nThey can now browse and join clubs on sportbook.in`);
+  toast(name + ' approved!');
+  await notifyTelegram('New Member Approved: ' + name + ' | ' + mobile + ' | ' + email);
+  // Open WhatsApp to notify player their account is approved
+  var waMsg = encodeURIComponent('Hi ' + name + '! Your SportBook account has been approved. You can now login at sportbook.in and join Mahjong clubs. Welcome!');
+  window.open('https://wa.me/91' + mobile + '?text=' + waMsg, '_blank');
   loadSiteMembers();
 }
 

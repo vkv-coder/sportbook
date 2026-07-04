@@ -323,7 +323,13 @@ async function loadAvailability(){
         else if(onWaitlist){btnHtml='<button class="btn-booked" style="border-color:#8e44ad;color:#bb8fce;">⏳ On Waitlist</button>';}
         else if(seatsLeft<=0){btnHtml='<button class="btn-full" onclick="openWaitlistModal(\''+club.id+'\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\',\''+club.club_name.replace(/'/g,"\\'")+'\')">Full — Join Waitlist</button>';}
         else if(myBookingInThisSlot){btnHtml='<button class="btn-blocked">Already booked this time slot at another club</button>';}
-        else if(bal<=0){btnHtml='<button class="btn-blocked">No slot balance — contact organiser</button>';}
+        else if(bal<=0){
+          var cWa=club.whatsapp_no||'';
+          var bMsg=encodeURIComponent('Hi, I am '+player.name+'. My slot balance is 0 at '+club.club_name+'. Please add slots to my account. Thank you.');
+          btnHtml='<div style="display:flex;flex-direction:column;gap:6px;"><button class="btn-blocked">No slot balance — contact organiser</button>'
+            +(cWa?'<a href="https://wa.me/91'+cWa+'?text='+bMsg+'" target="_blank" class="btn-book-seat" style="text-align:center;text-decoration:none;display:block;">💬 WhatsApp Organiser</a>':'')
+            +'</div>';
+        }
         else{btnHtml='<button class="btn-book-seat" onclick="bookSeat(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\',this)">Book a Seat ('+seatsLeft+' available)</button>';}
         slotsHtml+='<div class="slot-row"><div class="slot-time">🕐 '+slot.start_time+' – '+slot.end_time+'</div><div class="slot-seats">Seats booked: <span>'+totalBooked+'/'+(club.total_tables*4)+'</span></div>'+btnHtml+'</div>';
       }
@@ -514,7 +520,6 @@ async function loadMyBookings(){
         var key=w.club_id+'_'+w.slot_id+'_'+w.booking_date;
         var pos=(wlBySlot[key]||[]).findIndex(function(x){return x.id===w.id;})+1;
         return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">WL/'+pos+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta" style="color:#bb8fce;font-weight:600;">⏳ Position: WL/'+pos+'</div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')" >Opt Out from Waitlist</button></div></div>';
-      }).join('');
       }).join('');
     }
     if(bookings.length){

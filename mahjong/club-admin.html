@@ -525,8 +525,26 @@ async function setSlotBalance(memId,val){
 }
 
 async function updateMember(memId,status,name){
-  if(!confirm(`${status} ${name}?`))return;
-  try{await sbPatch(`mj_members?id=eq.${memId}`,{status});loadPendingMembers();loadApprovedMembers();loadStats();}
+  if(!confirm(status+' '+name+'?'))return;
+  try{
+    var updateData = {status: status};
+    if(status === 'approved') updateData.joined_at = new Date().toISOString();
+    await sbPatch('mj_members?id=eq.'+memId, updateData);
+    // FIX: If approving, open WhatsApp to notify player
+    if(status === 'approved'){
+      // Get player mobile
+      var mems = await sb('mj_members?id=eq.'+memId+'&select=player_id');
+      if(mems.length){
+        var players = await sb('sp_members?id=eq.'+mems[0].player_id+'&select=name,mobile,whatsapp');
+        if(players.length){
+          var p = players[0];
+          var waMsg = encodeURIComponent('Hi ' + p.name + '! Your membership request for ' + club.club_name + ' has been approved. You can now book your Mahjong seats. Welcome!');
+          window.open('https://wa.me/91' + (p.whatsapp||p.mobile) + '?text=' + waMsg, '_blank');
+        }
+      }
+    }
+    loadPendingMembers();loadApprovedMembers();loadStats();
+  }
   catch(e){alert('Error: '+e.message);}
 }
 
