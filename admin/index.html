@@ -211,8 +211,8 @@ main{padding:24px;max-width:700px;margin:0 auto;}
         <div class="stat-card"><div class="stat-val" id="sm-stat-active">—</div><div class="stat-label">Active</div></div>
         <div class="stat-card"><div class="stat-val" id="sm-stat-pending">—</div><div class="stat-label">Pending</div></div>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-        <button onclick="exportMembersCSV()" style="background:#00B87A;color:white;border:none;padding:9px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Export Members CSV</button>
+      <div style="text-align:right;margin-bottom:12px;">
+        <button onclick="exportMembersCSV()" style="background:#00B87A;color:white;border:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Download Members CSV</button>
       </div>
       <div class="tabs" id="sm-tabs">
         <button class="tab active" onclick="showSmTab('sm-pending')">Pending</button>
@@ -538,40 +538,6 @@ async function updateSiteMember(id, newStatus, name, mobile, email) {
   loadSiteMembers();
 }
 
-async function exportMembersCSV() {
-  try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc', {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-    });
-    var data = await resp.json();
-    if (!data.length) { toast('No members found.'); return; }
-    var cols = ['Name','Mobile','Email','Gender','WhatsApp','Telegram','Status','Registered'];
-    var lines = [cols.join(',')];
-    data.forEach(function(m) {
-      var row = [
-        m.name||'', m.mobile||'', m.email||'', m.gender||'',
-        m.whatsapp||'', m.telegram_id||'', m.status||'',
-        m.created_at ? new Date(m.created_at).toLocaleDateString('en-IN') : ''
-      ];
-      lines.push(row.map(function(v) {
-        return '"' + String(v).replace(/"/g, '""') + '"';
-      }).join(','));
-    });
-    var csv = lines.join('
-');
-    var blob = new Blob([csv], {type: 'text/csv'});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'sportbook_members_' + new Date().toISOString().split('T')[0] + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('CSV downloaded!');
-  } catch(e) { toast('Error: ' + e.message); }
-}
-
 async function deleteSiteMember(id, name) {
   if (!confirm(`Reject and remove "${name}" from SportBook?`)) return;
   await fetch(`${SUPABASE_URL}/rest/v1/sp_members?id=eq.${id}`, {
@@ -580,6 +546,41 @@ async function deleteSiteMember(id, name) {
   });
   toast(`${name} removed.`);
   loadSiteMembers();
+}
+
+async function exportMembersCSV() {
+  try {
+    var url = SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc';
+    var resp = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      }
+    });
+    var data = await resp.json();
+    if (!data || !data.length) { toast('No members found.'); return; }
+    var cols = 'Name,Mobile,Email,Gender,WhatsApp,Telegram,Status,Registered';
+    var rows = data.map(function(m) {
+      var d = m.created_at ? new Date(m.created_at).toLocaleDateString('en-IN') : '';
+      return [
+        m.name||'', m.mobile||'', m.email||'', m.gender||'',
+        m.whatsapp||'', m.telegram_id||'', m.status||'', d
+      ].map(function(v) {
+        return '"' + String(v).replace(/"/g, '""') + '"';
+      }).join(',');
+    });
+    var csv = cols + '\r\n' + rows.join('\r\n');
+    var blob = new Blob([csv], {type: 'text/csv'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'members_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    toast('Downloaded!');
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
 }
 </script>
 </body>
