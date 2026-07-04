@@ -501,13 +501,11 @@ function renderSiteMembers(list, elId, status) {
     const date = new Date(m.created_at).toLocaleDateString('en-IN');
     let actions = '';
     if (status==='pending') {
-      actions = `
-        <button class="action-btn approve-btn" onclick="updateSiteMember('${m.id}','active','${(m.name||'').replace(/'/g,"\\'")}','${m.mobile||''}','${m.email||''}')">✅ Approve</button>
-        <button class="action-btn reject-btn"  onclick="deleteSiteMember('${m.id}','${(m.name||'').replace(/'/g,"\\'")}')">❌ Reject</button>`;
+      actions = '<button class="action-btn approve-btn" onclick="updateSiteMember(\'' + m.id + '\',\'active\',\'' + (m.name||'').replace(/'/g,"\\'") + '\',\'' + (m.mobile||'') + '\',\'' + (m.email||'') + '\')">Approve</button>'
+              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + (m.name||'') + '" onclick="deleteSiteM(this)">Reject</button>';
     } else {
-      actions = `
-        <span class="approved-badge">✅ Active</span>
-        <button class="action-btn reject-btn" onclick="deleteSiteMember('${m.id}','${(m.name||'').replace(/'/g,"\\'")}')">🗑 Remove</button>`;
+      actions = '<span class="approved-badge">Active</span>'
+              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + (m.name||'') + '" onclick="deleteSiteM(this)">Remove</button>';
     }
     return `
       <div class="member-card">
@@ -538,15 +536,18 @@ async function updateSiteMember(id, newStatus, name, mobile, email) {
   loadSiteMembers();
 }
 
-async function deleteSiteMember(id, name) {
+async function deleteSiteM(btn) {
+  var id = btn.getAttribute('data-id');
+  var name = btn.getAttribute('data-name');
   if (!confirm('Remove ' + name + ' from SportBook?')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
+    await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
       method: 'DELETE',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
       }
     });
     toast(name + ' removed.');
@@ -554,6 +555,11 @@ async function deleteSiteMember(id, name) {
   } catch(e) {
     toast('Error: ' + e.message);
   }
+}
+
+async function deleteSiteMember(id, name) {
+  var btn = {getAttribute: function(k){ return k==='data-id'?id:name; }};
+  deleteSiteM(btn);
 }
 
 async function exportMembersCSV() {
