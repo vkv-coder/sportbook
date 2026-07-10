@@ -521,7 +521,6 @@ async function loadMyBookings(){
         var pos=(wlBySlot[key]||[]).findIndex(function(x){return x.id===w.id;})+1;
         return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">WL/'+pos+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta" style="color:#bb8fce;font-weight:600;">⏳ Position: WL/'+pos+'</div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')" >Opt Out from Waitlist</button></div></div>';
       }).join('');
-      }).join('');
     }
     if(bookings.length){
       html+='<div class="section-label">✅ Confirmed Bookings</div>';
