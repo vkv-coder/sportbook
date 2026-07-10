@@ -568,7 +568,7 @@ async function loadDiscover(){
       if(club.banner_url){
         // Banner card layout - full width image + 2 column text
         return '<div class="discover-card" style="background:#1a2a1a;border:1px solid #86efac;padding:0;overflow:hidden;border-radius:var(--radius);">'
-          +'<img src="'+club.banner_url+'" style="width:100%;height:260px;object-fit:cover;display:block;" alt="'+club.club_name+'" />'
+          +'<img src="'+club.banner_url+'" style="width:100%;height:auto;object-fit:contain;display:block;background:#0f1a0f;max-height:320px;" alt="'+club.club_name+'" />'
           +'<div style="padding:14px;">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
           +'<div class="discover-name" style="color:#e8f5e9;">🏯 '+club.club_name+'</div>'
