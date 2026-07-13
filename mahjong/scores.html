@@ -434,14 +434,18 @@ async function submitScores(){
 
 async function confirmScores(){
   try{
-    // Check not already confirmed
     const existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
     if(existing.length>0){showMsg('confirm-msg','You have already confirmed.','warn');return;}
-    // Add confirmation
     await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:player.id});
-    // Check if all 4 confirmed
     const allConfirms=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=id');
     if(allConfirms.length>=4){
+      // Assign ranks and rank points: 1st=100, 2nd=75, 3rd=50, 4th=25
+      const entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
+      entries.sort((a,b)=>b.final_points-a.final_points);
+      const rankPoints=[100,75,50,25];
+      for(let i=0;i<entries.length;i++){
+        await sbPatch('mj_score_entries?id=eq.'+entries[i].id,{rank:i+1,rank_points:rankPoints[i]||25});
+      }
       await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
     }
     openRoom(currentRoom.id);

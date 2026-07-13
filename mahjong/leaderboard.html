@@ -89,7 +89,7 @@ select option{background:var(--surface);}
     <div class="stats-row">
       <div class="stat-card"><div class="stat-number" id="stat-players">—</div><div class="stat-label">Players</div></div>
       <div class="stat-card"><div class="stat-number" id="stat-games">—</div><div class="stat-label">Games</div></div>
-      <div class="stat-card"><div class="stat-number" id="stat-top">—</div><div class="stat-label">Top Avg</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-top">—</div><div class="stat-label">Top Points</div></div>
     </div>
 
     <!-- PRO -->
@@ -190,11 +190,11 @@ async function loadLeaderboard(){
     const players=await sb('sp_members?id=in.('+playerIds.join(',')+')'+'&select=id,name');
     const pMap={};players.forEach(p=>{pMap[p.id]=p;});
 
-    // Aggregate stats per player
+    // Aggregate rank points per player
     const stats={};
     entries.forEach(e=>{
-      if(!stats[e.player_id]){stats[e.player_id]={total:0,games:0};}
-      stats[e.player_id].total+=e.final_points;
+      if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
+      stats[e.player_id].rankPoints+=(e.rank_points||0);
       stats[e.player_id].games+=1;
     });
 
@@ -202,23 +202,22 @@ async function loadLeaderboard(){
     const allPlayers=Object.keys(stats).map(pid=>({
       pid,
       name:pMap[pid]?pMap[pid].name:'Unknown',
-      total:stats[pid].total,
+      rankPoints:stats[pid].rankPoints,
       games:stats[pid].games,
-      avg:Math.round(stats[pid].total/stats[pid].games),
       category:catMap[pid]||'beginner',
       isMe:pid===player.id
     }));
 
-    // Split by category and sort by avg desc
-    const pro=allPlayers.filter(p=>p.category==='pro').sort((a,b)=>b.avg-a.avg);
-    const moderate=allPlayers.filter(p=>p.category==='moderate').sort((a,b)=>b.avg-a.avg);
-    const beginner=allPlayers.filter(p=>p.category==='beginner').sort((a,b)=>b.avg-a.avg);
+    // Split by category and sort by rank points desc
+    const pro=allPlayers.filter(p=>p.category==='pro').sort((a,b)=>b.rankPoints-a.rankPoints);
+    const moderate=allPlayers.filter(p=>p.category==='moderate').sort((a,b)=>b.rankPoints-a.rankPoints);
+    const beginner=allPlayers.filter(p=>p.category==='beginner'||p.category==='intermediate'||p.category==='advanced'||p.category==='taiwanese').sort((a,b)=>b.rankPoints-a.rankPoints);
 
     // Stats
-    const topAvg=allPlayers.length?Math.max(...allPlayers.map(p=>p.avg)):0;
+    const topPoints=allPlayers.length?Math.max(...allPlayers.map(p=>p.rankPoints)):0;
     document.getElementById('stat-players').textContent=allPlayers.length;
     document.getElementById('stat-games').textContent=rooms.length;
-    document.getElementById('stat-top').textContent=topAvg.toLocaleString();
+    document.getElementById('stat-top').textContent=topPoints.toLocaleString();
 
     // Render each category
     renderCategory(pro,'lb-pro','count-pro','section-pro');
@@ -245,7 +244,7 @@ function renderCategory(list, elId, countId, sectionId){
   const rankColors=['gold','silver','bronze'];
   document.getElementById(elId).innerHTML=
     '<table class="lb-table">'
-    +'<thead><tr><th>#</th><th>Player</th><th>Games</th><th>Total Pts</th><th>Avg/Game</th></tr></thead>'
+    +'<thead><tr><th>#</th><th>Player</th><th>Games</th><th>Rank Points</th></tr></thead>'
     +'<tbody>'
     +list.map((p,i)=>{
       const rankLabel=i<3?medals[i]:(i+1);
