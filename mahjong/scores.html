@@ -273,11 +273,14 @@ async function createRoom(){
 
   showMsg('create-msg','Creating room...','info');
   try{
+    // Auto-fetch playing_category from confirmed bookings for this table/slot/date
+    var catRes = await sb('mj_bookings?club_id=eq.'+clubId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date+'&status=eq.confirmed&select=playing_category&limit=1');
+    var roomCategory = catRes.length ? catRes[0].playing_category : 'beginner';
     const room=await sb('mj_score_rooms','POST',{
       club_id:clubId,session_date:date,table_number:tableNo,
       created_by:player.id,
       player1_id:player.id,player2_id:p2,player3_id:p3,player4_id:p4,
-      status:'open'
+      status:'open', playing_category:roomCategory
     });
     showMsg('create-msg','✅ Room created! Go to My Rooms to enter scores.','success');
     setTimeout(()=>{switchTab('tab-rooms');loadRooms();},1500);
@@ -417,13 +420,28 @@ async function submitScores(){
     if(isNaN(val)||val<0){showMsg('entry-msg','Enter valid scores for all players.','error');return;}
     scores.push({pid,val});
   }
+  // Validate total based on playing category
+  const total = scores.reduce(function(sum,s){return sum+s.val;},0);
+  const category = currentRoom.playing_category||'beginner';
+  if(category==='taiwanese'){
+    if(total!==2040){
+      showMsg('entry-msg','Please check scores. Taiwanese total must be 2,040. Current total: '+total.toLocaleString(),'error');
+      return;
+    }
+  } else {
+    if(total!==140000){
+      showMsg('entry-msg','Please verify scores. Total must be 140,000. Current total: '+total.toLocaleString(),'error');
+      return;
+    }
+  }
   showMsg('entry-msg','Submitting...','info');
   try{
     // Delete any existing entries for this room
     await fetch(SB_URL+'/rest/v1/mj_score_entries?room_id=eq.'+currentRoom.id,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
     // Insert new entries
+    const entryCategory = currentRoom.playing_category||'beginner';
     for(const s of scores){
-      await sb('mj_score_entries','POST',{room_id:currentRoom.id,player_id:s.pid,starting_points:35000,final_points:s.val});
+      await sb('mj_score_entries','POST',{room_id:currentRoom.id,player_id:s.pid,starting_points:category==='taiwanese'?0:35000,final_points:s.val,playing_category:entryCategory});
     }
     // Update room status to pending_confirm
     await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'pending_confirm'});
