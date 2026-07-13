@@ -93,11 +93,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 <div class="header">
   <div>
     <div class="header-title">🀄 Mahjong</div>
-    <div class="header-sub" id="header-player-name">Loading...</div>
+    <div class="header-sub" id="header-player-name" style="cursor:pointer;" onclick="confirmLogout()" title="Tap for account options">Loading...</div>
   </div>
   <div style="display:flex;gap:8px;">
     <a href="/" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;border-radius:6px;font-size:11px;text-decoration:none;">🏠 Menu</a>
-    <button class="btn-logout" onclick="logout()">Logout</button>
   </div>
 </div>
 <div class="nav-tabs">
@@ -766,6 +765,7 @@ async function loadDiscoverVenueEvents(clubs){
   }catch(e){return{};}
 }
 
+function confirmLogout(){if(confirm('This will require OTP again next time. Logout?')){logout();}}
 function logout(){localStorage.removeItem('sp_member');localStorage.removeItem('mj_active_club');window.location.href='/select-game.html?role=player';}
 </script>
 </body>

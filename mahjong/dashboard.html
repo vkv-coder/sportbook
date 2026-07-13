@@ -104,9 +104,8 @@
 <div class="header">
   <div>
     <div class="header-title">🀄 My Dashboard</div>
-    <div class="header-sub" id="header-player-name">Loading...</div>
+    <div class="header-sub" id="header-player-name" style="cursor:pointer;" onclick="confirmLogout()" title="Tap for account options">Loading...</div>
   </div>
-  <button class="btn-logout" onclick="logout()">Logout</button>
 </div>
 
 <div class="nav-tabs">
@@ -441,6 +440,7 @@ async function processWaitlist(clubId,slotId,tableNo,date){
   }catch(e){}
 }
 
+function confirmLogout(){if(confirm('This will require OTP again next time. Logout?')){logout();}}
 // FIX 3: logout uses correct key sp_member
 function logout(){
   localStorage.removeItem('sp_member');
