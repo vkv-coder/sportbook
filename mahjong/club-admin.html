@@ -545,11 +545,13 @@ async function updateMember(memId,status,name){
 
 async function loadSessions(){
   const date=document.getElementById('session-date-filter').value;
+  console.log('loadSessions date:', date, 'club:', club?club.id:'NO CLUB');
   if(!date)return;
   document.getElementById('sessions-loading').style.display='block';
   document.getElementById('sessions-list').innerHTML='';
   try{
     const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${date}&select=*&order=table_number.asc`);
+    console.log('sessions found:', sessions.length, sessions);
     document.getElementById('sessions-loading').style.display='none';
     if(!sessions.length){document.getElementById('sessions-list').innerHTML='<div class="empty-state"><div class="empty-icon">🀄</div><p>No table sessions for this date.</p></div>';return;}
     const pids=[...new Set(sessions.flatMap(s=>[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean)))];
