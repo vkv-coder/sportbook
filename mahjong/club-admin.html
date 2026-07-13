@@ -475,6 +475,11 @@ async function loadPendingMembers(){
   }catch(e){document.getElementById('pending-members-loading').style.display='none';}
 }
 
+function setCategoryDropdown(memId, category){
+  var sel = document.getElementById('cat-'+memId);
+  if(sel) sel.value = category||'beginner';
+}
+
 async function loadApprovedMembers(){
   document.getElementById('approved-members-loading').style.display='block';
   document.getElementById('approved-members').innerHTML='';
@@ -506,11 +511,11 @@ async function loadApprovedMembers(){
         <div class="member-actions" style="margin-top:6px;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
             <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Category:</label>
-            <select onchange="updateCategory('${m.id}',this.value)" style="flex:1;padding:6px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;">
-              <option value="beginner" ${(m.category||'beginner')==='beginner'?'selected':''}>🟢 Beginner</option>
-              <option value="moderate" ${m.category==='moderate'?'selected':''}>🟡 Moderate</option>
-              <option value="pro" ${m.category==='pro'?'selected':''}>🔴 Pro</option>
-            </select>
+            <select id="cat-${m.id}" onchange="updateCategory('${m.id}',this.value)" style="flex:1;padding:6px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;">
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="taiwanese">Taiwanese</option></select>
           </div>
         </div>
         <div class="member-actions" style="margin-top:6px;">
@@ -519,6 +524,8 @@ async function loadApprovedMembers(){
         </div>
       </div>`;
     }).join('');
+  // Set category dropdowns after render
+  mems.forEach(function(m){ setCategoryDropdown(m.id, m.category); });
   }catch(e){document.getElementById('approved-members-loading').style.display='none';}
 }
 
