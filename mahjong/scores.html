@@ -109,36 +109,13 @@ select option{background:var(--surface);}
 
   <!-- TAB: CREATE ROOM -->
   <div class="tab-content" id="tab-create">
-    <div class="card">
-      <div class="card-title">🎮 Create Score Room</div>
-      <div class="form-group">
-        <label>Select Club</label>
-        <select id="room-club"></select>
+      <div class="card">
+        <div class="card-title">🎯 Select Your Game to Score</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Select a confirmed booking to enter scores for.</div>
+        <div id="my-games-loading" class="loading"><div class="spinner"></div>Loading your games...</div>
+        <div id="create-msg"></div>
+        <div id="my-games-list"></div>
       </div>
-      <div class="form-group">
-        <label>Game Date</label>
-        <input type="date" id="room-date"/>
-      </div>
-      <div class="form-group">
-        <label>Table Number</label>
-        <input type="number" id="room-table" placeholder="e.g. 1" min="1"/>
-      </div>
-      <div class="section-label">Add 3 Other Players</div>
-      <div class="form-group">
-        <label>Player 2</label>
-        <select id="room-p2"><option value="">Select player</option></select>
-      </div>
-      <div class="form-group">
-        <label>Player 3</label>
-        <select id="room-p3"><option value="">Select player</option></select>
-      </div>
-      <div class="form-group">
-        <label>Player 4</label>
-        <select id="room-p4"><option value="">Select player</option></select>
-      </div>
-      <div id="create-msg"></div>
-      <button class="btn btn-gold btn-full" onclick="createRoom()">Create Room →</button>
-    </div>
   </div>
 
 </div>
@@ -199,14 +176,13 @@ select option{background:var(--surface);}
 <script>
 const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-let player=null, myClubs=[], clubMembers={}, currentRoom=null, currentEntries=[];
+let player=null, currentRoom=null, currentEntries=[];
 
 window.addEventListener('DOMContentLoaded', async()=>{
   const saved=localStorage.getItem('sp_member');
   if(!saved){window.location.href='/select-game.html?role=player';return;}
   player=JSON.parse(saved);
   document.getElementById('header-sub').textContent=player.name;
-  await loadMyClubs();
   loadRooms();
 });
 
@@ -226,64 +202,67 @@ function switchTab(tabId){
   document.getElementById(tabId).classList.add('active');
   const idx=['tab-rooms','tab-create'].indexOf(tabId);
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if(tabId==='tab-create') loadMyGames();
 }
 
-async function loadMyClubs(){
-  const mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
-  const ids=mems.map(m=>m.club_id);
-  if(!ids.length)return;
-  myClubs=await sb('mj_clubs?id=in.('+ids.join(',')+')'+'&status=eq.active&select=id,club_name,total_tables');
-  const sel=document.getElementById('room-club');
-  sel.innerHTML='<option value="">Select club</option>'+myClubs.map(c=>'<option value="'+c.id+'">'+c.club_name+'</option>').join('');
-  sel.onchange=async function(){
-    await loadClubMembers(sel.value);
-  };
-}
-
-async function loadClubMembers(clubId){
-  if(!clubId)return;
-  const mems=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&player_id=neq.'+player.id+'&select=player_id');
-  const ids=mems.map(m=>m.player_id);
-  if(!ids.length){clubMembers[clubId]=[];return;}
-  const players=await sb('sp_members?id=in.('+ids.join(',')+')'+'&select=id,name,mobile');
-  clubMembers[clubId]=players;
-  const opts='<option value="">Select player</option>'+players.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.mobile+')</option>').join('');
-  document.getElementById('room-p2').innerHTML=opts;
-  document.getElementById('room-p3').innerHTML=opts;
-  document.getElementById('room-p4').innerHTML=opts;
-}
-
-async function createRoom(){
-  const clubId=document.getElementById('room-club').value;
-  const date=document.getElementById('room-date').value;
-  const tableNo=parseInt(document.getElementById('room-table').value);
-  const p2=document.getElementById('room-p2').value;
-  const p3=document.getElementById('room-p3').value;
-  const p4=document.getElementById('room-p4').value;
-
-  if(!clubId||!date||!tableNo||!p2||!p3||!p4){showMsg('create-msg','Please fill all fields.','error');return;}
-  if(new Set([player.id,p2,p3,p4]).size<4){showMsg('create-msg','All 4 players must be different.','error');return;}
-
-  showMsg('create-msg','Verifying membership...','info');
-  // FIX: Check player is member of selected club before creating room
+async function loadMyGames(){
+  document.getElementById('my-games-loading').style.display='block';
+  document.getElementById('my-games-list').innerHTML='';
   try{
-    const myMem=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&status=eq.approved&select=id');
-    if(!myMem.length){showMsg('create-msg','You are not an approved member of this club.','error');return;}
-  }catch(e){showMsg('create-msg','Error verifying membership: '+e.message,'error');return;}
+    var bookings = await sb('mj_bookings?player_id=eq.'+player.id+'&status=eq.confirmed&select=*&order=booking_date.desc');
+    document.getElementById('my-games-loading').style.display='none';
+    if(!bookings.length){
+      document.getElementById('my-games-list').innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div><p>No confirmed bookings found.<br/>Book a seat first to score.</p></div>';
+      return;
+    }
+    var clubIds=[...new Set(bookings.map(function(b){return b.club_id;}))];
+    var slotIds=[...new Set(bookings.map(function(b){return b.slot_id;}))];
+    var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name');
+    var slots=await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time');
+    var cMap={};clubs.forEach(function(c){cMap[c.id]=c;});
+    var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
+    // Filter out bookings that already have a score room
+    var rooms=await sb('mj_score_rooms?or=(player1_id.eq.'+player.id+',player2_id.eq.'+player.id+',player3_id.eq.'+player.id+',player4_id.eq.'+player.id+')&select=club_id,session_date,table_number');
+    var scoredKeys=new Set(rooms.map(function(r){return r.club_id+'_'+r.session_date+'_'+r.table_number;}));
+    document.getElementById('my-games-list').innerHTML=bookings.map(function(b){
+      var club=cMap[b.club_id];
+      var slot=sMap[b.slot_id];
+      var key=b.club_id+'_'+b.booking_date+'_'+b.table_number;
+      var isScored=scoredKeys.has(key);
+      var catLabel={beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'}[b.playing_category]||b.playing_category||'';
+      return '<div class="room-item" style="'+(isScored?'opacity:0.5;cursor:default;':'')+'" '+(isScored?'':'onclick="createRoomFromBooking(\''+b.club_id+'\',\''+b.booking_date+'\','+b.table_number+',\''+b.slot_id+'\')"')+'>'
+        +'<div class="room-header"><div class="room-title">'+(club?club.club_name:'—')+' · Table '+b.table_number+'</div>'
+        +'<span class="badge '+(isScored?'badge-confirmed':'badge-open')+'">'+(isScored?'Scored':'+ Score')+'</span></div>'
+        +'<div class="room-meta">📅 '+b.booking_date+'</div>'
+        +'<div class="room-meta">🕐 '+(slot?slot.start_time+'-'+slot.end_time:'—')+'</div>'
+        +'<div class="room-meta">'+catLabel+'</div>'
+        +'</div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('my-games-loading').style.display='none';
+    document.getElementById('my-games-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
+  }
+}
 
-  showMsg('create-msg','Creating room...','info');
+async function createRoomFromBooking(clubId, date, tableNo, slotId){
   try{
-    // Auto-fetch playing_category from confirmed bookings for this table/slot/date
-    var catRes = await sb('mj_bookings?club_id=eq.'+clubId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date+'&status=eq.confirmed&select=playing_category&limit=1');
-    var roomCategory = catRes.length ? catRes[0].playing_category : 'beginner';
-    const room=await sb('mj_score_rooms','POST',{
+    showMsg('create-msg','Looking up players...','info');
+    var bookingsForTable=await sb('mj_bookings?club_id=eq.'+clubId+'&booking_date=eq.'+date+'&table_number=eq.'+tableNo+'&status=eq.confirmed&select=player_id,playing_category');
+    if(bookingsForTable.length<2){showMsg('create-msg','Less than 2 confirmed players for this table.','error');return;}
+    var pids=bookingsForTable.map(function(b){return b.player_id;});
+    while(pids.length<4) pids.push(null);
+    var roomCategory=bookingsForTable[0].playing_category||'beginner';
+    var catRes=await sb('mj_bookings?club_id=eq.'+clubId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date+'&status=eq.confirmed&select=playing_category&limit=1');
+    roomCategory=catRes.length?catRes[0].playing_category:'beginner';
+    var room=await sb('mj_score_rooms','POST',{
       club_id:clubId,session_date:date,table_number:tableNo,
       created_by:player.id,
-      player1_id:player.id,player2_id:p2,player3_id:p3,player4_id:p4,
-      status:'open', playing_category:roomCategory
+      player1_id:pids[0]||null,player2_id:pids[1]||null,
+      player3_id:pids[2]||null,player4_id:pids[3]||null,
+      status:'open',playing_category:roomCategory
     });
-    showMsg('create-msg','✅ Room created! Go to My Rooms to enter scores.','success');
-    setTimeout(()=>{switchTab('tab-rooms');loadRooms();},1500);
+    showMsg('create-msg','✅ Score room created! Go to My Rooms tab.','success');
+    setTimeout(function(){switchTab('tab-rooms');loadRooms();loadMyGames();},1500);
   }catch(e){showMsg('create-msg','Error: '+e.message,'error');}
 }
 
@@ -335,7 +314,8 @@ async function openRoom(roomId){
 
     if(currentRoom.status==='open'){
       // Only leader can enter scores
-      if(currentRoom.created_by===player.id){
+      var isParticipant=[currentRoom.player1_id,currentRoom.player2_id,currentRoom.player3_id,currentRoom.player4_id].indexOf(player.id)>-1;
+      if(isParticipant){
         document.getElementById('entry-section').style.display='block';
         document.getElementById('score-rows').innerHTML=pids.map(pid=>{
           const p=pMap[pid];
