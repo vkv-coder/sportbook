@@ -572,6 +572,8 @@ async function loadSessions(){
     const waitlist=await sb(`mj_waitlist?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.waiting&select=*`);
     console.log('Rendering sessions...');
     // Build wlBySlot map for waitlist display
+    var allWaitlist=[];
+    try{allWaitlist=await sb('mj_waitlist?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.waiting&select=*');}catch(e){}
     var wlBySlot={};
     allWaitlist.forEach(function(w){
       if(!wlBySlot[w.slot_id])wlBySlot[w.slot_id]=[];
