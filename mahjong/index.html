@@ -626,7 +626,7 @@ async function loadMyBookings(){
           +'<div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div>'
           +'<div class="booking-meta">🎮 Category: <span>'+(catLabel[r.playing_category]||r.playing_category)+'</span></div>'
           +'<div style="margin-top:8px;font-size:11px;color:var(--muted);">Waiting for 3 more '+r.playing_category+' players to confirm table.</div>'
-          +'<div style="margin-top:8px;"><button class="btn btn-sm btn-red" onclick="cancelBookingRequest(''+r.id+'')">Cancel Request</button></div>'
+          +'<div style="margin-top:8px;"><button class="btn btn-sm btn-red" onclick="cancelBookingRequest(\''+r.id+'\')">Cancel Request</button></div>'
           +'</div>';
       }).join('');
     }
