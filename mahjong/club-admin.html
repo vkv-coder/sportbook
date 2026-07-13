@@ -440,8 +440,9 @@ async function loadDashboard(){
   document.getElementById('cancel-hours').value=club.cancellation_hours||24;
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('session-date-filter').value=today;
+  document.getElementById('overview-date').value=today;
   allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
-  loadStats();loadTodaySessions();loadPendingMembers();loadApprovedMembers();loadSessions();loadSlotsAdmin();loadGroupRequests();
+  loadStats();loadOverviewMatrix();loadPendingMembers();loadApprovedMembers();loadSessions();loadSlotsAdmin();loadGroupRequests();
 }
 
 async function loadStats(){
@@ -456,40 +457,6 @@ async function loadStats(){
     document.getElementById('stat-pending').textContent=pending.length;
     document.getElementById('stat-tables-full').textContent=fullSessions.length;
   }catch(e){}
-}
-
-async function loadTodaySessions(){
-  const today=new Date().toISOString().split('T')[0];
-  document.getElementById('today-sessions-loading').style.display='block';
-  document.getElementById('today-sessions').innerHTML='';
-  try{
-    const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${today}&status=eq.full&select=*`);
-    document.getElementById('today-sessions-loading').style.display='none';
-    if(!sessions.length){document.getElementById('today-sessions').innerHTML='<div class="empty-state"><div class="empty-icon">🀄</div><p>No full tables today yet.</p></div>';return;}
-    const pids=[...new Set(sessions.flatMap(s=>[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean)))];
-    const pd=pids.length?await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,email`):[];
-    const pm={};pd.forEach(p=>{pm[p.id]=p;});
-    document.getElementById('today-sessions').innerHTML=sessions.map(s=>{
-      const slot=allSlots.find(sl=>sl.id===s.slot_id);
-      const slotLabel=slot?`${slot.start_time}–${slot.end_time}`:'—';
-      const players=[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean).map(id=>pm[id]);
-      const emailList=players.map(p=>p?.email).filter(Boolean).join(',');
-      const waMsg=encodeURIComponent(`🀄 *Table Ready!*\n\n${club.club_name}\nDate: ${today}\nTime: ${slotLabel}\nTable: ${s.table_number}\n\nPlayers:\n${players.map((p,i)=>`${i+1}. ${p?.name||'?'}`).join('\n')}`);
-      return`<div class="session-item" style="margin-bottom:14px;">
-        <div class="session-header">
-          <div class="session-title">Table ${s.table_number} · ${slotLabel}</div>
-          <span class="badge badge-full">FULL</span>
-        </div>
-        <div style="margin-bottom:10px;">
-          ${players.map((p,i)=>`<div style="font-size:12px;color:var(--text);margin-bottom:3px;"><span style="color:var(--muted);">P${i+1}</span> ${p?.name||'—'} · ${p?.mobile||''}</div>`).join('')}
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <a href="https://wa.me/?text=${waMsg}" target="_blank" class="btn btn-whatsapp btn-sm">💬 WhatsApp</a>
-          ${emailList?`<a href="mailto:${emailList}?subject=Table Ready — ${club.club_name}" class="btn btn-blue btn-sm">✉️ Email All</a>`:''}
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){document.getElementById('today-sessions-loading').style.display='none';}
 }
 
 async function loadPendingMembers(){
