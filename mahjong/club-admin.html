@@ -105,6 +105,24 @@ select option{background:var(--surface);}
 .table-card.empty .t-dot{background:#c0392b;}
 .slot-section{margin-bottom:20px;}
 .slot-label{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+.lb-podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:24px;padding:0 8px;}
+.lb-podium-item{flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.lb-podium-crown{font-size:24px;margin-bottom:4px;}
+.lb-podium-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;margin:0 auto 6px;border:3px solid;}
+.lb-podium-avatar.gold{background:linear-gradient(135deg,#f1c40f,#e67e22);border-color:#f1c40f;color:#0f0e17;}
+.lb-podium-avatar.silver{background:linear-gradient(135deg,#bdc3c7,#95a5a6);border-color:#bdc3c7;color:#0f0e17;}
+.lb-podium-avatar.bronze{background:linear-gradient(135deg,#e67e22,#d35400);border-color:#e67e22;color:#fff;}
+.lb-podium-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.3;}
+.lb-podium-points{font-size:13px;font-weight:700;color:var(--gold);}
+.lb-podium-base{border-radius:8px 8px 0 0;width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif Display',serif;font-size:18px;font-weight:700;}
+.lb-podium-base.gold{background:linear-gradient(135deg,#f1c40f33,#e67e2222);border:1px solid #f1c40f44;height:60px;color:#f1c40f;}
+.lb-podium-base.silver{background:linear-gradient(135deg,#bdc3c733,#95a5a622);border:1px solid #bdc3c744;height:44px;color:#bdc3c7;}
+.lb-podium-base.bronze{background:linear-gradient(135deg,#e67e2233,#d3540022);border:1px solid #e67e2244;height:32px;color:#e67e22;}
+.lb-rank-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.lb-rank-num{font-size:16px;font-weight:700;color:var(--muted);min-width:24px;text-align:center;}
+.lb-rank-name{flex:1;font-size:13px;font-weight:600;color:var(--text);}
+.lb-rank-pts{font-size:15px;font-weight:700;color:var(--gold);}
+.lb-rank-pts-label{font-size:10px;color:var(--muted);text-align:right;}
 </style>
 </head>
 <body>
@@ -1098,44 +1116,59 @@ async function loadLeaderboardAdmin(){
       var roomIds=rooms.map(function(r){return r.id;});
       var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points');
       entries.forEach(function(e){
-        if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
+        if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0};}
         stats[e.player_id].rankPoints+=(e.rank_points||0);
-        stats[e.player_id].games+=1;
       });
     }
-    // Add initial points
     members.forEach(function(m){
       if(m.initial_points&&m.initial_points>0){
-        if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0};}
+        if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0};}
         stats[m.player_id].rankPoints+=(m.initial_points||0);
       }
     });
     if(!Object.keys(stats).length){
       document.getElementById('lb-loading-admin').style.display='none';
-      document.getElementById('lb-content-admin').innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>No confirmed games yet.</p></div>';
+      document.getElementById('lb-content-admin').innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>No data yet.</p></div>';
       return;
     }
     var pids=[...new Set(Object.keys(stats))];
     var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name');
     var pMap={};players.forEach(function(p){pMap[p.id]=p;});
     var allPlayers=Object.keys(stats).map(function(pid){
-      return {pid:pid,name:pMap[pid]?pMap[pid].name:'Unknown',rankPoints:stats[pid].rankPoints,games:stats[pid].games};
+      return {pid:pid,name:pMap[pid]?pMap[pid].name:'Unknown',rankPoints:stats[pid].rankPoints};
     }).sort(function(a,b){return b.rankPoints-a.rankPoints;});
-    var medals=['🥇','🥈','🥉'];
-    var html='';
-    allPlayers.forEach(function(p,i){
-      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">'
-        +'<div style="display:flex;align-items:center;gap:10px;">'
-        +'<span style="font-size:'+(i<3?'22':'16')+'px;">'+(i<3?medals[i]:(i+1))+'</span>'
-        +'<div><div style="font-size:14px;font-weight:600;color:var(--text);">'+p.name+'</div></div>'
-        +'</div>'
-        +'<div style="text-align:right;">'
-        +'<div style="font-size:16px;font-weight:700;color:var(--gold);">'+p.rankPoints.toLocaleString()+'</div>'
-        +'<div style="font-size:10px;color:var(--muted);">pts</div>'
-        +'</div></div>';
+    var top3=allPlayers.slice(0,3);
+    var rest=allPlayers.slice(3);
+    var podiumOrder=[1,0,2];
+    var posStyles=[
+      {cls:'gold',crown:'👑',base:'gold',label:'1st'},
+      {cls:'silver',crown:'🥈',base:'silver',label:'2nd'},
+      {cls:'bronze',crown:'🥉',base:'bronze',label:'3rd'}
+    ];
+    var podiumHtml='<div class="lb-podium">';
+    podiumOrder.forEach(function(playerIdx,posIdx){
+      var p=top3[playerIdx];
+      var style=posStyles[posIdx];
+      if(!p){podiumHtml+='<div class="lb-podium-item"><div class="lb-podium-base '+style.base+'">'+style.label+'</div></div>';return;}
+      var initials=p.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+      podiumHtml+='<div class="lb-podium-item">'
+        +'<div class="lb-podium-crown">'+style.crown+'</div>'
+        +'<div class="lb-podium-avatar '+style.cls+'">'+initials+'</div>'
+        +'<div class="lb-podium-name">'+p.name+'</div>'
+        +'<div class="lb-podium-points">'+p.rankPoints.toLocaleString()+' pts</div>'
+        +'<div class="lb-podium-base '+style.base+'">'+style.label+'</div>'
+        +'</div>';
     });
+    podiumHtml+='</div>';
+    var restHtml=rest.map(function(p,i){
+      return '<div class="lb-rank-card">'
+        +'<div class="lb-rank-num">'+(i+4)+'</div>'
+        +'<div class="lb-rank-name">'+p.name+'</div>'
+        +'<div><div class="lb-rank-pts">'+p.rankPoints.toLocaleString()+'</div><div class="lb-rank-pts-label">pts</div></div>'
+        +'</div>';
+    }).join('');
     document.getElementById('lb-loading-admin').style.display='none';
-    document.getElementById('lb-content-admin').innerHTML=html;
+    document.getElementById('lb-content-admin').innerHTML=podiumHtml+(rest.length?'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin:16px 0 10px;">Other Players</div>'+restHtml:'');
   }catch(e){
     document.getElementById('lb-loading-admin').style.display='none';
     document.getElementById('lb-content-admin').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
