@@ -180,11 +180,18 @@ async function loadLeaderboard(){
     ];
 
     var podiumHtml='<div class="podium">';
-    podiumOrder.forEach(function(idx){
-      var p=top3[idx];
-      var style=podiumStyles[idx];
+    podiumOrder.forEach(function(playerIdx, posIdx){
+      var p=top3[playerIdx];
+      var posLabels=['2nd','1st','3rd'];
+      var posStyles=[
+        {cls:'silver',crown:'🥈',base:'silver'},
+        {cls:'gold',crown:'👑',base:'gold'},
+        {cls:'bronze',crown:'🥉',base:'bronze'}
+      ];
+      var style=posStyles[posIdx];
+      var posLabel=posLabels[posIdx];
       if(!p){
-        podiumHtml+='<div class="podium-item"><div class="podium-base '+style.base+'">'+['2','1','3'][idx]+'</div></div>';
+        podiumHtml+='<div class="podium-item"><div class="podium-base '+style.base+'">'+posLabel+'</div></div>';
         return;
       }
       var initials=p.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
@@ -194,7 +201,7 @@ async function loadLeaderboard(){
         +'<div class="podium-name">'+p.name+(p.isMe?' 👤':'')+'</div>'
         +'<div class="podium-points">'+p.rankPoints+' pts</div>'
         +'<div class="podium-games">'+p.games+' games</div>'
-        +'<div class="podium-base '+style.base+'">'+['2nd','1st','3rd'][idx]+'</div>'
+        +'<div class="podium-base '+style.base+'">'+posLabel+'</div>'
         +'</div>';
     });
     podiumHtml+='</div>';
