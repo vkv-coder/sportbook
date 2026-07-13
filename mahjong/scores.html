@@ -332,34 +332,44 @@ async function openRoom(roomId){
         document.getElementById('submit-scores-btn').style.display='none';
       }
     } else if(currentRoom.status==='pending_confirm'||currentRoom.status==='reset'){
-      // Show confirmation section
-      const entries=await sb('mj_score_entries?room_id=eq.'+roomId+'&select=*');
-      const confirms=await sb('mj_score_confirmations?room_id=eq.'+roomId+'&select=*');
-      currentEntries=entries;
       document.getElementById('confirm-section').style.display='block';
-      const myConfirm=confirms.find(c=>c.player_id===player.id);
-
-      document.getElementById('confirm-rows').innerHTML=pids.map(pid=>{
-        const p=pMap[pid];
-        const entry=entries.find(e=>e.player_id===pid);
-        const conf=confirms.find(c=>c.player_id===pid);
-        const diff=(entry?entry.final_points:35000)-35000;
-        const diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
-        const diffColor=diff>0?'#58d68d':diff<0?'#f1948a':'var(--muted)';
-        return '<div class="confirm-row">'
-          +'<div><div class="confirm-player">'+(p?p.name:'—')+(pid===player.id?' (You)':'')+'</div>'
-          +'<div style="font-size:11px;color:'+diffColor+';margin-top:2px;">'+diffStr+' points</div></div>'
-          +'<div style="text-align:right;">'
-          +'<div class="confirm-points">'+(entry?entry.final_points.toLocaleString():'—')+'</div>'
-          +'<span class="confirm-status '+(conf?'confirm-yes':'confirm-no')+'">'+(conf?'✅ Confirmed':'⏳ Pending')+'</span>'
-          +'</div>'
-          +'</div>';
-      }).join('');
-
-      if(myConfirm){
-        document.getElementById('confirm-btn').disabled=true;
-        document.getElementById('confirm-btn').textContent='✅ You Confirmed';
-      }
+      var entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
+      // Sort by final_points descending to show rank preview
+      var sortedEntries=[...entries].sort(function(a,b){return b.final_points-a.final_points;});
+      var rankPoints=[100,75,50,25];
+      var medals=['🥇','🥈','🥉','4️⃣'];
+      var pidsConf=[currentRoom.player1_id,currentRoom.player2_id,currentRoom.player3_id,currentRoom.player4_id].filter(Boolean);
+      var confPlayers=pidsConf.length?await sb('sp_members?id=in.('+pidsConf.join(',')+')'+'&select=id,name'):[];
+      var confPMap={};confPlayers.forEach(function(p){confPMap[p.id]=p;});
+      document.getElementById('confirm-rows').innerHTML=
+        '<div style="margin-bottom:14px;padding:10px;background:var(--surface);border-radius:8px;">'
+        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Rank Preview</div>'
+        +sortedEntries.map(function(e,i){
+          var p=confPMap[e.player_id];
+          var diff=e.final_points-e.starting_points;
+          var diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
+          var diffColor=diff>0?'#58d68d':diff<0?'#f1948a':'var(--muted)';
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">'
+            +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">'+medals[i]+'</span>'
+            +'<div><div style="font-size:13px;font-weight:600;color:var(--text);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div>'
+            +'<div style="font-size:11px;color:'+diffColor+';">'+diffStr+' pts</div></div></div>'
+            +'<div style="text-align:right;">'
+            +'<div style="font-size:14px;font-weight:700;color:var(--gold);">'+e.final_points.toLocaleString()+'</div>'
+            +'<div style="font-size:11px;color:#bb8fce;font-weight:600;">+'+rankPoints[i]+' rank pts</div>'
+            +'</div></div>';
+        }).join('')
+        +'</div>'
+        +(currentRoom.created_by===player.id
+          ?'<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">As room creator, your confirmation locks the scores for everyone.</div>'
+          :'<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Waiting for room creator to confirm scores.</div>');
+      var isCreator=currentRoom.created_by===player.id;
+      var alreadyConfirmed=false;
+      try{
+        var myConf=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
+        alreadyConfirmed=myConf.length>0;
+      }catch(e){}
+      document.getElementById('confirm-btn').disabled=(!isCreator||alreadyConfirmed);
+      document.getElementById('confirm-btn').textContent=alreadyConfirmed?'✅ Confirmed':isCreator?'✅ Confirm & Lock Scores':'Only Creator Can Confirm';
     } else if(currentRoom.status==='confirmed'){
       // Show final results
       const entries=await sb('mj_score_entries?room_id=eq.'+roomId+'&select=*');
@@ -431,22 +441,24 @@ async function submitScores(){
 }
 
 async function confirmScores(){
+  if(currentRoom.created_by!==player.id){
+    showMsg('confirm-msg','Only the room creator can confirm scores.','warn');
+    return;
+  }
   try{
-    const existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
+    var existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
     if(existing.length>0){showMsg('confirm-msg','You have already confirmed.','warn');return;}
     await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:player.id});
-    const allConfirms=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=id');
-    if(allConfirms.length>=4){
-      // Assign ranks and rank points: 1st=100, 2nd=75, 3rd=50, 4th=25
-      const entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
-      entries.sort((a,b)=>b.final_points-a.final_points);
-      const rankPoints=[100,75,50,25];
-      for(let i=0;i<entries.length;i++){
-        await sbPatch('mj_score_entries?id=eq.'+entries[i].id,{rank:i+1,rank_points:rankPoints[i]||25});
-      }
-      await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
+    // Assign ranks and rank points
+    var entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
+    entries.sort(function(a,b){return b.final_points-a.final_points;});
+    var rankPoints=[100,75,50,25];
+    for(var i=0;i<entries.length;i++){
+      await sbPatch('mj_score_entries?id=eq.'+entries[i].id,{rank:i+1,rank_points:rankPoints[i]||25,playing_category:currentRoom.playing_category||'beginner'});
     }
-    openRoom(currentRoom.id);
+    await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
+    showMsg('confirm-msg','✅ Scores confirmed and locked!','success');
+    setTimeout(function(){openRoom(currentRoom.id);},1000);
   }catch(e){alert('Error: '+e.message);}
 }
 
