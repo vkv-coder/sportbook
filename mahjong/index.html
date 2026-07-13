@@ -428,14 +428,16 @@ async function checkCategoryAutoConfirm(clubId, slotId, date, category, clubName
     if(requests.length < 4) return; // Not enough yet
     // Take first 4
     var toConfirm = requests.slice(0,4);
-    // Find a free table
+    // Find a free table — fetch club directly (don't rely on myClubs array)
+    var clubData = await sb('mj_clubs?id=eq.'+clubId+'&select=total_tables,club_name');
+    if(!clubData.length) return;
+    var totalTables = clubData[0].total_tables;
     var bookings = await sb('mj_bookings?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed&select=table_number');
     var tableCount = {};
     bookings.forEach(function(b){ tableCount[b.table_number]=(tableCount[b.table_number]||0)+1; });
-    var club = myClubs.find(function(c){ return c.id===clubId; });
     var assignedTable = null;
-    for(var t=1;t<=club.total_tables;t++){ if((tableCount[t]||0)<4){ assignedTable=t; break; } }
-    if(!assignedTable){ await tg('🀄 4 '+category+' players ready for '+date+' '+timeLabel+' at '+clubName+' but NO FREE TABLE available!'); return; }
+    for(var t=1;t<=totalTables;t++){ if((tableCount[t]||0)<4){ assignedTable=t; break; } }
+    if(!assignedTable){ await tg('4 '+category+' players ready for '+date+' '+timeLabel+' at '+clubName+' but NO FREE TABLE available!'); return; }
     // Confirm all 4
     for(var i=0;i<toConfirm.length;i++){
       var req = toConfirm[i];
