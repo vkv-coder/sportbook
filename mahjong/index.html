@@ -400,16 +400,21 @@ async function submitBookingRequest(){
   var btn = document.getElementById('submit-booking-btn');
   btn.disabled = true; btn.textContent = 'Sending...';
   try{
+    console.log('Booking request:', {clubId:w.clubId, slotId:w.slotId, date:w.date, playerId:player.id, category:selectedCategory});
     // Check if already requested
     var existing = await sb('mj_booking_requests?player_id=eq.'+player.id+'&club_id=eq.'+w.clubId+'&slot_id=eq.'+w.slotId+'&booking_date=eq.'+w.date+'&status=eq.pending&select=id');
     if(existing.length > 0){ showMsg('booking-request-msg','You already have a pending request for this slot.','warn'); btn.disabled=false; btn.textContent='Send Request →'; return; }
     // Submit request
-    await sb('mj_booking_requests','POST',{
-      club_id: w.clubId, slot_id: w.slotId, booking_date: w.date,
-      player_id: player.id, playing_category: selectedCategory,
-      telegram_id: player.telegram_id||'', whatsapp: player.whatsapp||player.mobile,
-      status: 'pending'
+    console.log('Inserting booking request...');
+    var insertResult = await fetch(SB_URL+'/rest/v1/mj_booking_requests', {
+      method: 'POST',
+      headers: {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body: JSON.stringify({club_id:w.clubId, slot_id:w.slotId, booking_date:w.date, player_id:player.id, playing_category:selectedCategory, telegram_id:player.telegram_id||'', whatsapp:player.whatsapp||player.mobile, status:'pending'})
     });
+    console.log('Insert status:', insertResult.status);
+    var insertData = await insertResult.json();
+    console.log('Insert result:', JSON.stringify(insertData));
+    if(!insertResult.ok){ showMsg('booking-request-msg','Error saving request: '+JSON.stringify(insertData),'error'); btn.disabled=false; btn.textContent='Send Request →'; return; }
     // Notify player via Telegram
     var catLabel = selectedCategory.charAt(0).toUpperCase()+selectedCategory.slice(1);
     await tg('🀄 Booking Request Received!\n\nPlayer: '+player.name+'\nClub: '+w.clubName+'\nDate: '+w.date+'\nSlot: '+w.timeLabel+'\nCategory: '+catLabel+'\n\nPlease check club dashboard to confirm when 4 players of same category are ready.');
