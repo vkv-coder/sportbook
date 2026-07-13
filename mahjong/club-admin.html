@@ -521,6 +521,14 @@ async function loadApprovedMembers(){
         </div>
         <div class="member-actions" style="margin-top:6px;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
+            <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Initial Pts:</label>
+            <input type="number" id="init-${m.id}" placeholder="Historical points" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/>
+            <button class="btn btn-gold btn-sm" onclick="saveInitialPoints('${m.id}',${m.initial_points||0})">Save</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Current initial pts: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span></div>
+        </div>
+        <div class="member-actions" style="margin-top:6px;">
+          <div style="display:flex;align-items:center;gap:8px;width:100%;">
             <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Category:</label>
             <select id="cat-${m.id}" onchange="updateCategory('${m.id}',this.value)" style="flex:1;padding:6px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;">
               <option value="beginner">Beginner</option>
@@ -1055,6 +1063,18 @@ async function loadOverviewMatrix(){
     document.getElementById('overview-matrix-loading').style.display='none';
     document.getElementById('overview-matrix').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
   }
+}
+
+async function saveInitialPoints(memId, current){
+  var inp=document.getElementById('init-'+memId);
+  var pts=parseInt(inp.value);
+  if(isNaN(pts)||pts<0){alert('Enter valid points.');return;}
+  try{
+    await sbPatch('mj_members?id=eq.'+memId,{initial_points:pts});
+    toast('Initial points saved!');
+    inp.value='';
+    loadApprovedMembers();
+  }catch(e){alert('Error: '+e.message);}
 }
 
 async function updateCategory(memId, category){
