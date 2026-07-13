@@ -154,6 +154,22 @@ async function loadLeaderboard(){
       stats[e.player_id].rankPoints+=(e.rank_points||0);
       stats[e.player_id].games+=1;
     });
+    // Add initial points from mj_members
+    try{
+      var members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&select=player_id,initial_points');
+      members.forEach(function(m){
+        if(m.initial_points && m.initial_points>0){
+          if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0};}
+          stats[m.player_id].rankPoints+=(m.initial_points||0);
+        }
+      });
+      // Fetch names for players who only have initial points and no game entries yet
+      var missingPids=Object.keys(stats).filter(function(pid){return !pMap[pid];});
+      if(missingPids.length){
+        var morePlayers=await sb('sp_members?id=in.('+missingPids.join(',')+')'+'&select=id,name');
+        morePlayers.forEach(function(p){pMap[p.id]=p;});
+      }
+    }catch(e){}
     var allPlayers=Object.keys(stats).map(function(pid){
       return {
         pid:pid,
