@@ -577,7 +577,6 @@ async function loadSessions(){
       if(!wlBySlot[w.slot_id])wlBySlot[w.slot_id]=[];
       wlBySlot[w.slot_id].push(w);
     });
-    try{
     document.getElementById('sessions-list').innerHTML=sessions.map(s=>{
       const slot=allSlots.find(sl=>sl.id===s.slot_id);
       const slotLabel=slot?(slot.start_time+'-'+slot.end_time):'—';
@@ -598,7 +597,6 @@ async function loadSessions(){
           +'<a href="https://wa.me/91'+(p.whatsapp||p.mobile)+'?text='+waNotify+'" target="_blank" class="btn btn-sm btn-whatsapp" style="padding:4px 8px;font-size:11px;">💬</a>'
           +'</div>';
       }).join('');
-    }catch(renderErr){console.error('Render error:',renderErr);document.getElementById('sessions-list').innerHTML='<div class="status-box status-error">Render error: '+renderErr.message+'</div>';}
       return '<div class="session-item">'
         +'<div class="session-header"><div class="session-title">Table '+s.table_number+' · '+slotLabel+'</div><span class="badge '+(isFull?'badge-full':'badge-filling')+'">'+(isFull?'FULL':count+'/4')+'</span></div>'
         +'<div style="margin-bottom:10px;">'+playerRowsHtml
