@@ -243,7 +243,7 @@ select option{background:var(--surface);}
       <div class="card" style="margin-bottom:16px;">
         <div class="form-group" style="margin-bottom:10px;">
           <label>View Date</label>
-          <input type="date" id="session-date-filter" style="background:#ffffff;color:#111827;" onchange="loadSessions()"/>
+          <input type="date" id="session-date-filter" onchange="loadSessions()" style="width:100%;background:#1a1930;border:1px solid #2e2d4a;color:#e8e6f0;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark;"/>
         </div>
         <button class="btn btn-gold btn-full" onclick="copyTableAssignments()" style="display:flex;align-items:center;justify-content:center;gap:8px;">
           📋 Copy Table Assignments for WhatsApp Group
@@ -297,7 +297,7 @@ select option{background:var(--surface);}
       <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When 4 players of same category request same slot, they are auto-confirmed. You can also manually confirm here.</p>
       <div class="form-group">
         <label>Filter by Date</label>
-        <input type="date" id="req-date-filter" onchange="loadBookingRequests()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;width:100%;outline:none;"/>
+        <input type="date" id="req-date-filter" onchange="loadBookingRequests()" style="width:100%;background:#1a1930;border:1px solid #2e2d4a;color:#e8e6f0;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark;"/>
       </div>
       <div id="requests-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="requests-list"></div>
