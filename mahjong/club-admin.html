@@ -995,10 +995,15 @@ async function loadOverviewMatrix(){
         var tableBookings = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
         var count = tableBookings.length;
         var category = tableBookings.length?tableBookings[0].playing_category:'';
+        var pendingForTable = requests.filter(function(r){return r.slot_id===slot.id && !tableBookings.length;});
+        var pendingCount = pendingForTable.length;
+        var pendingCat = pendingCount?pendingForTable[0].playing_category:'';
+        if(!count && pendingCount){ count = pendingCount; category = pendingCat; }
         // Check pending requests for this slot
         var pendingForSlot = requests.filter(function(r){return r.slot_id===slot.id;});
         var catLabel = {beginner:'BEG',intermediate:'INT',advanced:'ADV',taiwanese:'TAI'}[category]||'';
-        var cardClass = count>=4?'full':count>0?'partial':'empty';
+        var isConfirmed = tableBookings.length > 0;
+        var cardClass = tableBookings.length>=4?'full':tableBookings.length>0?'partial':pendingCount>0?'partial':'empty';
         var playerIds = tableBookings.map(function(b){return b.player_id;});
         var playerIdsStr = JSON.stringify(playerIds).replace(/"/g,'&quot;');
         html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+count+')">'
