@@ -564,6 +564,12 @@ async function loadSessions(){
     const pm={};pd.forEach(p=>{pm[p.id]=p;});
     const waitlist=await sb(`mj_waitlist?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.waiting&select=*`);
     console.log('Rendering sessions...');
+    // Build wlBySlot map for waitlist display
+    var wlBySlot={};
+    allWaitlist.forEach(function(w){
+      if(!wlBySlot[w.slot_id])wlBySlot[w.slot_id]=[];
+      wlBySlot[w.slot_id].push(w);
+    });
     try{
     document.getElementById('sessions-list').innerHTML=sessions.map(s=>{
       const slot=allSlots.find(sl=>sl.id===s.slot_id);
