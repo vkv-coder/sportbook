@@ -249,11 +249,11 @@ select option{background:var(--surface);}
 
     <!-- BOOKING REQUESTS -->
     <div class="tab-content" id="tab-requests">
-      <div class="section-label">Pending Booking Requests</div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When 4 players of same category request same slot, confirm their table here.</p>
+      <div class="section-label">Pending Booking Requests by Category</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When 4 players of same category request same slot, they are auto-confirmed. You can also manually confirm here.</p>
       <div class="form-group">
         <label>Filter by Date</label>
-        <input type="date" id="req-date-filter" onchange="loadBookingRequests()" />
+        <input type="date" id="req-date-filter" onchange="loadBookingRequests()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;width:100%;outline:none;"/>
       </div>
       <div id="requests-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="requests-list"></div>
@@ -800,7 +800,6 @@ async function deleteVenueEvent(id){
   }catch(e){alert('Error: '+e.message);}
 }
 
-
 async function loadBookingRequests(){
   var date=document.getElementById('req-date-filter').value;
   if(!date)return;
@@ -809,19 +808,19 @@ async function loadBookingRequests(){
   try{
     var reqs=await sb('mj_booking_requests?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.pending&select=*&order=playing_category.asc,created_at.asc');
     document.getElementById('requests-loading').style.display='none';
-    if(!reqs.length){
-      document.getElementById('requests-list').innerHTML='<div class="empty-state"><div class="empty-icon">📥</div><p>No pending booking requests for this date.</p></div>';
-      return;
-    }
+    if(!reqs.length){document.getElementById('requests-list').innerHTML='<div class="empty-state"><div class="empty-icon">📥</div><p>No pending booking requests for this date.</p></div>';return;}
+    // Get player info
     var pids=[...new Set(reqs.map(function(r){return r.player_id;}))];
-    var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name,mobile,whatsapp');
+    var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name,mobile,whatsapp,telegram_id');
     var pMap={};players.forEach(function(p){pMap[p.id]=p;});
+    // Get slot info
     var slotIds=[...new Set(reqs.map(function(r){return r.slot_id;}))];
     var slots=slotIds.length?await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time'):[];
     var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
+    // Group by category+slot
     var groups={};
     reqs.forEach(function(r){
-      var key=r.playing_category+'__'+r.slot_id;
+      var key=r.playing_category+'_'+r.slot_id;
       if(!groups[key])groups[key]={category:r.playing_category,slot:sMap[r.slot_id],requests:[]};
       groups[key].requests.push(r);
     });
@@ -831,55 +830,43 @@ async function loadBookingRequests(){
       var g=groups[key];
       var sl=g.slot;
       var count=g.requests.length;
-      var isReady=(count>=4);
-      var borderCol=isReady?'var(--green)':'var(--border)';
-      var bgCol=isReady?'rgba(39,174,96,0.1)':'var(--card)';
-      var nameCol=isReady?'#58d68d':'var(--gold-light)';
-      var cntCol=isReady?'#58d68d':'#e67e22';
-      html+='<div style="background:var(--surface);border:1px solid '+borderCol+';border-radius:10px;margin-bottom:14px;overflow:hidden;">';
-      html+='<div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:'+bgCol+'">';
-      html+='<div><div style="font-size:14px;font-weight:600;color:'+nameCol+';">'+(catLabels[g.category]||g.category)+'</div>';
-      html+='<div style="font-size:12px;color:var(--muted);">'+( sl?sl.start_time+'-'+sl.end_time:'—')+'</div></div>';
-      html+='<div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:'+cntCol+';">'+count+'/4</div>';
-      html+='<div style="font-size:10px;color:var(--muted);">'+(isReady?'READY':'waiting')+'</div></div></div>';
+      var isReady=count>=4;
+      html+='<div style="background:var(--surface);border:1px solid '+(isReady?'var(--green)':'var(--border)')+';border-radius:10px;margin-bottom:14px;overflow:hidden;">';
+      html+='<div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:'+(isReady?'rgba(39,174,96,0.1)':'var(--card)')+'">';
+      html+='<div><div style="font-size:14px;font-weight:600;color:'+(isReady?'#58d68d':'var(--gold-light)')+';">'+(catLabels[g.category]||g.category)+'</div>';
+      html+='<div style="font-size:12px;color:var(--muted);">🕐 '+(sl?sl.start_time+'-'+sl.end_time:'—')+'</div></div>';
+      html+='<div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:'+(isReady?'#58d68d':'var(--orange)')+';">'+count+'/4</div>';
+      html+='<div style="font-size:10px;color:var(--muted);">'+(isReady?'READY TO CONFIRM':'waiting')+'</div></div></div>';
       html+='<div style="padding:12px 14px;">';
       g.requests.forEach(function(r,i){
         var p=pMap[r.player_id]||{};
-        var wa=(p.whatsapp||p.mobile||'');
         html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">';
-        html+='<div><span style="color:var(--muted);font-size:12px;">'+(i+1)+'. </span>';
-        html+='<span style="font-size:13px;color:var(--text);">'+(p.name||'—')+'</span>';
-        html+='<span style="font-size:11px;color:var(--muted);"> ('+( p.mobile||'—')+')</span></div>';
-        html+='<a href="https://wa.me/91'+wa+'" target="_blank" style="background:#25d366;color:#fff;padding:4px 8px;font-size:10px;text-decoration:none;border-radius:6px;">WA</a>';
+        html+='<div><span style="color:var(--muted);font-size:12px;">'+(i+1)+'. </span><span style="font-size:13px;color:var(--text);">'+( p.name||'—')+'</span><span style="font-size:11px;color:var(--muted);"> ('+( p.mobile||'—')+')</span></div>';
+        html+='<a href="https://wa.me/91'+(p.whatsapp||p.mobile||'')+'" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;padding:4px 8px;font-size:10px;text-decoration:none;border-radius:6px;">💬</a>';
         html+='</div>';
       });
       if(isReady){
-        var slotId=g.requests[0].slot_id;
-        var cat=g.category;
-        html+='<button class="btn btn-green btn-full" style="margin-top:12px;" ';
-        html+='data-slotid="'+slotId+'" data-cat="'+cat+'" data-date="'+date+'" ';
-        html+='onclick="manualConfirmRequests(this)">Confirm Table for These 4 Players</button>';
+        html+='<button class="btn btn-green btn-full" style="margin-top:12px;" onclick="manualConfirmRequests(''+key+'',''+g.category+'',''+g.requests[0].slot_id+'',''+date+'')">✅ Confirm Table for These 4 Players</button>';
       }
       html+='</div></div>';
     });
     document.getElementById('requests-list').innerHTML=html;
-  }catch(e){
-    document.getElementById('requests-loading').style.display='none';
-    document.getElementById('requests-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
-  }
+  }catch(e){document.getElementById('requests-loading').style.display='none';document.getElementById('requests-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';}
 }
 
 async function manualConfirmRequests(btn){
-  var slotId=btn.getAttribute('data-slotid');
+  var key=btn.getAttribute('data-key');
   var category=btn.getAttribute('data-cat');
+  var slotId=btn.getAttribute('data-slot');
   var date=btn.getAttribute('data-date');
+  // original function body below
   if(!confirm('Confirm table for these 4 players?'))return;
   try{
     var reqs=await sb('mj_booking_requests?club_id=eq.'+club.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&playing_category=eq.'+category+'&status=eq.pending&select=*&order=created_at.asc');
     var toConfirm=reqs.slice(0,4);
+    // Find free table
     var bookings=await sb('mj_bookings?club_id=eq.'+club.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed&select=table_number');
-    var tableCount={};
-    bookings.forEach(function(b){tableCount[b.table_number]=(tableCount[b.table_number]||0)+1;});
+    var tableCount={};bookings.forEach(function(b){tableCount[b.table_number]=(tableCount[b.table_number]||0)+1;});
     var assignedTable=null;
     for(var t=1;t<=club.total_tables;t++){if((tableCount[t]||0)<4){assignedTable=t;break;}}
     if(!assignedTable){alert('No free table available!');return;}
@@ -894,7 +881,7 @@ async function manualConfirmRequests(btn){
       await sbPatch('mj_booking_requests?id=eq.'+req.id,{status:'confirmed'});
       var pinfo=await sb('sp_members?id=eq.'+req.player_id+'&select=name,mobile,whatsapp');
       var p=pinfo[0]||{};
-      var waMsg=encodeURIComponent('Hi '+p.name+'! Your seat is confirmed at '+club.club_name+'. Date: '+date+', Time: '+timeLabel+', Table: '+assignedTable+'. Looking forward to your best playing!');
+      var waMsg=encodeURIComponent('Hi '+p.name+'! Your seat is confirmed at '+club.club_name+'. Date: '+date+', Time: '+timeLabel+', Table: '+assignedTable+'. Looking forward to your best playing! 🀄');
       window.open('https://wa.me/91'+(p.whatsapp||p.mobile)+'?text='+waMsg,'_blank');
     }
     toast('Table confirmed for 4 players!');
@@ -1012,7 +999,8 @@ function switchTab(tabId){
   const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-requests','tab-venue','tab-leaderboard','tab-settings'].indexOf(tabId);
   if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
   if(tabId==='tab-venue')loadVenueEvents();
-  if(tabId==='tab-requests'){var td=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=td;loadBookingRequests();}
+  if(tabId==='tab-requests'){var today=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=today;loadBookingRequests();}
+  if(tabId==='tab-sessions'){var today=new Date().toISOString().split('T')[0];document.getElementById('session-date-filter').value=today;loadSessions();}
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
 }
 
