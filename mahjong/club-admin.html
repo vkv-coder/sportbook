@@ -550,6 +550,11 @@ async function loadSessions(){
   document.getElementById('sessions-loading').style.display='block';
   document.getElementById('sessions-list').innerHTML='';
   try{
+    // Ensure allSlots is populated
+    if(!allSlots.length){
+      allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
+      console.log('allSlots reloaded:', allSlots.length);
+    }
     const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${date}&select=*&order=table_number.asc`);
     console.log('sessions found:', sessions.length, sessions);
     document.getElementById('sessions-loading').style.display='none';
@@ -604,7 +609,11 @@ async function loadSessions(){
         +(isFull?'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;"><a href="https://wa.me/?text='+waMsg+'" target="_blank" class="btn btn-sm btn-whatsapp">💬 All WhatsApp</a>'+(emailList?'<a href="mailto:'+emailList+'?subject=Table Ready" class="btn btn-blue btn-sm">✉️ Email All</a>':'')+'</div>':'')
         +'</div>';
     }).join('');
-  }catch(e){document.getElementById('sessions-loading').style.display='none';}
+  }catch(e){
+    document.getElementById('sessions-loading').style.display='none';
+    console.error('loadSessions error:', e.message, e);
+    document.getElementById('sessions-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
+  }
 }
 
 async function loadGroupRequests(){
