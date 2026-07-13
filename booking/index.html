@@ -425,7 +425,7 @@ async function loadSlots() {
     const isSelected = state.selectedSlot?.id === slot.id;
     let cls = isBooked?'booked':isPending?'pending':isReserved?'reserved':isSelected?'selected':'open';
     let statusText = isBooked?'Booked':isPending?'Pending':isReserved?'Reserved':'';
-    return `<div class="slot-btn ${cls}" onclick="${(isBooked||isPending||isReserved)?'':``selectSlot('${slot.id}')``}" data-id="${slot.id}">
+    return `<div class="slot-btn ${cls}" onclick="${(isBooked||isPending||isReserved)?'':`selectSlot('${slot.id}')`}" data-id="${slot.id}">
       <div class="slot-time">${slot.start_time?.slice(0,5)}</div>
       <div class="slot-price">${(isBooked||isPending||isReserved)?'':'₹'+slot.price}</div>
       <div class="slot-status">${statusText}</div>
