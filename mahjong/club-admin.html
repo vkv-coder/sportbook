@@ -1091,54 +1091,51 @@ async function loadLeaderboardAdmin(){
   document.getElementById('lb-loading-admin').style.display='block';
   document.getElementById('lb-content-admin').innerHTML='';
   try{
-    const rooms=await sb(`mj_score_rooms?club_id=eq.${club.id}&status=eq.confirmed&select=id,player1_id,player2_id,player3_id,player4_id`);
-    if(!rooms.length){
+    var rooms=await sb('mj_score_rooms?club_id=eq.'+club.id+'&status=eq.confirmed&select=id');
+    var members=await sb('mj_members?club_id=eq.'+club.id+'&status=eq.approved&select=player_id,initial_points');
+    var stats={};
+    if(rooms.length){
+      var roomIds=rooms.map(function(r){return r.id;});
+      var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points');
+      entries.forEach(function(e){
+        if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
+        stats[e.player_id].rankPoints+=(e.rank_points||0);
+        stats[e.player_id].games+=1;
+      });
+    }
+    // Add initial points
+    members.forEach(function(m){
+      if(m.initial_points&&m.initial_points>0){
+        if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0};}
+        stats[m.player_id].rankPoints+=(m.initial_points||0);
+      }
+    });
+    if(!Object.keys(stats).length){
       document.getElementById('lb-loading-admin').style.display='none';
       document.getElementById('lb-content-admin').innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>No confirmed games yet.</p></div>';
       return;
     }
-    const roomIds=rooms.map(r=>r.id);
-    const entries=await sb(`mj_score_entries?room_id=in.(${roomIds.join(',')})&select=*`);
-    const members=await sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=player_id,category`);
-    const catMap={};members.forEach(m=>{catMap[m.player_id]=m.category||'beginner';});
-    const playerIds=[...new Set(entries.map(e=>e.player_id))];
-    const players=await sb(`sp_members?id=in.(${playerIds.join(',')})&select=id,name`);
-    const pMap={};players.forEach(p=>{pMap[p.id]=p;});
-    const stats={};
-    entries.forEach(e=>{
-      if(!stats[e.player_id]){stats[e.player_id]={total:0,games:0};}
-      stats[e.player_id].total+=e.final_points;
-      stats[e.player_id].games+=1;
-    });
-    const allPlayers=Object.keys(stats).map(pid=>({
-      pid,name:pMap[pid]?pMap[pid].name:'Unknown',
-      total:stats[pid].total,games:stats[pid].games,
-      avg:Math.round(stats[pid].total/stats[pid].games),
-      category:catMap[pid]||'beginner'
-    }));
-    const pro=allPlayers.filter(p=>p.category==='pro').sort((a,b)=>b.avg-a.avg);
-    const moderate=allPlayers.filter(p=>p.category==='moderate').sort((a,b)=>b.avg-a.avg);
-    const beginner=allPlayers.filter(p=>p.category==='beginner').sort((a,b)=>b.avg-a.avg);
-    const medals=['🥇','🥈','🥉'];
-    function renderLB(list,title,icon){
-      if(!list.length)return '';
-      return '<div style="margin-bottom:20px;">'
-        +'<div style="font-size:13px;font-weight:600;color:var(--gold-light);margin-bottom:10px;">'+icon+' '+title+'</div>'
-        +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">'
-        +list.map((p,i)=>'<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);">'
-          +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">'+(i<3?medals[i]:(i+1))+'</span>'
-          +'<div><div style="font-size:13px;font-weight:600;color:var(--text);">'+p.name+'</div>'
-          +'<div style="font-size:11px;color:var(--muted);">'+p.games+' games · '+p.total.toLocaleString()+' total</div></div></div>'
-          +'<div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--gold);">'+p.avg.toLocaleString()+'</div>'
-          +'<div style="font-size:10px;color:var(--muted);">avg/game</div></div>'
-          +'</div>').join('')
+    var pids=[...new Set(Object.keys(stats))];
+    var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name');
+    var pMap={};players.forEach(function(p){pMap[p.id]=p;});
+    var allPlayers=Object.keys(stats).map(function(pid){
+      return {pid:pid,name:pMap[pid]?pMap[pid].name:'Unknown',rankPoints:stats[pid].rankPoints,games:stats[pid].games};
+    }).sort(function(a,b){return b.rankPoints-a.rankPoints;});
+    var medals=['🥇','🥈','🥉'];
+    var html='';
+    allPlayers.forEach(function(p,i){
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;">'
+        +'<div style="display:flex;align-items:center;gap:10px;">'
+        +'<span style="font-size:'+(i<3?'22':'16')+'px;">'+(i<3?medals[i]:(i+1))+'</span>'
+        +'<div><div style="font-size:14px;font-weight:600;color:var(--text);">'+p.name+'</div></div>'
+        +'</div>'
+        +'<div style="text-align:right;">'
+        +'<div style="font-size:16px;font-weight:700;color:var(--gold);">'+p.rankPoints.toLocaleString()+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);">pts</div>'
         +'</div></div>';
-    }
+    });
     document.getElementById('lb-loading-admin').style.display='none';
-    document.getElementById('lb-content-admin').innerHTML=
-      renderLB(pro,'Pro Players','🔴')+
-      renderLB(moderate,'Moderate Players','🟡')+
-      renderLB(beginner,'Beginner Players','🟢');
+    document.getElementById('lb-content-admin').innerHTML=html;
   }catch(e){
     document.getElementById('lb-loading-admin').style.display='none';
     document.getElementById('lb-content-admin').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
