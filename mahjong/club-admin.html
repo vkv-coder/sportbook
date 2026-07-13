@@ -84,6 +84,27 @@ select option{background:var(--surface);}
 .balance-row{display:flex;gap:8px;align-items:center;}
 .balance-row input{flex:1;padding:8px 12px;font-size:13px;}
 .balance-badge{font-size:13px;font-weight:700;color:var(--gold);min-width:40px;text-align:right;}
+.table-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:4px 0;}
+.table-card{border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;border:2px solid transparent;position:relative;}
+.table-card:hover{transform:translateY(-2px);border-color:var(--gold);}
+.table-card.full{background:rgba(39,174,96,0.2);border-color:rgba(39,174,96,0.4);}
+.table-card.partial{background:rgba(230,126,34,0.2);border-color:rgba(230,126,34,0.4);}
+.table-card.empty{background:rgba(192,57,43,0.15);border-color:rgba(192,57,43,0.3);}
+.table-card .t-num{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:3px;}
+.table-card .t-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;min-height:12px;}
+.table-card.full .t-cat{color:#58d68d;}
+.table-card.partial .t-cat{color:#f0b27a;}
+.table-card.empty .t-cat{color:#555;}
+.table-card .t-count{font-size:16px;font-weight:700;}
+.table-card.full .t-count{color:#58d68d;}
+.table-card.partial .t-count{color:#f0b27a;}
+.table-card.empty .t-count{color:#555;}
+.table-card .t-dot{width:8px;height:8px;border-radius:50%;margin:4px auto 0;}
+.table-card.full .t-dot{background:#27ae60;}
+.table-card.partial .t-dot{background:#e67e22;}
+.table-card.empty .t-dot{background:#c0392b;}
+.slot-section{margin-bottom:20px;}
+.slot-label{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:10px;padding:6px 0;border-bottom:1px solid var(--border);}
 </style>
 </head>
 <body>
@@ -172,14 +193,37 @@ select option{background:var(--surface);}
         <div class="stat-card"><div class="stat-number" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
         <div class="stat-card"><div class="stat-number" id="stat-tables-full">—</div><div class="stat-label">Full Today</div></div>
       </div>
-      <div class="card">
-        <div class="card-title">📋 Full Tables Today — Notify Members</div>
-        <div id="today-sessions-loading" class="loading"><div class="spinner"></div>Loading...</div>
-        <div id="today-sessions"></div>
+
+      <!-- DATE SELECTOR -->
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;">
+            <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Select Date</label>
+            <input type="date" id="overview-date" style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;" onchange="loadOverviewMatrix()"/>
+          </div>
+          <button onclick="loadOverviewMatrix()" style="margin-top:20px;background:var(--gold);color:#0f0e17;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">View</button>
+        </div>
       </div>
-      <div class="card">
+
+      <!-- TABLE MATRIX -->
+      <div id="overview-matrix-loading" style="display:none;" class="loading"><div class="spinner"></div>Loading tables...</div>
+      <div id="overview-matrix"></div>
+
+      <!-- CLUB INFO -->
+      <div class="card" style="margin-top:16px;">
         <div class="card-title">⚙️ Club Info</div>
         <div id="club-settings-display"></div>
+      </div>
+    </div>
+
+    <!-- TABLE DETAIL POPUP -->
+    <div id="table-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;width:100%;max-width:340px;max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div id="popup-title" style="font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);"></div>
+          <button onclick="closeTablePopup()" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;">✕</button>
+        </div>
+        <div id="popup-content"></div>
       </div>
     </div>
 
@@ -579,6 +623,9 @@ async function loadSessions(){
       if(!wlBySlot[w.slot_id])wlBySlot[w.slot_id]=[];
       wlBySlot[w.slot_id].push(w);
     });
+    var wlPids=[...new Set(allWaitlist.map(function(w){return w.player_id;}).filter(Boolean))];
+    var wlPd=wlPids.length?await sb('sp_members?id=in.('+wlPids.join(',')+')&select=id,name,mobile'):[];
+    var wlPMap={};wlPd.forEach(function(p){wlPMap[p.id]=p;});
     document.getElementById('sessions-list').innerHTML=sessions.map(s=>{
       const slot=allSlots.find(sl=>sl.id===s.slot_id);
       const slotLabel=slot?(slot.start_time+'-'+slot.end_time):'—';
@@ -914,6 +961,111 @@ async function manualConfirmRequests(btn){
     toast('Table confirmed for 4 players!');
     loadBookingRequests();
   }catch(e){alert('Error: '+e.message);}
+}
+
+function closeTablePopup(){
+  document.getElementById('table-popup').style.display='none';
+}
+
+async function showTablePopup(tableNo, slotLabel, date, playerIds, category, count){
+  document.getElementById('table-popup').style.display='flex';
+  var catLabel = {beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'}[category]||category||'—';
+  document.getElementById('popup-title').textContent = 'Table '+tableNo+' · '+slotLabel;
+  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">'+date+' · '+catLabel+' · '+count+'/4 seats</div>';
+  if(playerIds.length){
+    var pids = playerIds.filter(Boolean);
+    if(pids.length){
+      try{
+        var players = await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name,mobile');
+        var pMap={};players.forEach(function(p){pMap[p.id]=p;});
+        html += '<div style="margin-bottom:12px;">';
+        pids.forEach(function(pid,i){
+          var p=pMap[pid];
+          html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">'
+            +'<div style="width:28px;height:28px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold);">'+(i+1)+'</div>'
+            +'<div><div style="font-size:13px;font-weight:600;color:var(--text);">'+(p?p.name:'Unknown')+'</div>'
+            +'<div style="font-size:11px;color:var(--muted);">'+(p?p.mobile:'')+'</div></div>'
+            +'</div>';
+        });
+        html += '</div>';
+      }catch(e){}
+    }
+  }
+  for(var e=count;e<4;e++){
+    html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);opacity:0.4;">'
+      +'<div style="width:28px;height:28px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);">'+(count+e+1-count+1)+'</div>'
+      +'<div style="font-size:12px;color:var(--muted);">Empty seat</div>'
+      +'</div>';
+  }
+  document.getElementById('popup-content').innerHTML=html;
+}
+
+async function loadOverviewMatrix(){
+  var date = document.getElementById('overview-date').value;
+  if(!date)return;
+  document.getElementById('overview-matrix-loading').style.display='block';
+  document.getElementById('overview-matrix').innerHTML='';
+  try{
+    // Get all bookings for this date
+    var bookings = await sb('mj_bookings?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.confirmed&select=*');
+    // Get slots
+    if(!allSlots.length){
+      allSlots = await sb('mj_slots?club_id=eq.'+club.id+'&is_active=eq.true&select=*&order=start_time.asc');
+    }
+    // Get pending booking requests for this date
+    var requests = await sb('mj_booking_requests?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.pending&select=*');
+    document.getElementById('overview-matrix-loading').style.display='none';
+    if(!allSlots.length){
+      document.getElementById('overview-matrix').innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><p>No slots configured yet.</p></div>';
+      return;
+    }
+    var html='';
+    allSlots.forEach(function(slot){
+      html += '<div class="slot-section">';
+      html += '<div class="slot-label">🕐 '+slot.start_time+' – '+slot.end_time+'</div>';
+      html += '<div class="table-grid">';
+      for(var t=1;t<=club.total_tables;t++){
+        var tableBookings = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
+        var count = tableBookings.length;
+        var category = tableBookings.length?tableBookings[0].playing_category:'';
+        // Check pending requests for this slot
+        var pendingForSlot = requests.filter(function(r){return r.slot_id===slot.id;});
+        var catLabel = {beginner:'BEG',intermediate:'INT',advanced:'ADV',taiwanese:'TAI'}[category]||'';
+        var cardClass = count>=4?'full':count>0?'partial':'empty';
+        var playerIds = tableBookings.map(function(b){return b.player_id;});
+        var playerIdsStr = JSON.stringify(playerIds).replace(/"/g,'&quot;');
+        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+count+')">'
+          +'<div class="t-num">T'+t+'</div>'
+          +'<div class="t-cat">'+catLabel+'</div>'
+          +'<div class="t-count">'+count+'/4</div>'
+          +'<div class="t-dot"></div>'
+          +'</div>';
+      }
+      // Show pending requests summary for this slot
+      if(pendingForSlot.length){
+        var pendingBycat={};
+        pendingForSlot.forEach(function(r){
+          pendingBycat[r.playing_category]=(pendingBycat[r.playing_category]||0)+1;
+        });
+        var pendingStr=Object.keys(pendingBycat).map(function(c){return pendingBycat[c]+' '+c;}).join(', ');
+        html+='<div style="grid-column:1/-1;font-size:11px;color:#bb8fce;padding:4px 2px;">⏳ Pending: '+pendingStr+'</div>';
+      }
+      html += '</div></div>';
+    });
+    document.getElementById('overview-matrix').innerHTML=html||'<div class="empty-state"><div class="empty-icon">🀄</div><p>No bookings for this date.</p></div>';
+    // Update full today count
+    var fullCount=0;
+    allSlots.forEach(function(slot){
+      for(var t=1;t<=club.total_tables;t++){
+        var cnt=bookings.filter(function(b){return b.slot_id===slot.id&&b.table_number===t;}).length;
+        if(cnt>=4)fullCount++;
+      }
+    });
+    document.getElementById('stat-tables-full').textContent=fullCount;
+  }catch(e){
+    document.getElementById('overview-matrix-loading').style.display='none';
+    document.getElementById('overview-matrix').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
+  }
 }
 
 async function updateCategory(memId, category){
