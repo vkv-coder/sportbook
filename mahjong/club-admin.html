@@ -991,35 +991,52 @@ async function loadOverviewMatrix(){
       html += '<div class="slot-section">';
       html += '<div class="slot-label">🕐 '+slot.start_time+' – '+slot.end_time+'</div>';
       html += '<div class="table-grid">';
+      // Build pending assignment map - FIFO by category
+      var pendingByCategory = {};
+      requests.filter(function(r){return r.slot_id===slot.id;}).forEach(function(r){
+        if(!pendingByCategory[r.playing_category]) pendingByCategory[r.playing_category]=0;
+        pendingByCategory[r.playing_category]++;
+      });
+      // Assign pending categories to tables sequentially after confirmed tables
+      var confirmedTables = [];
+      for(var t=1;t<=club.total_tables;t++){
+        var tb = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
+        if(tb.length > 0) confirmedTables.push(t);
+      }
+      var pendingTableMap = {};
+      var nextTable = 1;
+      Object.keys(pendingByCategory).forEach(function(cat){
+        while(nextTable <= club.total_tables && confirmedTables.indexOf(nextTable) > -1) nextTable++;
+        if(nextTable <= club.total_tables){
+          pendingTableMap[nextTable] = {cat: cat, count: pendingByCategory[cat]};
+          nextTable++;
+        }
+      });
+
       for(var t=1;t<=club.total_tables;t++){
         var tableBookings = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
         var count = tableBookings.length;
-        var category = tableBookings.length?tableBookings[0].playing_category:'';
-        var pendingForTable = requests.filter(function(r){return r.slot_id===slot.id && !tableBookings.length;});
-        var pendingCount = pendingForTable.length;
-        var pendingCat = pendingCount?pendingForTable[0].playing_category:'';
-        if(!count && pendingCount){ count = pendingCount; category = pendingCat; }
-        // Check pending requests for this slot
-        var pendingForSlot = requests.filter(function(r){return r.slot_id===slot.id;});
+        var category = tableBookings.length ? tableBookings[0].playing_category : '';
+        var isPending = false;
+        if(!count && pendingTableMap[t]){
+          count = pendingTableMap[t].count;
+          category = pendingTableMap[t].cat;
+          isPending = true;
+        }
         var catLabel = {beginner:'BEG',intermediate:'INT',advanced:'ADV',taiwanese:'TAI'}[category]||'';
-        var isConfirmed = tableBookings.length > 0;
-        var cardClass = tableBookings.length>=4?'full':tableBookings.length>0?'partial':pendingCount>0?'partial':'empty';
+        var cardClass = tableBookings.length>=4?'full':tableBookings.length>0?'partial':isPending?'partial':'empty';
         var playerIds = tableBookings.map(function(b){return b.player_id;});
         var playerIdsStr = JSON.stringify(playerIds).replace(/"/g,'&quot;');
-        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+count+')">'
+        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+tableBookings.length+')">'
           +'<div class="t-num">T'+t+'</div>'
-          +'<div class="t-cat">'+catLabel+'</div>'
+          +'<div class="t-cat">'+catLabel+(isPending?' ⏳':'')+'</div>'
           +'<div class="t-count">'+count+'/4</div>'
           +'<div class="t-dot"></div>'
           +'</div>';
       }
       // Show pending requests summary for this slot
-      if(pendingForSlot.length){
-        var pendingBycat={};
-        pendingForSlot.forEach(function(r){
-          pendingBycat[r.playing_category]=(pendingBycat[r.playing_category]||0)+1;
-        });
-        var pendingStr=Object.keys(pendingBycat).map(function(c){return pendingBycat[c]+' '+c;}).join(', ');
+      if(Object.keys(pendingByCategory).length){
+        var pendingStr=Object.keys(pendingByCategory).map(function(c){return pendingByCategory[c]+' '+c;}).join(', ');
         html+='<div style="grid-column:1/-1;font-size:11px;color:#bb8fce;padding:4px 2px;">⏳ Pending: '+pendingStr+'</div>';
       }
       html += '</div></div>';
