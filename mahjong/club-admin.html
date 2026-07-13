@@ -563,9 +563,11 @@ async function loadSessions(){
     const pd=pids.length?await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,email`):[];
     const pm={};pd.forEach(p=>{pm[p.id]=p;});
     const waitlist=await sb(`mj_waitlist?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.waiting&select=*`);
+    console.log('Rendering sessions...');
+    try{
     document.getElementById('sessions-list').innerHTML=sessions.map(s=>{
       const slot=allSlots.find(sl=>sl.id===s.slot_id);
-      const slotLabel=slot?`${slot.start_time}–${slot.end_time}`:'—';
+      const slotLabel=slot?(slot.start_time+'-'+slot.end_time):'—';
       const players=[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean).map(id=>pm[id]);
       const count=players.length;
       const isFull=count>=4;
@@ -583,6 +585,7 @@ async function loadSessions(){
           +'<a href="https://wa.me/91'+(p.whatsapp||p.mobile)+'?text='+waNotify+'" target="_blank" class="btn btn-sm btn-whatsapp" style="padding:4px 8px;font-size:11px;">💬</a>'
           +'</div>';
       }).join('');
+    }catch(renderErr){console.error('Render error:',renderErr);document.getElementById('sessions-list').innerHTML='<div class="status-box status-error">Render error: '+renderErr.message+'</div>';}
       return '<div class="session-item">'
         +'<div class="session-header"><div class="session-title">Table '+s.table_number+' · '+slotLabel+'</div><span class="badge '+(isFull?'badge-full':'badge-filling')+'">'+(isFull?'FULL':count+'/4')+'</span></div>'
         +'<div style="margin-bottom:10px;">'+playerRowsHtml
