@@ -522,8 +522,10 @@ async function loadApprovedMembers(){
         <div class="member-actions" style="margin-top:6px;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
             <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Initial Pts:</label>
-            <input type="number" id="init-${m.id}" placeholder="Historical points" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/>
-            <button class="btn btn-gold btn-sm" onclick="saveInitialPoints('${m.id}',${m.initial_points||0})">Save</button>
+            ${(m.initial_points||0)>0
+              ? '<span style="color:var(--gold);font-weight:700;font-size:13px;">'+(m.initial_points)+' ✅ Set</span>'
+              : '<input type="number" id="init-'+m.id+'" placeholder="Historical points" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+'\',0)">Save</button>'
+            }
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px;">Current initial pts: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span></div>
         </div>
@@ -1066,13 +1068,14 @@ async function loadOverviewMatrix(){
 }
 
 async function saveInitialPoints(memId, current){
+  if(current>0){alert('Initial points already set and cannot be changed.');return;}
   var inp=document.getElementById('init-'+memId);
   var pts=parseInt(inp.value);
   if(isNaN(pts)||pts<0){alert('Enter valid points.');return;}
+  if(!confirm('Set initial points to '+pts+' for this member? This cannot be changed later.'))return;
   try{
     await sbPatch('mj_members?id=eq.'+memId,{initial_points:pts});
     toast('Initial points saved!');
-    inp.value='';
     loadApprovedMembers();
   }catch(e){alert('Error: '+e.message);}
 }
