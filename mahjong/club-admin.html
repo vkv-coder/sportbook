@@ -846,7 +846,7 @@ async function loadBookingRequests(){
         html+='</div>';
       });
       if(isReady){
-        html+='<button class="btn btn-green btn-full" style="margin-top:12px;" onclick="manualConfirmRequests(''+key+'',''+g.category+'',''+g.requests[0].slot_id+'',''+date+'')">✅ Confirm Table for These 4 Players</button>';
+        html+='<button class="btn btn-green btn-full" style="margin-top:12px;" onclick="manualConfirmRequests(this)" data-key="'+key+'" data-cat="'+g.category+'" data-slot="'+g.requests[0].slot_id+'" data-date="'+date+'">Confirm Table for These 4 Players</button>';
       }
       html+='</div></div>';
     });
