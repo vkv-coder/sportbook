@@ -174,13 +174,13 @@ select option{background:var(--surface);}
       <button class="nav-tab" onclick="switchTab('tab-members')"><span class="tab-icon">👥</span>Members</button>
       <button class="nav-tab" onclick="switchTab('tab-sessions')"><span class="tab-icon">🀄</span>Tables</button>
       <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👨‍👩‍👧‍👦</span>Groups</button>
+      <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
     </div>
     <div class="nav-tabs" id="nav-row-2">
       <button class="nav-tab" onclick="switchTab('tab-slots')"><span class="tab-icon">🕐</span>Slots</button>
       <button class="nav-tab" onclick="switchTab('tab-requests')"><span class="tab-icon">📥</span>Requests</button>
       <button class="nav-tab" onclick="switchTab('tab-venue')"><span class="tab-icon">📍</span>Venues</button>
-      <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>Ranks</button>
-      <button class="nav-tab" onclick="switchTab('tab-settings')"><span class="tab-icon">⚙️</span>Settings</button>
+      <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>LBoard</button>
     </div>
   </div>
 
@@ -1187,7 +1187,7 @@ function switchTab(tabId){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-slots','tab-requests','tab-venue','tab-leaderboard','tab-settings'].indexOf(tabId);
+  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-settings','tab-slots','tab-requests','tab-venue','tab-leaderboard'].indexOf(tabId);
   if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
   if(tabId==='tab-venue')loadVenueEvents();
   if(tabId==='tab-requests'){var today=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=today;loadBookingRequests();}
