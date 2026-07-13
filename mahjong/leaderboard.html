@@ -137,7 +137,6 @@ async function loadLeaderboard(){
   document.getElementById('lb-empty').style.display='none';
 
   try{
-    // Get all confirmed rooms
     var rooms=await sb('mj_score_rooms?club_id=eq.'+clubId+'&status=eq.confirmed&select=id');
     if(!rooms.length){
       document.getElementById('lb-loading').style.display='none';
@@ -145,20 +144,16 @@ async function loadLeaderboard(){
       return;
     }
     var roomIds=rooms.map(function(r){return r.id;});
-    // Get all score entries with rank points
     var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points');
-    // Get player names
     var pids=[...new Set(entries.map(function(e){return e.player_id;}))];
-    var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name');
+    var players=pids.length?await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name'):[];
     var pMap={};players.forEach(function(p){pMap[p.id]=p;});
-    // Aggregate rank points per player
     var stats={};
     entries.forEach(function(e){
       if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
       stats[e.player_id].rankPoints+=(e.rank_points||0);
       stats[e.player_id].games+=1;
     });
-    // Build sorted list
     var allPlayers=Object.keys(stats).map(function(pid){
       return {
         pid:pid,
@@ -168,11 +163,11 @@ async function loadLeaderboard(){
         isMe:pid===player.id
       };
     }).sort(function(a,b){return b.rankPoints-a.rankPoints;});
+    var topPoints=allPlayers.length?allPlayers[0].rankPoints:0;
 
-    // Stats
     document.getElementById('stat-players').textContent=allPlayers.length;
     document.getElementById('stat-games').textContent=rooms.length;
-    document.getElementById('stat-top').textContent=allPlayers.length?allPlayers[0].rankPoints:0;
+    document.getElementById('stat-top').textContent=topPoints;
 
     // Render podium (top 3)
     var top3=allPlayers.slice(0,3);
@@ -197,7 +192,7 @@ async function loadLeaderboard(){
         +'<div class="podium-crown">'+style.crown+'</div>'
         +'<div class="podium-avatar '+style.cls+'">'+initials+'</div>'
         +'<div class="podium-name">'+p.name+(p.isMe?' 👤':'')+'</div>'
-        +'<div class="podium-points">'+p.rankPoints+'</div>'
+        +'<div class="podium-points">'+p.rankPoints+' pts</div>'
         +'<div class="podium-games">'+p.games+' games</div>'
         +'<div class="podium-base '+style.base+'">'+['2nd','1st','3rd'][idx]+'</div>'
         +'</div>';
