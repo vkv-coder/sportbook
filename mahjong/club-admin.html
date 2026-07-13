@@ -1002,7 +1002,12 @@ function switchTab(tabId){
   if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
   if(tabId==='tab-venue')loadVenueEvents();
   if(tabId==='tab-requests'){var today=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=today;loadBookingRequests();}
-  if(tabId==='tab-sessions'){var today=new Date().toISOString().split('T')[0];document.getElementById('session-date-filter').value=today;loadSessions();}
+  if(tabId==='tab-sessions'){
+    var today=new Date().toISOString().split('T')[0];
+    var sdf=document.getElementById('session-date-filter');
+    if(sdf){sdf.value=today;loadSessions();}
+    else{setTimeout(function(){var s=document.getElementById('session-date-filter');if(s){s.value=today;loadSessions();}},200);}
+  }
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
 }
 
