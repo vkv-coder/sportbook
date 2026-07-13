@@ -28,7 +28,7 @@ select option{background:var(--surface);}
 .empty-state p{font-size:13px;line-height:1.6;}
 
 /* STATS */
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
 .stat-number{font-size:22px;font-weight:700;color:var(--gold);}
 .stat-label{font-size:10px;color:var(--muted);margin-top:2px;}
@@ -86,7 +86,6 @@ select option{background:var(--surface);}
   <div id="lb-content" style="display:none;">
     <div class="stats-row">
       <div class="stat-card"><div class="stat-number" id="stat-players">-</div><div class="stat-label">Players</div></div>
-      <div class="stat-card"><div class="stat-number" id="stat-games">-</div><div class="stat-label">Games</div></div>
       <div class="stat-card"><div class="stat-number" id="stat-top">-</div><div class="stat-label">Top Points</div></div>
     </div>
     <div id="podium-section"></div>
@@ -107,9 +106,13 @@ var player=null,myClubs=[];
 
 window.addEventListener('DOMContentLoaded',async function(){
   var saved=localStorage.getItem('sp_member');
-  if(!saved){window.location.href='/select-game.html?role=player';return;}
-  player=JSON.parse(saved);
-  document.getElementById('header-sub').textContent=player.name;
+  if(saved){
+    player=JSON.parse(saved);
+    document.getElementById('header-sub').textContent=player.name;
+  } else {
+    player={id:'',name:''};
+    document.getElementById('header-sub').textContent='Public View';
+  }
   await loadClubs();
 });
 
@@ -120,10 +123,19 @@ async function sb(path){
 }
 
 async function loadClubs(){
-  var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
-  var ids=mems.map(function(m){return m.club_id;});
-  if(!ids.length)return;
-  myClubs=await sb('mj_clubs?id=in.('+ids.join(',')+')'+'&status=eq.active&select=id,club_name');
+  var saved=localStorage.getItem('sp_member');
+  if(saved && player.id){
+    try{
+      var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
+      var ids=mems.map(function(m){return m.club_id;});
+      if(ids.length){
+        myClubs=await sb('mj_clubs?id=in.('+ids.join(',')+')'+'&status=eq.active&select=id,club_name');
+      }
+    }catch(e){}
+  }
+  if(!myClubs.length){
+    myClubs=await sb('mj_clubs?status=eq.active&select=id,club_name');
+  }
   var sel=document.getElementById('club-select');
   sel.innerHTML='<option value="">Select a club...</option>'+myClubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('');
   if(myClubs.length===1){sel.value=myClubs[0].id;loadLeaderboard();}
@@ -182,7 +194,6 @@ async function loadLeaderboard(){
     var topPoints=allPlayers.length?allPlayers[0].rankPoints:0;
 
     document.getElementById('stat-players').textContent=allPlayers.length;
-    document.getElementById('stat-games').textContent=rooms.length;
     document.getElementById('stat-top').textContent=topPoints;
 
     // Render podium (top 3)
@@ -216,7 +227,6 @@ async function loadLeaderboard(){
         +'<div class="podium-avatar '+style.cls+'">'+initials+'</div>'
         +'<div class="podium-name">'+p.name+(p.isMe?' 👤':'')+'</div>'
         +'<div class="podium-points">'+p.rankPoints+' pts</div>'
-        +'<div class="podium-games">'+p.games+' games</div>'
         +'<div class="podium-base '+style.base+'">'+posLabel+'</div>'
         +'</div>';
     });
@@ -231,7 +241,6 @@ async function loadLeaderboard(){
           +'<div class="rank-num">'+(i+4)+'</div>'
           +'<div class="rank-info">'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
-          +'<div class="rank-sub">'+p.games+' games played</div>'
           +'</div>'
           +'<div><div class="rank-points">'+p.rankPoints+'</div><div class="rank-pts-label">pts</div></div>'
           +'</div>';
