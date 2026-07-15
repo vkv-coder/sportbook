@@ -400,44 +400,90 @@ async function loadMyBookings(){
       const slot=allSlots.find(s=>s.id===b.slot_id);
       const slotLabel=slot?`${slot.start_time} – ${slot.end_time}`:'Unknown slot';
       const badgeClass=b.status==='confirmed'?'badge-confirmed':'badge-cancelled';
-      return `<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 ${b.booking_date}</div><span class="booking-badge ${badgeClass}">${b.status}</span></div><div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div><div class="booking-meta">🕐 Time: <span>${slotLabel}</span></div>${b.status==='confirmed'?`<div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelBooking('${b.id}','${b.slot_id}',${b.table_number},'${b.booking_date}')">Cancel Booking</button></div>`:''}</div>`;
+      return `<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 ${b.booking_date}</div><span class="booking-badge ${badgeClass}">${b.status}</span></div><div class="booking-meta">🀄 Table: <span>${b.table_number}</span></div><div class="booking-meta">🕐 Time: <span>${slotLabel}</span></div>${b.status==='confirmed'?`<div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelBooking('${b.id}')">Cancel Booking</button></div>`:''}</div>`;
     }).join('');
   }catch(e){document.getElementById('bookings-loading').style.display='none';}
 }
 
-// FIX 2: cancelBooking now triggers waitlist auto-assign
-async function cancelBooking(bookingId,slotId,tableNo,date){
+// Cancellation now triggers: 1) waitlist check (same category) 2) consolidation shift from another partial table
+async function cancelBooking(bookingId){
   if(!confirm('Cancel this booking?'))return;
   try{
+    const bookingRows=await sb(`mj_bookings?id=eq.${bookingId}&select=*`);
+    if(!bookingRows.length){alert('Booking not found.');return;}
+    const booking=bookingRows[0];
+    const{club_id,slot_id,table_number,booking_date,playing_category}=booking;
+
     await sbPatch(`mj_bookings?id=eq.${bookingId}`,{status:'cancelled'});
-    await sbPatch(`mj_table_sessions?club_id=eq.${currentClub.id}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`,{status:'filling'});
-    // FIX: Trigger waitlist processing after cancellation
-    await processWaitlist(currentClub.id,slotId,tableNo,date);
+
+    const remaining=await sb(`mj_bookings?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}&status=eq.confirmed&select=id`);
+    await sbPatch(`mj_table_sessions?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}`,{status:remaining.length>=4?'full':'filling'});
+
+    // Step 1: try waitlist first (same category only)
+    const filled=await processWaitlist(club_id,slot_id,table_number,booking_date,playing_category);
+
+    // Step 2: if waitlist had no match, try consolidation shift from another partial table (same category)
+    if(!filled){
+      await tryConsolidationShift(club_id,slot_id,table_number,booking_date,playing_category);
+    }
+
     loadMyBookings();
     loadSlotsForDate(selectedDate);
   }catch(e){alert('Error: '+e.message);}
 }
 
-// Waitlist auto-assign (same logic as mahjong/index.html)
-async function processWaitlist(clubId,slotId,tableNo,date){
+// Waitlist auto-assign — now filters by matching category, and returns true/false whether it filled the seat
+async function processWaitlist(clubId,slotId,tableNo,date,category){
   try{
-    const waiting=await sb(`mj_waitlist?club_id=eq.${clubId}&slot_id=eq.${slotId}&booking_date=eq.${date}&status=eq.waiting&order=created_at.asc&select=*`);
-    if(!waiting.length)return;
+    const waiting=await sb(`mj_waitlist?club_id=eq.${clubId}&slot_id=eq.${slotId}&booking_date=eq.${date}&status=eq.waiting&playing_category=eq.${category}&order=created_at.asc&select=*`);
+    if(!waiting.length)return false;
     const next=waiting[0];
     const mem=await sb(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}&select=slot_balance`);
     const bal=mem[0]?mem[0].slot_balance||0:0;
     if(bal<=0){
       await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'no_balance'});
-      await processWaitlist(clubId,slotId,tableNo,date);
-      return;
+      return await processWaitlist(clubId,slotId,tableNo,date,category);
     }
-    await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed'});
+    await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed',playing_category:category});
     await sbPatch(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}`,{slot_balance:bal-1});
     await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'assigned'});
+    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`,{status:'full'});
     const pinfo=await sb(`sp_members?id=eq.${next.player_id}&select=name,mobile,whatsapp`);
     const p=pinfo[0]||{};
-    await tg(`🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub: <b>${clubId}</b>\nPlayer: <b>${p.name||'Member'}</b>\nMobile: ${p.mobile||'—'}\nTable: ${tableNo}\nDate: ${date}\n\n⚡ Please inform the player their seat is confirmed!`);
-  }catch(e){}
+    await tg(`🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub ID: <b>${clubId}</b>\nPlayer: <b>${p.name||'Member'}</b>\nMobile: ${p.mobile||'—'}\nTable: ${tableNo}\nDate: ${date}\n\n⚡ Please inform the player their seat is confirmed!`);
+    return true;
+  }catch(e){return false;}
+}
+
+// Consolidation shift: move the EARLIEST-booked player from another partial table (same category/slot/date)
+// into the newly vacated seat, leaving the most recent player behind. Silent — no notification.
+async function tryConsolidationShift(clubId,slotId,vacatedTableNo,date,category){
+  try{
+    const allBookings=await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&booking_date=eq.${date}&playing_category=eq.${category}&status=eq.confirmed&select=*&order=created_at.asc`);
+    const byTable={};
+    allBookings.forEach(b=>{
+      if(!byTable[b.table_number])byTable[b.table_number]=[];
+      byTable[b.table_number].push(b);
+    });
+    // Find another table (not the vacated one) with 1-3 confirmed players
+    let donorTable=null;
+    for(const t in byTable){
+      if(parseInt(t)===vacatedTableNo)continue;
+      if(byTable[t].length>=1&&byTable[t].length<=3){donorTable=parseInt(t);break;}
+    }
+    if(!donorTable)return; // nothing to shift — table stays partial until the 3-hour alert check
+
+    const donorPlayers=byTable[donorTable]; // already sorted by created_at asc
+    const earliestPlayerBooking=donorPlayers[0]; // earliest-booked player moves
+
+    await sbPatch(`mj_bookings?id=eq.${earliestPlayerBooking.id}`,{table_number:vacatedTableNo});
+
+    const vacatedCount=(await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${vacatedTableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`)).length;
+    const donorCount=donorPlayers.length-1;
+
+    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${vacatedTableNo}&booking_date=eq.${date}`,{status:vacatedCount>=4?'full':'filling'});
+    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${donorTable}&booking_date=eq.${date}`,{status:donorCount>=4?'full':donorCount>0?'filling':'open'});
+  }catch(e){/* silent — worst case table stays partial, caught later by 3-hour alert check */}
 }
 
 function confirmLogout(){if(confirm('This will require OTP again next time. Logout?')){logout();}}
