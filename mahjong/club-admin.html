@@ -78,7 +78,7 @@ select option{background:var(--surface);}
 .empty-state .empty-icon{font-size:36px;margin-bottom:10px;}
 .empty-state p{font-size:13px;line-height:1.6;}
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;margin-top:16px;}
-.divider{height:1px;background:var(--border);margin:16px 0;}
+.divider{height:1px;background:var(--border);margin:16px  0;}
 .btn-whatsapp{background:#25d366;color:#fff;display:flex;align-items:center;gap:6px;}
 .btn-whatsapp:hover{background:#20b858;}
 .balance-row{display:flex;gap:8px;align-items:center;}
@@ -199,6 +199,7 @@ select option{background:var(--surface);}
       <button class="nav-tab" onclick="switchTab('tab-requests')"><span class="tab-icon">📥</span>Requests</button>
       <button class="nav-tab" onclick="switchTab('tab-venue')"><span class="tab-icon">📍</span>Venues</button>
       <button class="nav-tab" onclick="switchTab('tab-leaderboard')"><span class="tab-icon">🏆</span>LBoard</button>
+      <button class="nav-tab" onclick="switchTab('tab-fillalerts')"><span class="tab-icon">⚠️</span>Fill Alerts</button>
     </div>
   </div>
 
@@ -346,6 +347,14 @@ select option{background:var(--surface);}
       <div id="lb-content-admin"></div>
     </div>
 
+    <!-- FILL ALERTS -->
+    <div class="tab-content" id="tab-fillalerts">
+      <div class="section-label">⚠️ Slots Needing Players</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Tables that are still short of players within the next 3 hours. Click Send Alert to notify approved members (via Telegram) who haven't booked this slot.</p>
+      <div id="fillalerts-loading" class="loading"><div class="spinner"></div>Loading...</div>
+      <div id="fillalerts-list"></div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="tab-content" id="tab-settings">
       <div class="card">
@@ -371,6 +380,7 @@ const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 const TG_BOT='8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
 const TG_CHAT='8507770594';
+const FILL_ALERT_GAS_URL='https://script.google.com/macros/s/AKfycby60m-9xnQNqoe3k5mAPDhh7eTPiqkoHWJSEdNFdtmsrgewHFRgmcUc5v8Zk4bzVwIx/exec';
 let club=null,allSlots=[];
 
 async function sb(path,method='GET',body=null){
@@ -591,26 +601,20 @@ async function updateMember(memId,status,name){
 
 async function loadSessions(){
   const date=document.getElementById('session-date-filter').value;
-  console.log('loadSessions date:', date, 'club:', club?club.id:'NO CLUB');
   if(!date)return;
   document.getElementById('sessions-loading').style.display='block';
   document.getElementById('sessions-list').innerHTML='';
   try{
-    // Ensure allSlots is populated
     if(!allSlots.length){
       allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
-      console.log('allSlots reloaded:', allSlots.length);
     }
     const sessions=await sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${date}&select=*&order=table_number.asc`);
-    console.log('sessions found:', sessions.length, sessions);
     document.getElementById('sessions-loading').style.display='none';
     if(!sessions.length){document.getElementById('sessions-list').innerHTML='<div class="empty-state"><div class="empty-icon">🀄</div><p>No table sessions for this date.</p></div>';return;}
     const pids=[...new Set(sessions.flatMap(s=>[s.player1_id,s.player2_id,s.player3_id,s.player4_id].filter(Boolean)))];
     const pd=pids.length?await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,email`):[];
     const pm={};pd.forEach(p=>{pm[p.id]=p;});
     const waitlist=await sb(`mj_waitlist?club_id=eq.${club.id}&booking_date=eq.${date}&status=eq.waiting&select=*`);
-    console.log('Rendering sessions...');
-    // Build wlBySlot map for waitlist display
     var allWaitlist=[];
     try{allWaitlist=await sb('mj_waitlist?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.waiting&select=*');}catch(e){}
     var wlBySlot={};
@@ -669,7 +673,6 @@ async function loadSessions(){
     }).join('');
   }catch(e){
     document.getElementById('sessions-loading').style.display='none';
-    console.error('loadSessions error:', e.message, e);
     document.getElementById('sessions-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
   }
 }
@@ -878,15 +881,12 @@ async function loadBookingRequests(){
     var reqs=await sb('mj_booking_requests?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.pending&select=*&order=playing_category.asc,created_at.asc');
     document.getElementById('requests-loading').style.display='none';
     if(!reqs.length){document.getElementById('requests-list').innerHTML='<div class="empty-state"><div class="empty-icon">📥</div><p>No pending booking requests for this date.</p></div>';return;}
-    // Get player info
     var pids=[...new Set(reqs.map(function(r){return r.player_id;}))];
     var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name,mobile,whatsapp,telegram_id');
     var pMap={};players.forEach(function(p){pMap[p.id]=p;});
-    // Get slot info
     var slotIds=[...new Set(reqs.map(function(r){return r.slot_id;}))];
     var slots=slotIds.length?await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time'):[];
     var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
-    // Group by category+slot
     var groups={};
     reqs.forEach(function(r){
       var key=r.playing_category+'_'+r.slot_id;
@@ -928,12 +928,10 @@ async function manualConfirmRequests(btn){
   var category=btn.getAttribute('data-cat');
   var slotId=btn.getAttribute('data-slot');
   var date=btn.getAttribute('data-date');
-  // original function body below
   if(!confirm('Confirm table for these 4 players?'))return;
   try{
     var reqs=await sb('mj_booking_requests?club_id=eq.'+club.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&playing_category=eq.'+category+'&status=eq.pending&select=*&order=created_at.asc');
     var toConfirm=reqs.slice(0,4);
-    // Find free table
     var bookings=await sb('mj_bookings?club_id=eq.'+club.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed&select=table_number');
     var tableCount={};bookings.forEach(function(b){tableCount[b.table_number]=(tableCount[b.table_number]||0)+1;});
     var assignedTable=null;
@@ -1001,13 +999,10 @@ async function loadOverviewMatrix(){
   document.getElementById('overview-matrix-loading').style.display='block';
   document.getElementById('overview-matrix').innerHTML='';
   try{
-    // Get all bookings for this date
     var bookings = await sb('mj_bookings?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.confirmed&select=*');
-    // Get slots
     if(!allSlots.length){
       allSlots = await sb('mj_slots?club_id=eq.'+club.id+'&is_active=eq.true&select=*&order=start_time.asc');
     }
-    // Get pending booking requests for this date
     var requests = await sb('mj_booking_requests?club_id=eq.'+club.id+'&booking_date=eq.'+date+'&status=eq.pending&select=*');
     document.getElementById('overview-matrix-loading').style.display='none';
     if(!allSlots.length){
@@ -1019,13 +1014,11 @@ async function loadOverviewMatrix(){
       html += '<div class="slot-section">';
       html += '<div class="slot-label">🕐 '+slot.start_time+' – '+slot.end_time+'</div>';
       html += '<div class="table-grid">';
-      // Build pending assignment map - FIFO by category
       var pendingByCategory = {};
       requests.filter(function(r){return r.slot_id===slot.id;}).forEach(function(r){
         if(!pendingByCategory[r.playing_category]) pendingByCategory[r.playing_category]=0;
         pendingByCategory[r.playing_category]++;
       });
-      // Assign pending categories to tables sequentially after confirmed tables
       var confirmedTables = [];
       for(var t=1;t<=club.total_tables;t++){
         var tb = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
@@ -1062,7 +1055,6 @@ async function loadOverviewMatrix(){
           +'<div class="t-dot"></div>'
           +'</div>';
       }
-      // Show pending requests summary for this slot
       if(Object.keys(pendingByCategory).length){
         var pendingStr=Object.keys(pendingByCategory).map(function(c){return pendingByCategory[c]+' '+c;}).join(', ');
         html+='<div style="grid-column:1/-1;font-size:11px;color:#bb8fce;padding:4px 2px;">⏳ Pending: '+pendingStr+'</div>';
@@ -1070,7 +1062,6 @@ async function loadOverviewMatrix(){
       html += '</div></div>';
     });
     document.getElementById('overview-matrix').innerHTML=html||'<div class="empty-state"><div class="empty-icon">🀄</div><p>No bookings for this date.</p></div>';
-    // Update full today count
     var fullCount=0;
     allSlots.forEach(function(slot){
       for(var t=1;t<=club.total_tables;t++){
@@ -1188,7 +1179,6 @@ async function copyTableAssignments(){
     const slotIds=[...new Set(sessions.map(s=>s.slot_id))];
     const slots=slotIds.length?await sb(`mj_slots?id=in.(${slotIds.join(',')})&select=id,start_time,end_time`):[];
     const sMap={};slots.forEach(s=>{sMap[s.id]=s;});
-    // Group sessions by slot
     const bySlot={};
     sessions.forEach(s=>{
       if(!bySlot[s.slot_id])bySlot[s.slot_id]=[];
@@ -1207,19 +1197,71 @@ async function copyTableAssignments(){
         msg+='\n';
       });
     }
-    // Copy to clipboard
     await navigator.clipboard.writeText(msg);
     showMsg('copy-msg','✅ Copied! Paste directly into your WhatsApp group.','success');
   }catch(e){showMsg('copy-msg','Error: '+e.message,'error');}
+}
+
+// ---------- FILL ALERTS ----------
+async function loadFillAlerts(){
+  document.getElementById('fillalerts-loading').style.display='block';
+  document.getElementById('fillalerts-list').innerHTML='';
+  try{
+    var alerts=await sb('mj_fill_alerts?club_id=eq.'+club.id+'&status=in.(pending,sent)&select=*&order=booking_date.asc,created_at.asc');
+    document.getElementById('fillalerts-loading').style.display='none';
+    if(!alerts.length){document.getElementById('fillalerts-list').innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><p>No stuck tables right now.<br/>Checked automatically every few minutes.</p></div>';return;}
+    var slotIds=[...new Set(alerts.map(function(a){return a.slot_id;}))];
+    var slots=slotIds.length?await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time'):[];
+    var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
+    var catLabels={beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'};
+    document.getElementById('fillalerts-list').innerHTML=alerts.map(function(a){
+      var sl=sMap[a.slot_id];
+      var slotLabel=sl?(sl.start_time+'-'+sl.end_time):'—';
+      var isSent=a.status==='sent';
+      return '<div class="member-item">'
+        +'<div class="member-header"><div class="member-name">Table '+a.table_number+'</div>'
+        +'<span class="badge '+(isSent?'badge-approved':'badge-pending')+'">'+(isSent?'Sent':'Needs Alert')+'</span></div>'
+        +'<div class="member-meta">📅 Date: <span>'+a.booking_date+'</span></div>'
+        +'<div class="member-meta">🕐 Time: <span>'+slotLabel+'</span></div>'
+        +'<div class="member-meta">🎮 Category: <span>'+(catLabels[a.playing_category]||a.playing_category)+'</span></div>'
+        +'<div class="member-meta">👥 Players needed: <span>'+a.players_needed+'</span></div>'
+        +(isSent
+          ?'<div style="margin-top:8px;font-size:11px;color:var(--muted);">Alert sent'+(a.sent_at?' at '+new Date(a.sent_at).toLocaleTimeString():'')+'</div>'
+          :'<div class="member-actions"><button class="btn btn-orange btn-sm" onclick="sendFillAlertNow(\''+a.id+'\',this)">📢 Send Alert</button></div>')
+        +'</div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('fillalerts-loading').style.display='none';
+    document.getElementById('fillalerts-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
+  }
+}
+
+async function sendFillAlertNow(alertId, btn){
+  btn.disabled=true;btn.textContent='Sending...';
+  try{
+    var res=await fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId);
+    var data=await res.json();
+    if(data.ok){
+      toast('Alert sent to '+(data.sentCount||0)+' member(s)!');
+      loadFillAlerts();
+    }else{
+      alert('Error: '+(data.error||'Unknown error'));
+      btn.disabled=false;btn.textContent='📢 Send Alert';
+    }
+  }catch(e){
+    alert('Error: '+e.message);
+    btn.disabled=false;btn.textContent='📢 Send Alert';
+  }
 }
 
 function switchTab(tabId){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(tabId).classList.add('active');
-  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-settings','tab-slots','tab-requests','tab-venue','tab-leaderboard'].indexOf(tabId);
+  const idx=['tab-overview','tab-members','tab-sessions','tab-group','tab-settings','tab-slots','tab-requests','tab-venue','tab-leaderboard','tab-fillalerts'].indexOf(tabId);
   if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
   if(tabId==='tab-venue')loadVenueEvents();
+  if(tabId==='tab-fillalerts')loadFillAlerts();
   if(tabId==='tab-requests'){var today=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=today;loadBookingRequests();}
   if(tabId==='tab-sessions'){
     var today=new Date().toISOString().split('T')[0];
