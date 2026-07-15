@@ -533,7 +533,7 @@ async function loadApprovedMembers(){
       const p=pm[m.player_id]||{};
       const bal=m.slot_balance||0;
       return`<div class="member-item" id="mem-${m.id}">
-        <div class="member-header"><div class="member-name">${p.name||'Unknown'}</div><span class="badge badge-approved">Member</span></div>
+        <div class="member-header"><div class="member-name">${p.name||'Unknown'}</div><span class="badge badge-approved">${m.member_code||'Member'}</span></div>
         <div class="member-meta">📱 Mobile: <span>${p.mobile||'—'}</span></div>
         <div class="member-meta">💬 WhatsApp: <span>${p.whatsapp||p.mobile||'—'}</span></div>
         <div class="member-meta">✉️ <span>${p.email||'—'}</span></div>
@@ -595,8 +595,27 @@ async function setSlotBalance(memId,val){
 
 async function updateMember(memId,status,name){
   if(!confirm(`${status} ${name}?`))return;
-  try{await sbPatch(`mj_members?id=eq.${memId}`,{status});loadPendingMembers();loadApprovedMembers();loadStats();}
-  catch(e){alert('Error: '+e.message);}
+  try{
+    var updateData={status};
+    if(status==='approved'){
+      // Auto-assign next sequential member code (e.g. GM001, GM002...)
+      var clubData=await sb('mj_clubs?id=eq.'+club.id+'&select=code_prefix');
+      var prefix=(clubData&&clubData.length&&clubData[0].code_prefix)?clubData[0].code_prefix:'GM';
+      var existing=await sb('mj_members?club_id=eq.'+club.id+'&member_code=not.is.null&select=member_code&order=member_code.asc');
+      var nextNum=1;
+      if(existing&&existing.length){
+        // Find highest number used so far
+        var nums=existing.map(function(r){return parseInt((r.member_code||'').replace(prefix,''),10);}).filter(function(n){return !isNaN(n);});
+        if(nums.length) nextNum=Math.max.apply(null,nums)+1;
+      }
+      updateData.member_code=prefix+String(nextNum).padStart(3,'0');
+    }
+    await sbPatch('mj_members?id=eq.'+memId,updateData);
+    if(status==='approved'&&updateData.member_code){
+      toast('Approved! Member code assigned: '+updateData.member_code);
+    }
+    loadPendingMembers();loadApprovedMembers();loadStats();
+  }catch(e){alert('Error: '+e.message);}
 }
 
 async function loadSessions(){
