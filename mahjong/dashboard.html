@@ -417,13 +417,14 @@ async function cancelBooking(bookingId){
     await sbPatch(`mj_bookings?id=eq.${bookingId}`,{status:'cancelled'});
 
     const remaining=await sb(`mj_bookings?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}&status=eq.confirmed&select=id`);
-    await sbPatch(`mj_table_sessions?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}`,{status:remaining.length>=4?'full':'filling'});
+    await sbPatch(`mj_table_sessions?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}`,{status:remaining.length>=4?'full':remaining.length>0?'filling':'open'});
 
     // Step 1: try waitlist first (same category only)
     const filled=await processWaitlist(club_id,slot_id,table_number,booking_date,playing_category);
 
     // Step 2: if waitlist had no match, try consolidation shift from another partial table (same category)
-    if(!filled){
+    // Only makes sense if the vacated table still has other players seated — otherwise there's nothing to consolidate into.
+    if(!filled&&remaining.length>0){
       await tryConsolidationShift(club_id,slot_id,table_number,booking_date,playing_category);
     }
 
