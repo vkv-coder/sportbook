@@ -198,7 +198,6 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 var SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-var ADMIN_PIN = 'sportbook@admin2026';
 
 function toast(msg) {
   var el = document.getElementById('toast');
@@ -218,9 +217,21 @@ async function notifyTelegram(msg) {
 }
 
 // LOGIN
-function adminLogin() {
+async function adminLogin() {
   var pin = document.getElementById('adminPin').value;
-  if (pin !== ADMIN_PIN) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
+  document.getElementById('loginErr').textContent = '';
+  try {
+    var res = await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({action: 'checkPin', pin: pin})
+    });
+    var data = await res.json();
+    if (!data.valid) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
+  } catch(e) {
+    document.getElementById('loginErr').textContent = 'Login check failed. Try again.';
+    return;
+  }
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('navRight').textContent = 'Admin: Vijay';
