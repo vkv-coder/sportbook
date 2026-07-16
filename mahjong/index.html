@@ -105,8 +105,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
   <button class="nav-tab" onclick="switchTab('tab-my-clubs')"><span class="tab-icon">🏯</span>My Clubs</button>
   <button class="nav-tab" onclick="switchTab('tab-bookings')"><span class="tab-icon">📋</span>Bookings</button>
   <button class="nav-tab" onclick="switchTab('tab-discover')"><span class="tab-icon">🔍</span>Discover</button>
-  <button class="nav-tab" onclick="window.location.href='/mahjong/scores.html'"><span class="tab-icon">🎯</span>Scores</button>
   <button class="nav-tab" onclick="window.location.href='/mahjong/leaderboard.html'"><span class="tab-icon">🏆</span>Leaderboard</button>
+  <button class="nav-tab" onclick="showBotNote()"><span class="tab-icon">🎯</span>Scores</button>
 </div>
 <div class="main">
 
@@ -794,6 +794,10 @@ async function loadDiscoverVenueEvents(clubs){
 
 function confirmLogout(){if(confirm('This will require OTP again next time. Logout?')){logout();}}
 function logout(){localStorage.removeItem('sp_member');localStorage.removeItem('mj_active_club');window.location.href='/select-game.html?role=player';}
+
+function showBotNote(){
+  alert('🎯 Score Submission\n\nScores are now submitted via the Green Mahjong Club Telegram bot.\n\nContact your club admin for the bot link.');
+}
 </script>
 </body>
 </html>
