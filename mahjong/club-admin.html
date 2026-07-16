@@ -342,7 +342,10 @@ select option{background:var(--surface);}
 
     <!-- LEADERBOARD -->
     <div class="tab-content" id="tab-leaderboard">
-      <div class="section-label">🏆 Club Leaderboard</div>
+      <div style="display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;">
+        <button id="lb-tab-trad" class="nav-tab active" style="flex:1;border-bottom:none;" onclick="switchLbCat('traditional')">🀄 Traditional</button>
+        <button id="lb-tab-taiw" class="nav-tab" style="flex:1;border-bottom:none;" onclick="switchLbCat('taiwanese')">🏆 Taiwanese</button>
+      </div>
       <div id="lb-loading-admin" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="lb-content-admin"></div>
     </div>
@@ -549,13 +552,20 @@ async function loadApprovedMembers(){
         </div>
         <div class="member-actions" style="margin-top:6px;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
-            <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Initial Pts:</label>
+            <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Trad Pts:</label>
             ${(m.initial_points||0)>0
-              ? '<span style="color:var(--gold);font-weight:700;font-size:13px;">'+(m.initial_points)+' ✅ Set</span>'
-              : '<input type="number" id="init-'+m.id+'" placeholder="Historical points" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+'\',0)">Save</button>'
+              ? '<span style="color:var(--gold);font-weight:700;font-size:13px;">'+(m.initial_points)+' ✅</span>'
+              : '<input type="number" id="init-'+m.id+'" placeholder="Traditional pts" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+'\',\'traditional\',0)">Save</button>'
             }
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Current initial pts: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span></div>
+          <div style="display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;">
+            <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Taiw Pts:</label>
+            ${(m.initial_points_taiwanese||0)>0
+              ? '<span style="color:#58d68d;font-weight:700;font-size:13px;">'+(m.initial_points_taiwanese)+' ✅</span>'
+              : '<input type="number" id="init-tw-'+m.id+'" placeholder="Taiwanese pts" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+\'\',\'taiwanese\',' +(m.initial_points_taiwanese||0)+')">Save</button>'
+            }
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Trad: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span> · Taiw: <span style="color:#58d68d;font-weight:600;">${m.initial_points_taiwanese||0}</span></div>
         </div>
         <div class="member-actions" style="margin-top:6px;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
@@ -1095,15 +1105,21 @@ async function loadOverviewMatrix(){
   }
 }
 
-async function saveInitialPoints(memId, current){
-  if(current>0){alert('Initial points already set and cannot be changed.');return;}
-  var inp=document.getElementById('init-'+memId);
+async function saveInitialPoints(memId, category, current){
+  if(current>0){alert('Initial points for this category already set and cannot be changed.');return;}
+  var inputId = category==='taiwanese' ? 'init-tw-'+memId : 'init-'+memId;
+  var inp=document.getElementById(inputId);
+  if(!inp){alert('Input not found.');return;}
   var pts=parseInt(inp.value);
   if(isNaN(pts)||pts<0){alert('Enter valid points.');return;}
-  if(!confirm('Set initial points to '+pts+' for this member? This cannot be changed later.'))return;
+  var catLabel=category==='taiwanese'?'Taiwanese':'Traditional';
+  if(!confirm('Set '+catLabel+' initial points to '+pts+' for this member? This cannot be changed later.'))return;
   try{
-    await sbPatch('mj_members?id=eq.'+memId,{initial_points:pts});
-    toast('Initial points saved!');
+    var updateData={};
+    if(category==='taiwanese'){updateData.initial_points_taiwanese=pts;}
+    else{updateData.initial_points=pts;}
+    await sbPatch('mj_members?id=eq.'+memId,updateData);
+    toast(catLabel+' initial points saved!');
     loadApprovedMembers();
   }catch(e){alert('Error: '+e.message);}
 }
@@ -1115,38 +1131,66 @@ async function updateCategory(memId, category){
   }catch(e){alert('Error: '+e.message);}
 }
 
+var currentLbCat='traditional';
+
+function switchLbCat(cat){
+  currentLbCat=cat;
+  document.getElementById('lb-tab-trad').classList.toggle('active',cat==='traditional');
+  document.getElementById('lb-tab-taiw').classList.toggle('active',cat==='taiwanese');
+  loadLeaderboardAdmin();
+}
+
 async function loadLeaderboardAdmin(){
   document.getElementById('lb-loading-admin').style.display='block';
   document.getElementById('lb-content-admin').innerHTML='';
   try{
+    var isTaiwanese=(currentLbCat==='taiwanese');
+    var catFilter=isTaiwanese
+      ?'playing_category=eq.taiwanese'
+      :'playing_category=in.(beginner,intermediate,advanced,traditional)';
+
     var rooms=await sb('mj_score_rooms?club_id=eq.'+club.id+'&status=eq.confirmed&select=id');
-    var members=await sb('mj_members?club_id=eq.'+club.id+'&status=eq.approved&select=player_id,initial_points');
+    var members=await sb('mj_members?club_id=eq.'+club.id+'&status=eq.approved&select=player_id,initial_points,initial_points_taiwanese');
     var stats={};
+
     if(rooms.length){
       var roomIds=rooms.map(function(r){return r.id;});
-      var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points');
+      var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&'+catFilter+'&select=player_id,rank_points');
       entries.forEach(function(e){
         if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0};}
         stats[e.player_id].rankPoints+=(e.rank_points||0);
       });
     }
+
     members.forEach(function(m){
-      if(m.initial_points&&m.initial_points>0){
+      var pts=isTaiwanese?(m.initial_points_taiwanese||0):(m.initial_points||0);
+      if(pts>0){
         if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0};}
-        stats[m.player_id].rankPoints+=(m.initial_points||0);
+        stats[m.player_id].rankPoints+=pts;
       }
     });
+
     if(!Object.keys(stats).length){
+      document.getElementById('lb-loading-admin').style.display='none';
+      document.getElementById('lb-content-admin').innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>No data yet for this category.</p></div>';
+      return;
+    }
+
+    var pids=[...new Set(Object.keys(stats))];
+    var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name');
+    var pMap={};players.forEach(function(p){pMap[p.id]=p;});
+
+    var allPlayers=Object.keys(stats).map(function(pid){
+      return {pid:pid,name:pMap[pid]?pMap[pid].name:'Unknown',rankPoints:stats[pid].rankPoints};
+    }).filter(function(p){return p.rankPoints>0;})
+      .sort(function(a,b){return b.rankPoints-a.rankPoints;});
+
+    if(!allPlayers.length){
       document.getElementById('lb-loading-admin').style.display='none';
       document.getElementById('lb-content-admin').innerHTML='<div class="empty-state"><div class="empty-icon">🏆</div><p>No data yet.</p></div>';
       return;
     }
-    var pids=[...new Set(Object.keys(stats))];
-    var players=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name');
-    var pMap={};players.forEach(function(p){pMap[p.id]=p;});
-    var allPlayers=Object.keys(stats).map(function(pid){
-      return {pid:pid,name:pMap[pid]?pMap[pid].name:'Unknown',rankPoints:stats[pid].rankPoints};
-    }).sort(function(a,b){return b.rankPoints-a.rankPoints;});
+
     var top3=allPlayers.slice(0,3);
     var rest=allPlayers.slice(3);
     var podiumOrder=[1,0,2];
@@ -1170,6 +1214,7 @@ async function loadLeaderboardAdmin(){
         +'</div>';
     });
     podiumHtml+='</div>';
+
     var restHtml=rest.map(function(p,i){
       return '<div class="lb-rank-card">'
         +'<div class="lb-rank-num">'+(i+4)+'</div>'
@@ -1177,8 +1222,14 @@ async function loadLeaderboardAdmin(){
         +'<div><div class="lb-rank-pts">'+p.rankPoints.toLocaleString()+'</div><div class="lb-rank-pts-label">pts</div></div>'
         +'</div>';
     }).join('');
+
     document.getElementById('lb-loading-admin').style.display='none';
-    document.getElementById('lb-content-admin').innerHTML=podiumHtml+(rest.length?'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin:16px 0 10px;">Other Players</div>'+restHtml:'');
+    document.getElementById('lb-content-admin').innerHTML=
+      '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:16px;">'
+      +(isTaiwanese?'🏆 Taiwanese Leaderboard':'🀄 Traditional Leaderboard (Beginner · Intermediate · Advanced)')
+      +'</div>'
+      +podiumHtml
+      +(rest.length?'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin:16px 0 10px;">Other Players</div>'+restHtml:'');
   }catch(e){
     document.getElementById('lb-loading-admin').style.display='none';
     document.getElementById('lb-content-admin').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
