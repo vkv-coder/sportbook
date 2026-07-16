@@ -102,9 +102,6 @@
 <script>
 const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-const TELEGRAM_BOT = '8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg';
-const TELEGRAM_CHAT = '8507770594';
-
 async function sb(path, method, body) {
   method = method || 'GET';
   var res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
@@ -161,13 +158,11 @@ async function registerClub() {
     });
 
     // Telegram alert to site admin
-    await fetch('https://api.telegram.org/bot' + TELEGRAM_BOT + '/sendMessage', {
+    await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT,
-        text: '🀄 New Mahjong Club Registration\n\nClub: ' + name + '\nOwner: ' + owner + '\nCity: ' + city + '\nTables: ' + tables + '\nGender: ' + gender + '\nEmail: ' + email + '\nWhatsApp: ' + whatsapp + '\n\nApprove from Admin Panel: sportbook.in/admin',
-        parse_mode: 'HTML'
+        msg: '🀄 New Mahjong Club Registration\n\nClub: ' + name + '\nOwner: ' + owner + '\nCity: ' + city + '\nTables: ' + tables + '\nGender: ' + gender + '\nEmail: ' + email + '\nWhatsApp: ' + whatsapp + '\n\nApprove from Admin Panel: sportbook.in/admin'
       })
     });
 

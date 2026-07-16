@@ -528,10 +528,10 @@ async function notifyAdmin(member) {
       + '👤 Gender: ' + member.gender + '\n'
       + '💬 WhatsApp: ' + (member.whatsapp || member.mobile) + '\n\n'
       + 'Please approve from Admin Panel: sportbook.in/admin';
-    await fetch('https://api.telegram.org/bot8755990830:AAF4SBuKaGc4FXfjGqNdqVTOFCwk3vj8LYg/sendMessage', {
+    await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: '8507770594', text: msg, parse_mode: 'HTML' })
+      body: JSON.stringify({ msg: msg })
     });
   } catch(e) {}
 }
