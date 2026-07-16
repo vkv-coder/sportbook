@@ -15,25 +15,24 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .header-title{font-family:'Noto Serif Display',serif;font-size:18px;color:var(--gold);}
 .header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
 .main{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
-.club-selector{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;}
+.club-selector{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;}
 .club-selector label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
 .club-selector select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;}
 .club-selector select:focus{border-color:var(--gold);}
 select option{background:var(--surface);}
+.cat-tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden;}
+.cat-tab{flex:1;padding:11px 8px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;text-align:center;}
+.cat-tab.active{background:var(--gold);color:#0f0e17;}
 .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
 .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
 .empty-state .empty-icon{font-size:40px;margin-bottom:12px;}
 .empty-state p{font-size:13px;line-height:1.6;}
-
-/* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px;}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
 .stat-number{font-size:22px;font-weight:700;color:var(--gold);}
 .stat-label{font-size:10px;color:var(--muted);margin-top:2px;}
-
-/* TOP 3 PODIUM */
 .podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:28px;padding:0 8px;}
 .podium-item{flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;}
 .podium-crown{font-size:28px;margin-bottom:4px;}
@@ -43,24 +42,22 @@ select option{background:var(--surface);}
 .podium-avatar.bronze{background:linear-gradient(135deg,#e67e22,#d35400);border-color:#e67e22;color:#fff;}
 .podium-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.3;}
 .podium-points{font-size:13px;font-weight:700;color:var(--gold);}
-.podium-games{font-size:10px;color:var(--muted);}
 .podium-base{border-radius:8px 8px 0 0;width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif Display',serif;font-size:20px;font-weight:700;}
 .podium-base.gold{background:linear-gradient(135deg,#f1c40f33,#e67e2222);border:1px solid #f1c40f44;height:64px;color:#f1c40f;}
 .podium-base.silver{background:linear-gradient(135deg,#bdc3c733,#95a5a622);border:1px solid #bdc3c744;height:48px;color:#bdc3c7;}
 .podium-base.bronze{background:linear-gradient(135deg,#e67e2233,#d3540022);border:1px solid #e67e2244;height:36px;color:#e67e22;}
-
-/* RANK CARDS (4th onwards) */
-.rank-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;transition:all 0.2s;}
+.rank-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px;}
 .rank-card.me{border-color:var(--gold);background:rgba(201,168,76,0.08);}
 .rank-num{font-size:18px;font-weight:700;color:var(--muted);min-width:28px;text-align:center;}
 .rank-info{flex:1;}
 .rank-name{font-size:14px;font-weight:600;color:var(--text);}
-.rank-sub{font-size:11px;color:var(--muted);margin-top:2px;}
 .rank-points{font-size:16px;font-weight:700;color:var(--gold);text-align:right;}
 .rank-pts-label{font-size:10px;color:var(--muted);text-align:right;}
 .you-badge{background:rgba(201,168,76,0.2);color:var(--gold);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;}
-
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;}
+.cat-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;margin-bottom:16px;}
+.cat-badge.trad{background:#1a2a3a;color:#5dade2;}
+.cat-badge.taiw{background:#1a3a1a;color:#58d68d;}
 </style>
 </head>
 <body>
@@ -81,9 +78,16 @@ select option{background:var(--surface);}
     </select>
   </div>
 
+  <!-- CATEGORY TABS -->
+  <div class="cat-tabs">
+    <button class="cat-tab active" onclick="switchCat('traditional',this)">🀄 Traditional</button>
+    <button class="cat-tab" onclick="switchCat('taiwanese',this)">🏆 Taiwanese</button>
+  </div>
+
   <div id="lb-loading" style="display:none;" class="loading"><div class="spinner"></div>Loading leaderboard...</div>
 
   <div id="lb-content" style="display:none;">
+    <div id="cat-badge-row"></div>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-number" id="stat-players">-</div><div class="stat-label">Players</div></div>
       <div class="stat-card"><div class="stat-number" id="stat-top">-</div><div class="stat-label">Top Points</div></div>
@@ -102,7 +106,7 @@ select option{background:var(--surface);}
 <script>
 var SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-var player=null,myClubs=[];
+var player=null,myClubs=[],currentCat='traditional';
 
 window.addEventListener('DOMContentLoaded',async function(){
   var saved=localStorage.getItem('sp_member');
@@ -122,9 +126,16 @@ async function sb(path){
   return res.json();
 }
 
+function switchCat(cat,btn){
+  currentCat=cat;
+  document.querySelectorAll('.cat-tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  var clubId=document.getElementById('club-select').value;
+  if(clubId) loadLeaderboard();
+}
+
 async function loadClubs(){
-  var saved=localStorage.getItem('sp_member');
-  if(saved && player.id){
+  if(player.id){
     try{
       var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
       var ids=mems.map(function(m){return m.club_id;});
@@ -149,76 +160,88 @@ async function loadLeaderboard(){
   document.getElementById('lb-empty').style.display='none';
 
   try{
+    // Determine which playing_categories count for this tab
+    var isTaiwanese=(currentCat==='taiwanese');
+    var catFilter=isTaiwanese
+      ?'playing_category=eq.taiwanese'
+      :'playing_category=in.(beginner,intermediate,advanced,traditional)';
+
+    // Get all confirmed rooms for this club
     var rooms=await sb('mj_score_rooms?club_id=eq.'+clubId+'&status=eq.confirmed&select=id');
-    if(!rooms.length){
+    var stats={};
+
+    if(rooms.length){
+      var roomIds=rooms.map(function(r){return r.id;});
+      var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&'+catFilter+'&select=player_id,rank_points');
+      entries.forEach(function(e){
+        if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
+        stats[e.player_id].rankPoints+=(e.rank_points||0);
+        stats[e.player_id].games+=1;
+      });
+    }
+
+    // Add initial points (separate column per category)
+    var members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&select=player_id,initial_points,initial_points_taiwanese');
+    members.forEach(function(m){
+      var pts=isTaiwanese?(m.initial_points_taiwanese||0):(m.initial_points||0);
+      if(pts>0){
+        if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0};}
+        stats[m.player_id].rankPoints+=pts;
+      }
+    });
+
+    if(!Object.keys(stats).length){
       document.getElementById('lb-loading').style.display='none';
       document.getElementById('lb-empty').style.display='block';
       return;
     }
-    var roomIds=rooms.map(function(r){return r.id;});
-    var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points');
-    var pids=[...new Set(entries.map(function(e){return e.player_id;}))];
-    var players=pids.length?await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=id,name'):[];
+
+    // Fetch names
+    var allPids=Object.keys(stats);
+    var players=await sb('sp_members?id=in.('+allPids.join(',')+')'+'&select=id,name');
     var pMap={};players.forEach(function(p){pMap[p.id]=p;});
-    var stats={};
-    entries.forEach(function(e){
-      if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
-      stats[e.player_id].rankPoints+=(e.rank_points||0);
-      stats[e.player_id].games+=1;
-    });
-    // Add initial points from mj_members
-    try{
-      var members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&select=player_id,initial_points');
-      members.forEach(function(m){
-        if(m.initial_points && m.initial_points>0){
-          if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0};}
-          stats[m.player_id].rankPoints+=(m.initial_points||0);
-        }
-      });
-      // Fetch names for players who only have initial points and no game entries yet
-      var missingPids=Object.keys(stats).filter(function(pid){return !pMap[pid];});
-      if(missingPids.length){
-        var morePlayers=await sb('sp_members?id=in.('+missingPids.join(',')+')'+'&select=id,name');
-        morePlayers.forEach(function(p){pMap[p.id]=p;});
-      }
-    }catch(e){}
-    var allPlayers=Object.keys(stats).map(function(pid){
+
+    var allPlayers=allPids.map(function(pid){
       return {
         pid:pid,
         name:pMap[pid]?pMap[pid].name:'Unknown',
         rankPoints:stats[pid].rankPoints,
         games:stats[pid].games,
-        isMe:pid===player.id
+        isMe:pid===(player?player.id:'')
       };
-    }).sort(function(a,b){return b.rankPoints-a.rankPoints;});
-    var topPoints=allPlayers.length?allPlayers[0].rankPoints:0;
+    }).filter(function(p){return p.rankPoints>0;})
+      .sort(function(a,b){return b.rankPoints-a.rankPoints;});
 
+    if(!allPlayers.length){
+      document.getElementById('lb-loading').style.display='none';
+      document.getElementById('lb-empty').style.display='block';
+      return;
+    }
+
+    var topPoints=allPlayers[0].rankPoints;
     document.getElementById('stat-players').textContent=allPlayers.length;
     document.getElementById('stat-top').textContent=topPoints;
 
-    // Render podium (top 3)
+    // Category badge
+    document.getElementById('cat-badge-row').innerHTML=isTaiwanese
+      ?'<div class="cat-badge taiw">🏆 Taiwanese Leaderboard</div>'
+      :'<div class="cat-badge trad">🀄 Traditional Leaderboard (Beginner · Intermediate · Advanced)</div>';
+
+    // Podium top 3
     var top3=allPlayers.slice(0,3);
     var rest=allPlayers.slice(3);
-    var podiumOrder=[1,0,2]; // 2nd, 1st, 3rd left to right
-    var podiumStyles=[
-      {cls:'silver',crown:'🥈',base:'silver'},
-      {cls:'gold',crown:'👑',base:'gold'},
-      {cls:'bronze',crown:'🥉',base:'bronze'}
+    var podiumOrder=[1,0,2];
+    var posStyles=[
+      {cls:'silver',crown:'🥈',base:'silver',label:'2nd'},
+      {cls:'gold',crown:'👑',base:'gold',label:'1st'},
+      {cls:'bronze',crown:'🥉',base:'bronze',label:'3rd'}
     ];
-
     var podiumHtml='<div class="podium">';
-    podiumOrder.forEach(function(playerIdx, posIdx){
+    podiumOrder.forEach(function(playerIdx,posIdx){
       var p=top3[playerIdx];
-      var posLabels=['2nd','1st','3rd'];
-      var posStyles=[
-        {cls:'silver',crown:'🥈',base:'silver'},
-        {cls:'gold',crown:'👑',base:'gold'},
-        {cls:'bronze',crown:'🥉',base:'bronze'}
-      ];
       var style=posStyles[posIdx];
-      var posLabel=posLabels[posIdx];
       if(!p){
-        podiumHtml+='<div class="podium-item"><div class="podium-base '+style.base+'">'+posLabel+'</div></div>';
+        podiumHtml+='<div class="podium-item"><div class="podium-base '+style.base+'">'+style.label+'</div></div>';
         return;
       }
       var initials=p.name.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
@@ -227,21 +250,19 @@ async function loadLeaderboard(){
         +'<div class="podium-avatar '+style.cls+'">'+initials+'</div>'
         +'<div class="podium-name">'+p.name+(p.isMe?' 👤':'')+'</div>'
         +'<div class="podium-points">'+p.rankPoints+' pts</div>'
-        +'<div class="podium-base '+style.base+'">'+posLabel+'</div>'
+        +'<div class="podium-base '+style.base+'">'+style.label+'</div>'
         +'</div>';
     });
     podiumHtml+='</div>';
     document.getElementById('podium-section').innerHTML=podiumHtml;
 
-    // Render rest (4th onwards)
+    // Rest (4th onwards)
     if(rest.length){
       document.getElementById('rest-label').style.display='block';
       document.getElementById('rest-section').innerHTML=rest.map(function(p,i){
         return '<div class="rank-card'+(p.isMe?' me':'')+'">'
           +'<div class="rank-num">'+(i+4)+'</div>'
-          +'<div class="rank-info">'
-          +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
-          +'</div>'
+          +'<div class="rank-info"><div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div></div>'
           +'<div><div class="rank-points">'+p.rankPoints+'</div><div class="rank-pts-label">pts</div></div>'
           +'</div>';
       }).join('');
