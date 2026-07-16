@@ -562,7 +562,7 @@ async function loadApprovedMembers(){
             <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Taiw Pts:</label>
             ${(m.initial_points_taiwanese||0)>0
               ? '<span style="color:#58d68d;font-weight:700;font-size:13px;">'+(m.initial_points_taiwanese)+' ✅</span>'
-              : '<input type="number" id="init-tw-'+m.id+'" placeholder="Taiwanese pts" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+\'\',\'taiwanese\',' +(m.initial_points_taiwanese||0)+')">Save</button>'
+              : '<input type="number" id="init-tw-'+m.id+'" placeholder="Taiwanese pts" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+'\',\'taiwanese\','+(m.initial_points_taiwanese||0)+')">Save</button>'
             }
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:4px;">Trad: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span> · Taiw: <span style="color:#58d68d;font-weight:600;">${m.initial_points_taiwanese||0}</span></div>
