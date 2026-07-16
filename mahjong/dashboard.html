@@ -305,6 +305,25 @@ function openBookModal(slotId,tableNo,currentCount,timeLabel){
 }
 function closeModal(){document.getElementById('book-modal').classList.remove('open');pendingBooking=null;}
 
+// Recomputes player1_id..player4_id and status on mj_table_sessions from the
+// current confirmed mj_bookings rows, so the admin Tables view never goes stale
+// after a cancellation, waitlist fill, or consolidation shift. Returns the seat count.
+async function syncTableSession(clubId,slotId,tableNo,date){
+  const confirmed=await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=player_id&order=created_at.asc`);
+  const pids=confirmed.map(b=>b.player_id);
+  const sessionData={
+    player1_id:pids[0]||null,player2_id:pids[1]||null,player3_id:pids[2]||null,player4_id:pids[3]||null,
+    status:pids.length>=4?'full':pids.length>0?'filling':'open'
+  };
+  const existing=await sb(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&select=id`);
+  if(existing.length>0){
+    await sbPatch(`mj_table_sessions?id=eq.${existing[0].id}`,sessionData);
+  }else{
+    await sb('mj_table_sessions','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,booking_date:date,...sessionData});
+  }
+  return pids.length;
+}
+
 async function confirmBooking(){
   if(!pendingBooking)return;
   const btn=document.getElementById('book-confirm-btn');
@@ -321,15 +340,7 @@ async function confirmBooking(){
       btn.disabled=false;btn.textContent='Confirm Booking';return;
     }
     await sb('mj_bookings','POST',{club_id:currentClub.id,slot_id:pendingBooking.slotId,table_number:pendingBooking.tableNo,player_id:currentPlayer.id,booking_date:selectedDate,status:'confirmed'});
-    const newCount=fresh.length+1;
-    const sessions=await sb(`mj_table_sessions?club_id=eq.${currentClub.id}&slot_id=eq.${pendingBooking.slotId}&table_number=eq.${pendingBooking.tableNo}&booking_date=eq.${selectedDate}&select=*`);
-    const allPlayerIds=[...fresh.map(b=>b.player_id),currentPlayer.id];
-    const sessionData={player1_id:allPlayerIds[0]||null,player2_id:allPlayerIds[1]||null,player3_id:allPlayerIds[2]||null,player4_id:allPlayerIds[3]||null,status:newCount>=4?'full':'filling'};
-    if(sessions.length>0){
-      await sbPatch(`mj_table_sessions?id=eq.${sessions[0].id}`,sessionData);
-    }else{
-      await sb('mj_table_sessions','POST',{club_id:currentClub.id,slot_id:pendingBooking.slotId,table_number:pendingBooking.tableNo,booking_date:selectedDate,...sessionData});
-    }
+    const newCount=await syncTableSession(currentClub.id,pendingBooking.slotId,pendingBooking.tableNo,selectedDate);
     if(newCount>=4){
       const slotInfo=allSlots.find(s=>s.id===pendingBooking.slotId);
       await tg(`🀄 <b>TABLE FULL — Action Required</b>\n\nClub: <b>${currentClub.club_name}</b>\nTable: <b>${pendingBooking.tableNo}</b>\nDate: <b>${selectedDate}</b>\nTime: <b>${slotInfo?slotInfo.start_time+'–'+slotInfo.end_time:''}</b>\n\nAll 4 seats booked. Please notify members from Club Admin Dashboard.`);
@@ -416,15 +427,14 @@ async function cancelBooking(bookingId){
 
     await sbPatch(`mj_bookings?id=eq.${bookingId}`,{status:'cancelled'});
 
-    const remaining=await sb(`mj_bookings?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}&status=eq.confirmed&select=id`);
-    await sbPatch(`mj_table_sessions?club_id=eq.${club_id}&slot_id=eq.${slot_id}&table_number=eq.${table_number}&booking_date=eq.${booking_date}`,{status:remaining.length>=4?'full':remaining.length>0?'filling':'open'});
+    const remainingCount=await syncTableSession(club_id,slot_id,table_number,booking_date);
 
     // Step 1: try waitlist first (same category only)
     const filled=await processWaitlist(club_id,slot_id,table_number,booking_date,playing_category);
 
     // Step 2: if waitlist had no match, try consolidation shift from another partial table (same category)
     // Only makes sense if the vacated table still has other players seated — otherwise there's nothing to consolidate into.
-    if(!filled&&remaining.length>0){
+    if(!filled&&remainingCount>0){
       await tryConsolidationShift(club_id,slot_id,table_number,booking_date,playing_category);
     }
 
@@ -448,7 +458,7 @@ async function processWaitlist(clubId,slotId,tableNo,date,category){
     await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed',playing_category:category});
     await sbPatch(`mj_members?player_id=eq.${next.player_id}&club_id=eq.${clubId}`,{slot_balance:bal-1});
     await sbPatch(`mj_waitlist?id=eq.${next.id}`,{status:'assigned'});
-    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}`,{status:'full'});
+    await syncTableSession(clubId,slotId,tableNo,date);
     const pinfo=await sb(`sp_members?id=eq.${next.player_id}&select=name,mobile,whatsapp`);
     const p=pinfo[0]||{};
     await tg(`🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub ID: <b>${clubId}</b>\nPlayer: <b>${p.name||'Member'}</b>\nMobile: ${p.mobile||'—'}\nTable: ${tableNo}\nDate: ${date}\n\n⚡ Please inform the player their seat is confirmed!`);
@@ -479,11 +489,8 @@ async function tryConsolidationShift(clubId,slotId,vacatedTableNo,date,category)
 
     await sbPatch(`mj_bookings?id=eq.${earliestPlayerBooking.id}`,{table_number:vacatedTableNo});
 
-    const vacatedCount=(await sb(`mj_bookings?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${vacatedTableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`)).length;
-    const donorCount=donorPlayers.length-1;
-
-    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${vacatedTableNo}&booking_date=eq.${date}`,{status:vacatedCount>=4?'full':'filling'});
-    await sbPatch(`mj_table_sessions?club_id=eq.${clubId}&slot_id=eq.${slotId}&table_number=eq.${donorTable}&booking_date=eq.${date}`,{status:donorCount>=4?'full':donorCount>0?'filling':'open'});
+    await syncTableSession(clubId,slotId,vacatedTableNo,date);
+    await syncTableSession(clubId,slotId,donorTable,date);
   }catch(e){/* silent — worst case table stays partial, caught later by 3-hour alert check */}
 }
 

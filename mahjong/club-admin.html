@@ -370,6 +370,10 @@ select option{background:var(--surface);}
           <label>Penalty-free cancellation window (hours before slot)</label>
           <input type="number" id="cancel-hours" placeholder="e.g. 24" min="0" max="168"/>
         </div>
+        <div class="form-group">
+          <label>Member Code Prefix</label>
+          <input type="text" id="code-prefix" placeholder="e.g. GM" maxlength="10" style="text-transform:uppercase;"/>
+        </div>
         <div id="settings-msg"></div>
         <button class="btn btn-gold btn-full" onclick="saveSettings()">Save Settings</button>
       </div>
@@ -392,7 +396,9 @@ async function sb(path,method='GET',body=null){
   return method==='DELETE'?null:res.json();
 }
 async function sbPatch(path,body){
-  return fetch(`${SB_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed.');}
+  return res;
 }
 async function tg(msg){
   try{await fetch(`https://api.telegram.org/bot${TG_BOT}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})});}catch(e){}
@@ -469,6 +475,7 @@ async function loadDashboard(){
     +'</div>';
   document.getElementById('cancel-policy').value=club.cancellation_policy||'';
   document.getElementById('cancel-hours').value=club.cancellation_hours||24;
+  document.getElementById('code-prefix').value=club.code_prefix||'GM';
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('session-date-filter').value=today;
   document.getElementById('overview-date').value=today;
@@ -618,9 +625,24 @@ async function updateMember(memId,status,name){
         var nums=existing.map(function(r){return parseInt((r.member_code||'').replace(prefix,''),10);}).filter(function(n){return !isNaN(n);});
         if(nums.length) nextNum=Math.max.apply(null,nums)+1;
       }
-      updateData.member_code=prefix+String(nextNum).padStart(3,'0');
+      // Retry with the next number if another admin claimed this code first (rare race condition).
+      // Only retry on an actual duplicate-key conflict — any other error should fail immediately.
+      var attempts=0;
+      while(true){
+        updateData.member_code=prefix+String(nextNum).padStart(3,'0');
+        try{
+          await sbPatch('mj_members?id=eq.'+memId,updateData);
+          break;
+        }catch(codeErr){
+          var isDupe=/duplicate|unique|already exists/i.test(codeErr.message||'');
+          attempts++;
+          if(!isDupe||attempts>=5) throw codeErr;
+          nextNum++;
+        }
+      }
+    } else {
+      await sbPatch('mj_members?id=eq.'+memId,updateData);
     }
-    await sbPatch('mj_members?id=eq.'+memId,updateData);
     if(status==='approved'&&updateData.member_code){
       toast('Approved! Member code assigned: '+updateData.member_code);
     }
@@ -821,10 +843,11 @@ async function deleteSlot(slotId){
 async function saveSettings(){
   const policy=document.getElementById('cancel-policy').value.trim();
   const hours=parseInt(document.getElementById('cancel-hours').value)||24;
+  const prefix=(document.getElementById('code-prefix').value.trim()||'GM').toUpperCase();
   showMsg('settings-msg','Saving...','info');
   try{
-    await sbPatch(`mj_clubs?id=eq.${club.id}`,{cancellation_policy:policy,cancellation_hours:hours});
-    club.cancellation_policy=policy;club.cancellation_hours=hours;
+    await sbPatch(`mj_clubs?id=eq.${club.id}`,{cancellation_policy:policy,cancellation_hours:hours,code_prefix:prefix});
+    club.cancellation_policy=policy;club.cancellation_hours=hours;club.code_prefix=prefix;
     localStorage.setItem('mj_admin_club',JSON.stringify(club));
     showMsg('settings-msg','✅ Settings saved!','success');
   }catch(e){showMsg('settings-msg','Error: '+e.message,'error');}
