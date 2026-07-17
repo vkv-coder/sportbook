@@ -747,7 +747,7 @@ async function loadGroupRequests(){
         <div class="member-meta">📅 Date: <span>${r.booking_date}</span></div>
         <div class="member-meta">🕐 Slot: <span>${slotLabel}</span></div>
         <div class="member-meta">👤 Requested by: <span>${requester?.name||'—'} (${requester?.mobile||''})</span></div>
-        <div class="member-meta">👥 Friends: <span>${r.mobile2}, ${r.mobile3}, ${r.mobile4}</span></div>
+        <div class="member-meta">👥 Friends (codes): <span>${r.mobile2}, ${r.mobile3}, ${r.mobile4}</span></div>
         <div class="member-actions">
           <select id="grp-table-${r.id}" style="padding:7px 10px;font-size:12px;flex:1;">${tableOptions}</select>
           <button class="btn btn-green btn-sm" onclick="approveGroupRequest('${r.id}','${r.requested_by}','${r.slot_id}','${r.booking_date}','${r.mobile2}','${r.mobile3}','${r.mobile4}')">✓ Approve</button>
@@ -758,18 +758,14 @@ async function loadGroupRequests(){
   }catch(e){document.getElementById('group-loading').style.display='none';}
 }
 
-async function approveGroupRequest(reqId,requestedBy,slotId,date,m2,m3,m4){
+async function approveGroupRequest(reqId,requestedBy,slotId,date,c2,c3,c4){
   const tableNo=parseInt(document.getElementById(`grp-table-${reqId}`).value);
   if(!tableNo){alert('Please select a table number.');return;}
   try{
-    const[p1info,p2info,p3info,p4info]=await Promise.all([
-      sb(`sp_members?id=eq.${requestedBy}&select=id`),
-      sb(`sp_members?mobile=eq.${m2}&select=id`),
-      sb(`sp_members?mobile=eq.${m3}&select=id`),
-      sb(`sp_members?mobile=eq.${m4}&select=id`)
-    ]);
-    const pids=[p1info[0]?.id,p2info[0]?.id,p3info[0]?.id,p4info[0]?.id].filter(Boolean);
-    if(pids.length<4){alert('Could not find all 4 players. Please check mobile numbers.');return;}
+    const codeMembers=await sb(`mj_members_view?club_id=eq.${club.id}&status=eq.approved&member_code=in.(${[c2,c3,c4].join(',')})&select=member_code,system_id`);
+    const codeMap={};codeMembers.forEach(m=>{codeMap[m.member_code]=m.system_id;});
+    const pids=[requestedBy,codeMap[c2],codeMap[c3],codeMap[c4]].filter(Boolean);
+    if(pids.length<4){alert('Could not find all 4 players. Please check member codes.');return;}
     const existing=await sb(`mj_bookings?club_id=eq.${club.id}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
     if(existing.length>0){alert(`Table ${tableNo} already has bookings for this slot. Please choose another table.`);return;}
     for(const pid of pids){

@@ -157,9 +157,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
       <div class="form-group"><label>Select Club</label><select id="grp-club"></select></div>
       <div class="form-group"><label>Select Date</label><input type="date" id="grp-date"/></div>
       <div class="form-group"><label>Select Time Slot</label><select id="grp-slot"></select></div>
-      <div class="form-group"><label>Friend 2 Mobile</label><input type="tel" id="grp-m2" placeholder="10-digit mobile" maxlength="10"/></div>
-      <div class="form-group"><label>Friend 3 Mobile</label><input type="tel" id="grp-m3" placeholder="10-digit mobile" maxlength="10"/></div>
-      <div class="form-group"><label>Friend 4 Mobile</label><input type="tel" id="grp-m4" placeholder="10-digit mobile" maxlength="10"/></div>
+      <div class="form-group"><label>Friend 2 Member Code</label><input type="text" id="grp-m2" placeholder="e.g. GM002"/></div>
+      <div class="form-group"><label>Friend 3 Member Code</label><input type="text" id="grp-m3" placeholder="e.g. GM003"/></div>
+      <div class="form-group"><label>Friend 4 Member Code</label><input type="text" id="grp-m4" placeholder="e.g. GM004"/></div>
       <div id="grp-msg"></div>
       <button class="btn btn-gold btn-full-w" onclick="sendGroupRequest()">Send Group Request →</button>
     </div>
@@ -572,25 +572,21 @@ async function sendGroupRequest(){
   var clubId=document.getElementById('grp-club').value;
   var date=document.getElementById('grp-date').value;
   var slotId=document.getElementById('grp-slot').value;
-  var m2=document.getElementById('grp-m2').value.trim();
-  var m3=document.getElementById('grp-m3').value.trim();
-  var m4=document.getElementById('grp-m4').value.trim();
-  if(!clubId||!date||!slotId||!m2||!m3||!m4){showMsg('grp-msg','Please fill all fields.','error');return;}
-  if(m2.length!==10||m3.length!==10||m4.length!==10){showMsg('grp-msg','All mobile numbers must be 10 digits.','error');return;}
-  if([m2,m3,m4].includes(player.mobile)){showMsg('grp-msg','Do not enter your own mobile number.','error');return;}
+  var c2=document.getElementById('grp-m2').value.trim().toUpperCase();
+  var c3=document.getElementById('grp-m3').value.trim().toUpperCase();
+  var c4=document.getElementById('grp-m4').value.trim().toUpperCase();
+  if(!clubId||!date||!slotId||!c2||!c3||!c4){showMsg('grp-msg','Please fill all fields.','error');return;}
   showMsg('grp-msg','Sending request...','info');
   try{
-    var p2=await sb('sp_members?mobile=eq.'+m2+'&select=id,name');
-    var p3=await sb('sp_members?mobile=eq.'+m3+'&select=id,name');
-    var p4=await sb('sp_members?mobile=eq.'+m4+'&select=id,name');
-    if(!p2.length||!p3.length||!p4.length){showMsg('grp-msg','One or more mobile numbers not found in SportBook.','error');return;}
-    var ids=[p2[0].id,p3[0].id,p4[0].id];
-    var mems=await sb('mj_members?player_id=in.('+ids.join(',')+')'+'&club_id=eq.'+clubId+'&status=eq.approved&select=player_id');
-    if(mems.length<3){showMsg('grp-msg','One or more friends are not approved members of this club.','error');return;}
-    await sb('mj_group_requests','POST',{club_id:clubId,requested_by:player.id,slot_id:slotId,booking_date:date,mobile2:m2,mobile3:m3,mobile4:m4,status:'pending'});
+    var mems=await sb('mj_members_view?club_id=eq.'+clubId+'&status=eq.approved&member_code=in.('+[c2,c3,c4].join(',')+')&select=member_code,system_id,name');
+    if(mems.length<3){showMsg('grp-msg','One or more member codes are not valid approved members of this club.','error');return;}
+    var codeMap={};mems.forEach(function(m){codeMap[m.member_code]=m;});
+    if(!codeMap[c2]||!codeMap[c3]||!codeMap[c4]){showMsg('grp-msg','One or more member codes are not valid approved members of this club.','error');return;}
+    if([codeMap[c2].system_id,codeMap[c3].system_id,codeMap[c4].system_id].includes(player.id)){showMsg('grp-msg','Do not enter your own member code.','error');return;}
+    await sb('mj_group_requests','POST',{club_id:clubId,requested_by:player.id,slot_id:slotId,booking_date:date,mobile2:c2,mobile3:c3,mobile4:c4,status:'pending'});
     var club=myClubs.find(function(c){return c.id===clubId;});
     var slot=(slotsCache[clubId]||[]).find(function(s){return s.id===slotId;});
-    await tg('🀄 <b>Group Table Request</b>\n\nClub: <b>'+(club?club.club_name:'')+'</b>\nRequested by: <b>'+player.name+'</b> ('+player.mobile+')\nDate: '+date+'\nSlot: '+(slot?slot.start_time+'-'+slot.end_time:'')+'\nFriends: '+m2+', '+m3+', '+m4+'\n\nApprove from Club Dashboard.');
+    await tg('🀄 <b>Group Table Request</b>\n\nClub: <b>'+(club?club.club_name:'')+'</b>\nRequested by: <b>'+player.name+'</b> ('+player.mobile+')\nDate: '+date+'\nSlot: '+(slot?slot.start_time+'-'+slot.end_time:'')+'\nFriends: '+c2+', '+c3+', '+c4+'\n\nApprove from Club Dashboard.');
     showMsg('grp-msg','✅ Group request sent! Organiser will assign you a table.','success');
     document.getElementById('grp-m2').value='';document.getElementById('grp-m3').value='';document.getElementById('grp-m4').value='';
     loadGroupRequests();
