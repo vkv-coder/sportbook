@@ -211,8 +211,16 @@ async function sb(path,method='GET',body=null){
 async function sbPatch(path,body){
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
 }
-async function tg(msg){
-  try{await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msg})});}catch(e){}
+async function tg(msg,clubId){
+  try{
+    var body={msg:msg};
+    var cid=clubId||(currentClub&&currentClub.id);
+    if(cid){
+      var c=await sb('mj_clubs?id=eq.'+cid+'&select=telegram_admin_id');
+      if(c&&c[0]&&c[0].telegram_admin_id)body.chat_id=c[0].telegram_admin_id;
+    }
+    await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  }catch(e){}
 }
 function showMsg(elId,msg,type){document.getElementById(elId).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
 
@@ -340,7 +348,7 @@ async function confirmBooking(){
     const newCount=await syncTableSession(currentClub.id,pendingBooking.slotId,pendingBooking.tableNo,selectedDate);
     if(newCount>=4){
       const slotInfo=allSlots.find(s=>s.id===pendingBooking.slotId);
-      await tg(`🀄 <b>TABLE FULL — Action Required</b>\n\nClub: <b>${currentClub.club_name}</b>\nTable: <b>${pendingBooking.tableNo}</b>\nDate: <b>${selectedDate}</b>\nTime: <b>${slotInfo?slotInfo.start_time+'–'+slotInfo.end_time:''}</b>\n\nAll 4 seats booked. Please notify members from Club Admin Dashboard.`);
+      await tg(`🀄 <b>TABLE FULL — Action Required</b>\n\nClub: <b>${currentClub.club_name}</b>\nTable: <b>${pendingBooking.tableNo}</b>\nDate: <b>${selectedDate}</b>\nTime: <b>${slotInfo?slotInfo.start_time+'–'+slotInfo.end_time:''}</b>\n\nAll 4 seats booked. Please notify members from Club Admin Dashboard.`,currentClub.id);
     }
     document.getElementById('book-modal-msg').innerHTML=`<div class="status-box status-success">✅ Seat booked successfully!${newCount>=4?' Table is now FULL — admin notified.':''}</div>`;
     btn.textContent='Booked!';
@@ -458,7 +466,7 @@ async function processWaitlist(clubId,slotId,tableNo,date,category){
     await syncTableSession(clubId,slotId,tableNo,date);
     const pinfo=await sb(`sp_members?id=eq.${next.player_id}&select=name,mobile,whatsapp`);
     const p=pinfo[0]||{};
-    await tg(`🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub ID: <b>${clubId}</b>\nPlayer: <b>${p.name||'Member'}</b>\nMobile: ${p.mobile||'—'}\nTable: ${tableNo}\nDate: ${date}\n\n⚡ Please inform the player their seat is confirmed!`);
+    await tg(`🀄 <b>Waitlist Seat Confirmed!</b>\n\nClub ID: <b>${clubId}</b>\nPlayer: <b>${p.name||'Member'}</b>\nMobile: ${p.mobile||'—'}\nTable: ${tableNo}\nDate: ${date}\n\n⚡ Please inform the player their seat is confirmed!`,clubId);
     return true;
   }catch(e){return false;}
 }

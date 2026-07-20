@@ -398,8 +398,16 @@ async function sbPatch(path,body){
   if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed.');}
   return res;
 }
-async function tg(msg){
-  try{await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({msg})});}catch(e){}
+async function tg(msg,clubId){
+  try{
+    var body={msg:msg};
+    var cid=clubId||(club&&club.id);
+    if(cid){
+      var c=await sb('mj_clubs?id=eq.'+cid+'&select=telegram_admin_id');
+      if(c&&c[0]&&c[0].telegram_admin_id)body.chat_id=c[0].telegram_admin_id;
+    }
+    await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  }catch(e){}
 }
 function showMsg(id,msg,type){document.getElementById(id).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
 
@@ -776,7 +784,7 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,c2,c3,c4){
     }
     await sb('mj_table_sessions','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,booking_date:date,player1_id:pids[0],player2_id:pids[1],player3_id:pids[2],player4_id:pids[3],status:'full'});
     await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'approved',table_number:tableNo});
-    await tg('🀄 <b>Group Request Approved</b>\n\nClub: <b>'+club.club_name+'</b>\nTable: '+tableNo+'\nDate: '+date+'\n\nAll 4 members booked successfully.');
+    await tg('🀄 <b>Group Request Approved</b>\n\nClub: <b>'+club.club_name+'</b>\nTable: '+tableNo+'\nDate: '+date+'\n\nAll 4 members booked successfully.',club.id);
     const allPlayerInfo=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=name,whatsapp,mobile');
     let waMsg='Group approved! Table '+tableNo+' assigned on '+date+'.';
     waMsg+='\n\nContact members on WhatsApp:';
