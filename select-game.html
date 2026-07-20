@@ -158,7 +158,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
     </div>
 
     <div class="step" id="player-step2">
-      <div class="otp-note" style="margin-bottom:14px;">📧 We've emailed a 6-digit code to your registered email address. Enter it below.</div>
+      <div class="otp-note" id="otp-note-text" style="margin-bottom:14px;">📧 We've emailed a 6-digit code to your registered email address. Enter it below.</div>
       <div class="form-group"><label>Enter Code</label><input type="number" id="p-otp-input" placeholder="6-digit code"/></div>
       <div id="p-otp-msg"></div>
       <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
@@ -397,6 +397,15 @@ async function sb(path, method='GET', body=null) {
 
 function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
 
+// Shows enough of the email for the player to recognise which of their addresses it is, without exposing the whole thing
+function maskEmail(email) {
+  const parts = (email || '').split('@');
+  if (parts.length !== 2) return email || '';
+  const local = parts[0];
+  const masked = local.length <= 2 ? local.charAt(0) + '*' : local.slice(0, 2) + '*'.repeat(Math.max(local.length - 2, 3));
+  return masked + '@' + parts[1];
+}
+
 async function emailOTP(to, otp) {
   await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
     method: 'POST',
@@ -445,6 +454,7 @@ async function sendPlayerOTP(mode) {
       });
 
       await emailOTP(email, currentOTP);
+      document.getElementById('otp-note-text').innerHTML = '📧 We\'ve emailed a 6-digit code to <b>' + maskEmail(email) + '</b>. Enter it below.';
       showStep('player-step2');
 
     } catch(e) { showMsg('p-reg-msg','Error: '+e.message,'error'); }
@@ -467,6 +477,7 @@ async function sendPlayerOTP(mode) {
       });
 
       await emailOTP(players[0].email, currentOTP);
+      document.getElementById('otp-note-text').innerHTML = '📧 We\'ve emailed a 6-digit code to <b>' + maskEmail(players[0].email) + '</b>. Enter it below.';
       showStep('player-step2');
 
     } catch(e) { showMsg('p-login-msg','Error: '+e.message,'error'); }
