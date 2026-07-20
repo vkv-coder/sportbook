@@ -158,12 +158,8 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
     </div>
 
     <div class="step" id="player-step2">
-      <div class="otp-display">
-        <div class="otp-label">Your OTP (demo)</div>
-        <div class="otp-code" id="p-otp-shown">----</div>
-      </div>
-      <div class="otp-note">In production this will be sent via SMS</div>
-      <div class="form-group"><label>Enter OTP</label><input type="number" id="p-otp-input" placeholder="4-digit OTP"/></div>
+      <div class="otp-note" style="margin-bottom:14px;">📧 We've emailed a 6-digit code to your registered email address. Enter it below.</div>
+      <div class="form-group"><label>Enter Code</label><input type="number" id="p-otp-input" placeholder="6-digit code"/></div>
       <div id="p-otp-msg"></div>
       <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
       <button class="link-btn" onclick="goPlayerBack()">← Go Back</button>
@@ -399,7 +395,20 @@ async function sb(path, method='GET', body=null) {
   return res.json();
 }
 
-function generateOTP() { return Math.floor(1000 + Math.random() * 9000).toString(); }
+function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
+
+async function emailOTP(to, otp) {
+  await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'sendEmail',
+      to: to,
+      subject: 'Your SportBook login code',
+      html: '<p>Your SportBook login code is:</p><h2 style="letter-spacing:4px;">' + otp + '</h2><p style="font-size:13px;color:#666;">This code expires in 10 minutes. If you didn\'t request this, you can ignore this email.</p>'
+    })
+  });
+}
 function showMsg(elId, msg, type) {
   document.getElementById(elId).innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
 }
@@ -435,7 +444,7 @@ async function sendPlayerOTP(mode) {
         status: 'pending'
       });
 
-      document.getElementById('p-otp-shown').textContent = currentOTP;
+      await emailOTP(email, currentOTP);
       showStep('player-step2');
 
     } catch(e) { showMsg('p-reg-msg','Error: '+e.message,'error'); }
@@ -447,7 +456,7 @@ async function sendPlayerOTP(mode) {
     showMsg('p-login-msg','Checking...','info');
 
     try {
-      const players = await sb(`sp_members?mobile=eq.${mobile}&select=id`);
+      const players = await sb(`sp_members?mobile=eq.${mobile}&select=id,email`);
       if (!players.length) { showMsg('p-login-msg','Mobile not found. Please register first.','error'); return; }
 
       currentOTP = generateOTP();
@@ -457,7 +466,7 @@ async function sendPlayerOTP(mode) {
         body: JSON.stringify({ otp: currentOTP })
       });
 
-      document.getElementById('p-otp-shown').textContent = currentOTP;
+      await emailOTP(players[0].email, currentOTP);
       showStep('player-step2');
 
     } catch(e) { showMsg('p-login-msg','Error: '+e.message,'error'); }
