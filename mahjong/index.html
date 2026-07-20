@@ -302,7 +302,16 @@ async function loadMyClubs(){
       var bal=membershipsCache[c.id]?membershipsCache[c.id].slot_balance||0:0;
       var gL=c.gender_condition==='male'?'👨 Male Only':c.gender_condition==='female'?'👩 Female Only':'👥 Mixed';
       var bc=c.gender_condition==='male'?'badge-male':c.gender_condition==='female'?'badge-female':'badge-mixed';
-      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+c.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(c.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+c.total_tables+'</span></div><div class="discover-meta">📞 WhatsApp: <span>'+(c.whatsapp_no||'N/A')+'</span></div><div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Member</span><span style="font-size:13px;color:var(--gold);font-weight:700;">🎫 '+bal+' slots left</span></div></div>';
+      var waDigits=(c.whatsapp_no||'').replace(/[^0-9]/g,'');
+      var waLink=waDigits?'https://wa.me/'+waDigits:'';
+      var contactHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);">'
+        +'<div style="font-size:11px;color:#8b89a8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Contact Club Admin</div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+        +(c.email?'<a href="mailto:'+c.email+'" style="font-size:12px;background:#22213a;color:#e8e6f0;padding:6px 12px;border-radius:20px;text-decoration:none;">✉️ Email</a>':'')
+        +(waLink?'<a href="'+waLink+'" target="_blank" style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:6px 12px;border-radius:20px;text-decoration:none;">💬 WhatsApp</a>':'')
+        +(!c.email&&!waLink?'<span style="font-size:12px;color:#8b89a8;">No contact info on file — ask the club to add one.</span>':'')
+        +'</div></div>';
+      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+c.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(c.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+c.total_tables+'</span></div><div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Member</span><span style="font-size:13px;color:var(--gold);font-weight:700;">🎫 '+bal+' slots left</span></div>'+contactHtml+'</div>';
     }).join('');
     renderBalanceBar();
     populateGroupClubSelect();
