@@ -145,23 +145,13 @@ select option{background:var(--surface);}
         <div id="fp-step1">
           <div class="form-group"><label>Registered Club Email</label><input type="email" id="fp-email" placeholder="your@email.com"/></div>
           <div id="fp-msg1"></div>
-          <button class="btn btn-gold btn-full" onclick="sendForgotOTP()">Send OTP →</button>
+          <button class="btn btn-gold btn-full" onclick="sendResetLink(this)">Send Reset Link →</button>
         </div>
-        <div id="fp-step2" style="display:none;">
-          <div style="background:#1a1930;border:2px dashed var(--gold);border-radius:10px;padding:14px;text-align:center;margin-bottom:12px;">
-            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Your OTP (demo)</div>
-            <div id="fp-otp-shown" style="font-size:32px;font-weight:700;color:var(--gold);letter-spacing:8px;">----</div>
-          </div>
-          <div class="form-group"><label>Enter OTP</label><input type="number" id="fp-otp-input" placeholder="4-digit OTP"/></div>
-          <div id="fp-msg2"></div>
-          <button class="btn btn-gold btn-full" onclick="verifyForgotOTP()">Verify OTP →</button>
-        </div>
-        <div id="fp-step3" style="display:none;">
+        <div id="fp-step-done" style="display:none;">
           <div style="background:#1a3a1a;border:1px solid var(--green);border-radius:8px;padding:14px;text-align:center;">
-            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Your Password</div>
-            <div id="fp-password-text" style="font-size:20px;font-weight:700;color:#58d68d;"></div>
+            <div style="font-size:13px;font-weight:600;color:#58d68d;">✅ Check your email</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px;">If that email is registered, a password reset link has been sent. It expires in 30 minutes.</div>
           </div>
-          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;">Please save this password and use it to login.</div>
         </div>
       </div>
 
@@ -411,35 +401,40 @@ async function tg(msg,clubId){
 }
 function showMsg(id,msg,type){document.getElementById(id).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
 
-let fpOTP='';let fpClub=null;
-
 function toggleForgot(){
   const p=document.getElementById('forgot-panel');
   p.style.display=p.style.display==='none'?'block':'none';
 }
 
-async function sendForgotOTP(){
+async function sendResetLink(btn){
   const email=document.getElementById('fp-email').value.trim();
   if(!email){showMsg('fp-msg1','Enter your registered email.','error');return;}
-  showMsg('fp-msg1','Checking...','info');
+  btn.disabled=true;
+  showMsg('fp-msg1','Sending...','info');
   try{
-    const clubs=await sb('mj_clubs?email=eq.'+encodeURIComponent(email)+'&select=id,club_name,admin_password');
-    if(!clubs.length){showMsg('fp-msg1','Email not found. Please check and try again.','error');return;}
-    fpClub=clubs[0];
-    fpOTP=Math.floor(1000+Math.random()*9000).toString();
-    document.getElementById('fp-otp-shown').textContent=fpOTP;
+    const clubs=await sb('mj_clubs?email=eq.'+encodeURIComponent(email)+'&select=id,club_name');
+    if(clubs.length){
+      const clubRow=clubs[0];
+      // Max 3 reset emails per club per hour, to stop this being used to spam someone's inbox.
+      const oneHourAgo=new Date(Date.now()-60*60*1000).toISOString();
+      const recent=await sb('mj_password_resets?club_id=eq.'+clubRow.id+'&created_at=gte.'+oneHourAgo+'&select=id');
+      if(recent.length<3){
+        const token=crypto.randomUUID();
+        const expiresAt=new Date(Date.now()+30*60*1000).toISOString();
+        await sb('mj_password_resets','POST',{club_id:clubRow.id,token:token,expires_at:expiresAt});
+        const resetLink='https://sportbook.in/reset-password.html?token='+token;
+        await fetch('https://telegram-notify.unigoods2026.workers.dev/',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'sendResetEmail',to:email,clubName:clubRow.club_name,resetLink:resetLink})
+        });
+      }
+    }
+    // Same message whether or not the email matched, so this can't be used to
+    // check which emails are registered club accounts.
     document.getElementById('fp-msg1').innerHTML='';
     document.getElementById('fp-step1').style.display='none';
-    document.getElementById('fp-step2').style.display='block';
-  }catch(e){showMsg('fp-msg1','Error: '+e.message,'error');}
-}
-
-function verifyForgotOTP(){
-  const entered=document.getElementById('fp-otp-input').value.trim();
-  if(entered!==fpOTP){showMsg('fp-msg2','Incorrect OTP. Try again.','error');return;}
-  document.getElementById('fp-step2').style.display='none';
-  document.getElementById('fp-password-text').textContent=fpClub.admin_password;
-  document.getElementById('fp-step3').style.display='block';
+    document.getElementById('fp-step-done').style.display='block';
+  }catch(e){showMsg('fp-msg1','Error: '+e.message,'error');btn.disabled=false;}
 }
 
 async function adminLogin(){
