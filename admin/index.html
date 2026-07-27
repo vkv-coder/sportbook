@@ -530,7 +530,10 @@ async function approveMember(btn) {
 // Wrapped so a failure here never blocks the actual approval above.
 async function notifyPlayerApprovedOnTelegram(memberId) {
   try {
-    await fetch(NOTIFY_BOT_URL + '?action=notifyApproved&memberId=' + memberId);
+    // redirect:'manual' stops the browser from auto-following Apps Script's
+    // response redirect, which would otherwise trigger the script a second
+    // time and send the Telegram message twice.
+    await fetch(NOTIFY_BOT_URL + '?action=notifyApproved&memberId=' + memberId, { redirect: 'manual' });
   } catch(e) {}
 }
 
