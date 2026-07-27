@@ -1342,7 +1342,10 @@ async function loadFillAlerts(){
 async function sendFillAlertNow(alertId, btn){
   btn.disabled=true;btn.textContent='Sending...';
   try{
-    var res=await fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId);
+    // redirect:'manual' is defensive here - the bot's sendAlert response no longer
+    // redirects at all (fixed on the bot side), so this has nothing to suppress in
+    // practice, but keeps this call safe if that ever changes back.
+    var res=await fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{redirect:'manual'});
     var data=await res.json();
     if(data.ok){
       toast('Alert sent to '+(data.sentCount||0)+' member(s)!');
