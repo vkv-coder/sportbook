@@ -739,6 +739,7 @@ async function loadDiscover(){
           +(club.email?'<div style="font-size:12px;color:#a5d6a7;grid-column:1/-1;">✉️ <span style="color:#e8f5e9;">'+club.email+'</span></div>':'')
           +'</div>'
           +'<div>'+actionBtn+'</div>'
+          +'<div id="tg-connect-'+club.id+'"></div>'
           +venueHtml
           +'</div></div>';
       }
@@ -752,10 +753,17 @@ async function loadDiscover(){
         +(club.address?'<div class="discover-meta">🏠 <span>'+club.address+'</span></div>':'')
         +'<div class="discover-meta">🀄 Tables: <span>'+club.total_tables+'</span></div>'
         +(club.email?'<div class="discover-meta">✉️ <span>'+club.email+'</span></div>':'')
-        +'<div style="margin-top:12px;">'+actionBtn+'</div>'+venueHtml+'</div>';
+        +'<div style="margin-top:12px;">'+actionBtn+'</div>'
+        +'<div id="tg-connect-'+club.id+'"></div>'
+        +venueHtml+'</div>';
     }).join('');
   }catch(e){document.getElementById('discover-loading').style.display='none';}
 }
+
+// Layer 2: only Green Mahjong Club has its own bot set up so far. Any other
+// club just won't show a connect option below - nothing else changes for them.
+const GREEN_MAHJONG_CLUB_ID = 'c243fe89-0b06-42be-950f-f85cb9ac9633';
+const GREEN_MAHJONG_BOT_USERNAME = 'green_mahjong_bot';
 
 async function requestMembership(clubId,clubName,genderCondition,btn){
   if((genderCondition==='male'&&player.gender==='female')||(genderCondition==='female'&&player.gender==='male')){alert('Sorry! This club accepts '+genderCondition+' members only.');return;}
@@ -763,10 +771,50 @@ async function requestMembership(clubId,clubName,genderCondition,btn){
   try{
     var ex=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&select=id');
     if(ex.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
-    await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
+    var inserted=await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
     await tg('🀄 <b>New Membership Request</b>\n\nClub: <b>'+clubName+'</b>\nPlayer: <b>'+player.name+'</b>\nMobile: '+player.mobile+'\nEmail: '+player.email+'\nGender: '+player.gender+'\n\nApprove from Club Dashboard.',clubId);
     btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
+    var mjMemberId=inserted&&inserted[0]&&inserted[0].id;
+    if(mjMemberId&&clubId===GREEN_MAHJONG_CLUB_ID){
+      var connectEl=document.getElementById('tg-connect-'+clubId);
+      if(connectEl) connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId);
+    }
   }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
+}
+
+// ── TELEGRAM CONNECT for a pending club join request (optional) ──
+function tgConnectHtml(clubId,mjMemberId){
+  return '<div id="tg-msg-'+clubId+'" style="margin-top:6px;"></div>'
+    +'<a href="https://t.me/'+GREEN_MAHJONG_BOT_USERNAME+'?start='+mjMemberId+'" target="_blank" '
+    +'style="display:inline-block;font-size:12px;background:#22213a;color:#e8c97a;padding:6px 12px;border-radius:20px;text-decoration:none;margin-top:6px;" '
+    +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Green Mahjong Bot (optional)</a>';
+}
+
+let clubTgPollTimers={};
+
+function startClubTgPolling(clubId,mjMemberId){
+  showClubTgMsg(clubId,'Waiting for you to tap Start in Telegram...','#5dade2');
+  var startedAt=Date.now();
+  clearInterval(clubTgPollTimers[clubId]);
+  clubTgPollTimers[clubId]=setInterval(async function(){
+    if(Date.now()-startedAt>120000){
+      clearInterval(clubTgPollTimers[clubId]);
+      showClubTgMsg(clubId,"Didn't catch that yet — you can try the link again anytime.",'#f0b27a');
+      return;
+    }
+    try{
+      var rows=await sb('mj_members?id=eq.'+mjMemberId+'&select=telegram_id');
+      if(rows.length&&rows[0].telegram_id){
+        clearInterval(clubTgPollTimers[clubId]);
+        showClubTgMsg(clubId,'✅ Connected!','#58d68d');
+      }
+    }catch(e){}
+  },3000);
+}
+
+function showClubTgMsg(clubId,msg,color){
+  var el=document.getElementById('tg-msg-'+clubId);
+  if(el) el.innerHTML='<div style="font-size:11px;color:'+color+';margin-top:2px;">'+msg+'</div>';
 }
 
 async function loadVenueBanner(date){

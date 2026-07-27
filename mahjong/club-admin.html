@@ -646,8 +646,22 @@ async function updateMember(memId,status,name){
     if(status==='approved'&&updateData.member_code){
       toast('Approved! Member code assigned: '+updateData.member_code);
     }
+    if(status==='approved'){
+      notifyClubMemberApprovedOnTelegram(memId);
+    }
     loadPendingMembers();loadApprovedMembers();loadStats();
   }catch(e){alert('Error: '+e.message);}
+}
+
+// Pings Green Mahjong Bot for this membership, if they connected during their
+// join request - does nothing if they never connected. Wrapped so a failure
+// here never blocks the actual approval above. redirect:'manual' stops the
+// browser from auto-following Apps Script's response redirect, which would
+// otherwise trigger the script (and the Telegram send) a second time.
+async function notifyClubMemberApprovedOnTelegram(mjMemberId){
+  try{
+    await fetch(FILL_ALERT_GAS_URL+'?action=notifyClubApproved&memberId='+mjMemberId,{redirect:'manual'});
+  }catch(e){}
 }
 
 async function loadSessions(){
