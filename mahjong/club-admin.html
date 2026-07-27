@@ -443,9 +443,8 @@ async function adminLogin(){
   if(!email||!password){showMsg('login-msg','Enter email and password.','error');return;}
   showMsg('login-msg','Logging in...','info');
   try{
-    var clubs=await sb('mj_clubs?email=eq.'+encodeURIComponent(email)+'&select=*');
-    if(!clubs.length){showMsg('login-msg','Club not found.','error');return;}
-    if(clubs[0].admin_password!==password){showMsg('login-msg','Incorrect password.','error');return;}
+    var clubs=await sb('rpc/mj_verify_login','POST',{p_email:email,p_password:password});
+    if(!clubs.length){showMsg('login-msg','Incorrect email or password.','error');return;}
     if(clubs[0].status==='pending'){showMsg('login-msg','Club approval pending. Please wait for SportBook admin to approve.','warn');return;}
     if(clubs[0].status==='paused'){showMsg('login-msg','Club is paused. Contact SportBook admin.','warn');return;}
     club=clubs[0];

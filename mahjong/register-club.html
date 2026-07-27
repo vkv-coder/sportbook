@@ -151,12 +151,11 @@ async function registerClub() {
 
     showMsg('Submitting...','info');
 
-    await sb('mj_clubs', 'POST', {
-      club_name: name, city: city, address: address,
-      total_tables: tables, gender_condition: gender,
-      owner_name: owner, email: email,
-      whatsapp_no: whatsapp, telegram_admin_id: telegram || null, admin_password: pwd,
-      status: 'pending'
+    await sb('rpc/mj_register_club', 'POST', {
+      p_club_name: name, p_city: city, p_address: address,
+      p_total_tables: tables, p_gender_condition: gender,
+      p_owner_name: owner, p_email: email,
+      p_whatsapp_no: whatsapp, p_telegram_admin_id: telegram || null, p_password: pwd
     });
 
     // Telegram alert to site admin
