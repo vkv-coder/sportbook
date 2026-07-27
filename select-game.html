@@ -145,7 +145,6 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
           </select>
         </div>
         <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="p-whatsapp" placeholder="Leave blank if same as mobile above" maxlength="10" inputmode="numeric"/></div>
-        <div class="form-group"><label>Telegram ID <span style="color:#8b89a8;font-weight:400;">(optional)</span></label><input type="text" id="p-telegram" placeholder="e.g. @yourname or your Telegram ID"/></div>
         <div id="p-reg-msg"></div>
         <button class="btn-gold" onclick="sendPlayerOTP('new')">Send OTP →</button>
       </div>
@@ -163,6 +162,17 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
       <div id="p-otp-msg"></div>
       <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
       <button class="link-btn" onclick="goPlayerBack()">← Go Back</button>
+    </div>
+
+    <div class="step" id="player-step3">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:32px;margin-bottom:8px;">📩</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#e8c97a;">Want us to message you on Telegram?</div>
+        <div style="font-size:12px;color:#8b89a8;margin-top:6px;">Optional — get notified the moment you're approved.</div>
+      </div>
+      <div id="tg-connect-msg"></div>
+      <a id="tg-connect-link" class="btn-gold" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;" target="_blank" onclick="startTelegramPolling()">Connect Telegram →</a>
+      <button class="link-btn" onclick="skipTelegramConnect()">Skip for now</button>
     </div>
   </div>
 </div>
@@ -224,7 +234,6 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
             </select>
           </div>
           <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="p-whatsapp" placeholder="Leave blank if same as mobile above" maxlength="10" inputmode="numeric"/></div>
-          <div class="form-group"><label>Telegram ID <span style="color:#8b89a8;font-weight:400;">(optional)</span></label><input type="text" id="p-telegram" placeholder="e.g. @yourname or your Telegram ID"/></div>
           <div id="p-reg-msg"></div>
           <button class="btn-gold" onclick="sendPlayerOTP('new')">Send OTP →</button>
         </div>
@@ -328,6 +337,12 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 let currentRole = 'player';
 let currentOTP = '';
 let currentMode = 'new';
+let newMemberId = null;
+let tgPollTimer = null;
+let tgPollStart = 0;
+
+// Vijay: replace with the bot's real @username once you create it via @BotFather
+const NOTIFY_BOT_USERNAME = 'SportBookNotifyBot';
 
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
@@ -432,7 +447,6 @@ async function sendPlayerOTP(mode) {
     const email    = document.getElementById('p-email').value.trim();
     const gender   = document.getElementById('p-gender').value;
     const whatsapp = document.getElementById('p-whatsapp').value.trim();
-    const telegram = document.getElementById('p-telegram').value.trim();
 
     if (!name||!mobile||!email||!gender) { showMsg('p-reg-msg','Please fill all fields.','error'); return; }
     if (mobile.length!==10) { showMsg('p-reg-msg','Enter valid 10-digit mobile.','error'); return; }
@@ -447,7 +461,6 @@ async function sendPlayerOTP(mode) {
       const waNumber = whatsapp || mobile;
       await sb('sp_members', 'POST', {
         name, mobile, email, gender, whatsapp: waNumber,
-        telegram_id: telegram,
         otp: currentOTP,
         otp_verified: false,
         status: 'pending'
@@ -525,16 +538,61 @@ async function verifyPlayerOTP() {
     } else {
       // Send Telegram notification ONLY for brand new registrations
       // otp_verified was false before this call = first time verifying = new registration
-      if (currentMode === 'new' && !member.otp_verified) {
+      const isBrandNew = currentMode === 'new' && !member.otp_verified;
+      if (isBrandNew) {
         await notifyAdmin(member);
       }
       showMsg('p-otp-msg','✅ OTP verified!','success');
       setTimeout(() => {
-        document.getElementById('approval-overlay').classList.add('open');
+        if (isBrandNew) {
+          newMemberId = member.id;
+          showTelegramConnectStep();
+        } else {
+          document.getElementById('approval-overlay').classList.add('open');
+        }
       }, 600);
     }
 
   } catch(e) { showMsg('p-otp-msg','Error: '+e.message,'error'); }
+}
+
+// ── TELEGRAM CONNECT (optional, shown once right after registration) ──
+function showTelegramConnectStep() {
+  document.getElementById('tg-connect-link').href = 'https://t.me/' + NOTIFY_BOT_USERNAME + '?start=' + newMemberId;
+  document.getElementById('tg-connect-msg').innerHTML = '';
+  showStep('player-step3');
+}
+
+function startTelegramPolling() {
+  showMsg('tg-connect-msg', 'Waiting for you to tap Start in Telegram...', 'info');
+  tgPollStart = Date.now();
+  clearInterval(tgPollTimer);
+  tgPollTimer = setInterval(checkTelegramConnected, 3000);
+}
+
+async function checkTelegramConnected() {
+  if (Date.now() - tgPollStart > 120000) {
+    clearInterval(tgPollTimer);
+    showMsg('tg-connect-msg', "Didn't catch that yet — try tapping Connect again, or Skip for now.", 'warn');
+    return;
+  }
+  try {
+    const rows = await sb(`sp_members?id=eq.${newMemberId}&select=telegram_id`);
+    if (rows.length && rows[0].telegram_id) {
+      clearInterval(tgPollTimer);
+      showMsg('tg-connect-msg', '✅ Connected!', 'success');
+      setTimeout(finishRegistration, 900);
+    }
+  } catch(e) {}
+}
+
+function skipTelegramConnect() {
+  clearInterval(tgPollTimer);
+  finishRegistration();
+}
+
+function finishRegistration() {
+  document.getElementById('approval-overlay').classList.add('open');
 }
 
 async function notifyAdmin(member) {
