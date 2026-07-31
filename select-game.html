@@ -335,7 +335,6 @@ const SUPABASE_URL = 'https://jqqnnkzozjskziaizajg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 
 let currentRole = 'player';
-let currentOTP = '';
 let currentMode = 'new';
 let newMemberId = null;
 let tgPollTimer = null;
@@ -410,8 +409,6 @@ async function sb(path, method='GET', body=null) {
   return res.json();
 }
 
-function generateOTP() { return Math.floor(100000 + Math.random() * 900000).toString(); }
-
 // Shows enough of the email for the player to recognise which of their addresses it is, without exposing the whole thing
 function maskEmail(email) {
   const parts = (email || '').split('@');
@@ -421,18 +418,6 @@ function maskEmail(email) {
   return masked + '@' + parts[1];
 }
 
-async function emailOTP(to, otp) {
-  await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      action: 'sendEmail',
-      to: to,
-      subject: 'Your SportBook login code',
-      html: '<p>Your SportBook login code is:</p><h2 style="letter-spacing:4px;">' + otp + '</h2><p style="font-size:13px;color:#666;">This code expires in 10 minutes. If you didn\'t request this, you can ignore this email.</p>'
-    })
-  });
-}
 function showMsg(elId, msg, type) {
   document.getElementById(elId).innerHTML = `<div class="status-box status-${type}">${msg}</div>`;
 }
@@ -454,19 +439,20 @@ async function sendPlayerOTP(mode) {
     showMsg('p-reg-msg','Checking...','info');
 
     try {
-      const existing = await sb(`sp_members?mobile=eq.${mobile}&select=id`);
-      if (existing.length > 0) { showMsg('p-reg-msg','Mobile already registered. Use Returning Player tab.','warn'); return; }
-
-      currentOTP = generateOTP();
       const waNumber = whatsapp || mobile;
-      await sb('sp_members', 'POST', {
-        name, mobile, email, gender, whatsapp: waNumber,
-        otp: currentOTP,
-        otp_verified: false,
-        status: 'pending'
+      // OTP is generated and emailed entirely server-side now (never
+      // client-supplied) - see register_player_and_send_otp RPC.
+      const regRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/register_player_and_send_otp`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_name: name, p_mobile: mobile, p_email: email, p_gender: gender, p_whatsapp: waNumber })
       });
+      const regJson = await regRes.json();
+      if (!regRes.ok) { showMsg('p-reg-msg','Something went wrong. Please try again.','error'); return; }
+      if (regJson && regJson.ok === false && regJson.reason === 'mobile_taken') {
+        showMsg('p-reg-msg','Mobile already registered. Use Returning Player tab.','warn'); return;
+      }
 
-      await emailOTP(email, currentOTP);
       document.getElementById('otp-note-text').innerHTML = '📧 We\'ve emailed a 6-digit code to <b>' + maskEmail(email) + '</b>. Enter it below.';
       showStep('player-step2');
 
@@ -482,14 +468,15 @@ async function sendPlayerOTP(mode) {
       const players = await sb(`sp_members?mobile=eq.${mobile}&select=id,email`);
       if (!players.length) { showMsg('p-login-msg','Mobile not found. Please register first.','error'); return; }
 
-      currentOTP = generateOTP();
-      await fetch(`${SUPABASE_URL}/rest/v1/sp_members?mobile=eq.${mobile}`, {
-        method: 'PATCH',
+      // OTP is generated and emailed entirely server-side now (never
+      // client-supplied, never returned to the browser) - see
+      // request_player_login_otp RPC.
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/request_player_login_otp`, {
+        method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp: currentOTP })
+        body: JSON.stringify({ p_mobile: mobile })
       });
 
-      await emailOTP(players[0].email, currentOTP);
       document.getElementById('otp-note-text').innerHTML = '📧 We\'ve emailed a 6-digit code to <b>' + maskEmail(players[0].email) + '</b>. Enter it below.';
       showStep('player-step2');
 
@@ -518,7 +505,11 @@ async function verifyPlayerOTP() {
     if (!checkRes.ok || isValid !== true) { showMsg('p-otp-msg','Incorrect OTP. Try again.','error'); return; }
 
     // First fetch the member record
-    const members = await sb(`sp_members?mobile=eq.${mobile}&select=*`);
+    // otp is no longer a selectable column at all (server-only now) -
+    // explicit column list instead of select=*, which would otherwise
+    // fail outright since Postgres denies the whole query if any
+    // requested column is restricted.
+    const members = await sb(`sp_members?mobile=eq.${mobile}&select=id,name,mobile,email,gender,whatsapp,telegram_id,otp_verified,status,created_at`);
     if (!members.length) { showMsg('p-otp-msg','Account not found. Please register.','error'); return; }
     const member = members[0];
 
