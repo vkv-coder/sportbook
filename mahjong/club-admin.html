@@ -1409,7 +1409,10 @@ function toast(msg){
 
 window.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('mj_admin_club');
-  if(saved){club=JSON.parse(saved);loadDashboard();}
+  if(saved){club=JSON.parse(saved);loadDashboard();return;}
+  // Direct "Try Demo" links (?demo=1) skip straight to the demo login,
+  // instead of requiring a second click once this page loads.
+  if(new URLSearchParams(location.search).get('demo')==='1')tryDemoLogin();
 });
 </script>
 </body>
