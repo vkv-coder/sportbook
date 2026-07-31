@@ -412,23 +412,11 @@ async function sendResetLink(btn){
   btn.disabled=true;
   showMsg('fp-msg1','Sending...','info');
   try{
-    const clubs=await sb('mj_clubs?email=eq.'+encodeURIComponent(email)+'&select=id,club_name');
-    if(clubs.length){
-      const clubRow=clubs[0];
-      // Max 3 reset emails per club per hour, to stop this being used to spam someone's inbox.
-      const oneHourAgo=new Date(Date.now()-60*60*1000).toISOString();
-      const recent=await sb('mj_password_resets?club_id=eq.'+clubRow.id+'&created_at=gte.'+oneHourAgo+'&select=id');
-      if(recent.length<3){
-        const token=crypto.randomUUID();
-        const expiresAt=new Date(Date.now()+30*60*1000).toISOString();
-        await sb('mj_password_resets','POST',{club_id:clubRow.id,token:token,expires_at:expiresAt});
-        const resetLink='https://sportbook.in/reset-password.html?token='+token;
-        await fetch('https://telegram-notify.unigoods2026.workers.dev/',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({action:'sendResetEmail',to:email,clubName:clubRow.club_name,resetLink:resetLink})
-        });
-      }
-    }
+    // Token generation, rate-limiting, and the reset email itself all
+    // happen entirely server-side now (request_club_password_reset RPC) -
+    // the token is never returned to or visible from the browser, and a
+    // client can no longer read/enumerate the reset-request table directly.
+    await sb('rpc/request_club_password_reset','POST',{p_email:email});
     // Same message whether or not the email matched, so this can't be used to
     // check which emails are registered club accounts.
     document.getElementById('fp-msg1').innerHTML='';
