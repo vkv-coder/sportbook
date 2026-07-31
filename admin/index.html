@@ -291,7 +291,10 @@ function showSmTab(t) {
 
 // COURT OWNERS
 async function loadAll() {
-  var res = await sb.from('sz_owners').select('*').order('created_at', {ascending: false});
+  // password is server-only now (column-level lockdown) - explicit list
+  // instead of select('*'), which fails outright once any requested
+  // column is restricted.
+  var res = await sb.from('sz_owners').select('id,owner_name,venue_name,email,phone,city,zone_id,is_approved,created_at').order('created_at', {ascending: false});
   var all = res.data || [];
   var pending  = all.filter(function(o){ return !o.is_approved; });
   var approved = all.filter(function(o){ return  o.is_approved; });
