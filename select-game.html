@@ -292,6 +292,20 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
       <div style="text-align:center;margin-top:14px;">
         <button onclick="showOwnerForgot()" style="background:none;border:none;color:#c9a84c;font-size:13px;cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif;">Forgot Password?</button>
       </div>
+      <div style="text-align:center;margin-top:10px;">
+        <button onclick="toggleHowItWorks()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif;">How does this work?</button>
+      </div>
+      <div id="how-it-works-panel" style="display:none;margin-top:12px;background:#22213a;border:1px solid #2e2d4a;border-radius:10px;padding:16px;font-size:12px;color:#ddd;line-height:1.7;">
+        <b style="color:#e8c97a;">What this dashboard does:</b><br/>
+        Players book mahjong tables at your club through the SportBook app on their phones. This dashboard is where you, the club organiser, manage everything on your side:
+        <ul style="margin:8px 0 0 18px;padding:0;">
+          <li>Approve new members and top up their table-slot balance</li>
+          <li>See who's booked into which table, each session</li>
+          <li>Approve group booking requests from players wanting to play together</li>
+          <li>Record match scores and keep a running leaderboard</li>
+          <li>Set your cancellation policy and available time slots</li>
+        </ul>
+      </div>
 
       <div id="owner-forgot-panel" style="display:none;margin-top:16px;">
         <div style="background:#22213a;border:1px solid #2e2d4a;border-radius:12px;padding:16px;">
@@ -615,6 +629,11 @@ function showStep(stepId) {
 function showOwnerForgot() {
   const panel = document.getElementById('owner-forgot-panel');
   panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+}
+
+function toggleHowItWorks() {
+  const p = document.getElementById('how-it-works-panel');
+  p.style.display = p.style.display==='none' ? 'block' : 'none';
 }
 
 function goPlayerBack() {
