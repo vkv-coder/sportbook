@@ -512,13 +512,8 @@ async function verifyPlayerOTP() {
     const members = await sb(`sp_members?mobile=eq.${mobile}&select=id,name,mobile,email,gender,whatsapp,telegram_id,otp_verified,status,created_at`);
     if (!members.length) { showMsg('p-otp-msg','Account not found. Please register.','error'); return; }
     const member = members[0];
-
-    // Then mark OTP verified
-    await fetch(`${SUPABASE_URL}/rest/v1/sp_members?mobile=eq.${mobile}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ otp_verified: true })
-    });
+    // otp_verified is now set server-side by verify_player_otp itself
+    // (it already ran above), so no separate PATCH is needed here.
 
     // Save to localStorage
     localStorage.setItem('sp_member', JSON.stringify(member));
@@ -527,9 +522,10 @@ async function verifyPlayerOTP() {
       showMsg('p-otp-msg','✅ Welcome back! Taking you to clubs...','success');
       setTimeout(() => { window.location.href = '/mahjong/index.html'; }, 1200);
     } else {
-      // Send Telegram notification ONLY for brand new registrations
-      // otp_verified was false before this call = first time verifying = new registration
-      const isBrandNew = currentMode === 'new' && !member.otp_verified;
+      // Send Telegram notification ONLY for brand new registrations.
+      // register_player_and_send_otp already rejects a duplicate mobile,
+      // so reaching here via the "new" tab always means first-ever signup.
+      const isBrandNew = currentMode === 'new';
       if (isBrandNew) {
         await notifyAdmin(member);
       }
