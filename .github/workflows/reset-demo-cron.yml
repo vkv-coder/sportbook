@@ -1,0 +1,28 @@
+name: Nightly sportbook club-admin demo reset
+
+on:
+  schedule:
+    # 2:15 AM IST = 20:45 UTC the previous day (offset slightly from
+    # reminders' 2:00 AM job in the same Supabase project)
+    - cron: '45 20 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  reset-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call reset_sportbook_demo RPC
+        run: |
+          resp=$(curl -s -w "\n%{http_code}" \
+            "https://jqqnnkzozjskziaizajg.supabase.co/rest/v1/rpc/reset_sportbook_demo" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg" \
+            -H "Content-Type: application/json" \
+            -d "{\"p_secret\": \"${{ secrets.SPORTBOOK_RESET_SECRET }}\"}")
+          body=$(echo "$resp" | head -n -1)
+          status=$(echo "$resp" | tail -n1)
+          echo "Response: $body (HTTP $status)"
+          if [ "$status" -ge 300 ]; then
+            echo "reset call failed"
+            exit 1
+          fi

@@ -140,6 +140,28 @@ select option{background:var(--surface);}
         <button onclick="toggleForgot()" style="background:none;border:none;color:var(--gold);font-size:13px;cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif;">Forgot Password?</button>
       </div>
 
+      <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);text-align:center;">
+        <div style="font-size:11px;color:#E65100;font-weight:700;margin-bottom:4px;">🧪 Just looking? See the full club dashboard</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Sample club with members, sessions and requests already in it — no signup needed.</div>
+        <button class="btn btn-full" onclick="tryDemoLogin()" style="background:#455A64;color:#fff;">Try Demo Club Dashboard</button>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px;">Like what you see? Email <a href="mailto:vkvcoder.support@gmail.com" style="color:var(--gold);">vkvcoder.support@gmail.com</a> to get your own club set up.</div>
+      </div>
+
+      <div style="margin-top:14px;text-align:center;">
+        <button onclick="toggleHowItWorks()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif;">How does this work?</button>
+      </div>
+      <div id="how-it-works-panel" style="display:none;margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:12px;color:var(--text);line-height:1.7;">
+        <b style="color:var(--gold-light);">What this dashboard does:</b><br/>
+        Players book mahjong tables at your club through the SportBook app on their phones. This dashboard is where you, the club organiser, manage everything on your side:
+        <ul style="margin:8px 0 0 18px;padding:0;">
+          <li>Approve new members and top up their table-slot balance</li>
+          <li>See who's booked into which table, each session</li>
+          <li>Approve group booking requests from players wanting to play together</li>
+          <li>Record match scores and keep a running leaderboard</li>
+          <li>Set your cancellation policy and available time slots</li>
+        </ul>
+      </div>
+
       <div id="forgot-panel" style="display:none;margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;">
         <div style="font-size:13px;font-weight:600;color:var(--gold-light);margin-bottom:12px;">🔑 Reset Password</div>
         <div id="fp-step1">
@@ -425,6 +447,19 @@ async function sendResetLink(btn){
   }catch(e){showMsg('fp-msg1','Error: '+e.message,'error');btn.disabled=false;}
 }
 
+function toggleHowItWorks(){
+  const p=document.getElementById('how-it-works-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+function tryDemoLogin(){
+  // Reuses the exact real login path with known public demo credentials,
+  // scoped to the seeded demo club - same pattern as the other apps'
+  // Try Demo buttons.
+  document.getElementById('login-email').value='demo.club@anyapps.in';
+  document.getElementById('login-password').value='SportDemo-2026x!';
+  tg('🀄 Someone opened the SportBook club-admin demo dashboard.'); // no clubId - falls back to the owner's default chat
+  adminLogin();
+}
 async function adminLogin(){
   var email=document.getElementById('login-email').value.trim();
   var password=document.getElementById('login-password').value.trim();
