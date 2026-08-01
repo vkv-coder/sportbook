@@ -167,12 +167,11 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
     <div class="step" id="player-step3">
       <div style="text-align:center;margin-bottom:16px;">
         <div style="font-size:32px;margin-bottom:8px;">📩</div>
-        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#e8c97a;">Want us to message you on Telegram?</div>
-        <div style="font-size:12px;color:#8b89a8;margin-top:6px;">Optional — get notified the moment you're approved.</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#e8c97a;">Connect Telegram to Continue</div>
+        <div style="font-size:12px;color:#8b89a8;margin-top:6px;">Tap the button below — it opens Telegram with Start already filled in, just send it.</div>
       </div>
       <div id="tg-connect-msg"></div>
       <a id="tg-connect-link" class="btn-gold" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;" target="_blank" onclick="startTelegramPolling()">Connect Telegram →</a>
-      <button class="link-btn" onclick="skipTelegramConnect()">Skip for now</button>
     </div>
   </div>
 </div>
@@ -582,7 +581,7 @@ function startTelegramPolling() {
 async function checkTelegramConnected() {
   if (Date.now() - tgPollStart > 120000) {
     clearInterval(tgPollTimer);
-    showMsg('tg-connect-msg', "Didn't catch that yet — try tapping Connect again, or Skip for now.", 'warn');
+    showMsg('tg-connect-msg', "Didn't catch that yet — tap Connect Telegram again to continue.", 'warn');
     return;
   }
   try {
@@ -593,11 +592,6 @@ async function checkTelegramConnected() {
       setTimeout(finishRegistration, 900);
     }
   } catch(e) {}
-}
-
-function skipTelegramConnect() {
-  clearInterval(tgPollTimer);
-  finishRegistration();
 }
 
 function finishRegistration() {
