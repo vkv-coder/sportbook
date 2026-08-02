@@ -179,7 +179,10 @@ main{padding:24px;max-width:700px;margin:0 auto;}
         <div class="stat-card"><div class="stat-val" id="sm-stat-active">-</div><div class="stat-label">Active</div></div>
         <div class="stat-card"><div class="stat-val" id="sm-stat-pending">-</div><div class="stat-label">Pending</div></div>
       </div>
-      <input class="form-input" id="sm-search" placeholder="🔍 Search by name..." oninput="filterSiteMembers()" style="margin-bottom:12px;">
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <input class="form-input" id="sm-search" placeholder="🔍 Search by name..." oninput="filterSiteMembers()" style="margin-bottom:0;flex:1;">
+        <button id="sm-sort-btn" onclick="toggleSmSort()" style="background:white;border:1.5px solid var(--border);border-radius:10px;padding:0 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap;">A-Z</button>
+      </div>
       <div style="text-align:right;margin-bottom:12px;">
         <button onclick="exportMembersCSV()" style="background:var(--green);color:white;border:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Download Members CSV</button>
       </div>
@@ -474,6 +477,12 @@ async function notifyClubOwnerApproved(clubId, clubName) {
 // only the columns the dashboard actually needs.
 var SP_MEMBERS_COLS = 'id,name,mobile,email,gender,whatsapp,telegram_id,status,created_at';
 var smPendingAll = [], smActiveAll = [];
+var smSortAZ = false;
+function toggleSmSort() {
+  smSortAZ = !smSortAZ;
+  document.getElementById('sm-sort-btn').textContent = smSortAZ ? 'Newest' : 'A-Z';
+  filterSiteMembers();
+}
 async function loadSiteMembers() {
   var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=' + SP_MEMBERS_COLS + '&order=created_at.desc', {
     headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
@@ -492,8 +501,13 @@ async function loadSiteMembers() {
 // large member list.
 function filterSiteMembers() {
   var q = (document.getElementById('sm-search').value || '').trim().toLowerCase();
-  var p = q ? smPendingAll.filter(function(m){ return (m.name||'').toLowerCase().indexOf(q) !== -1; }) : smPendingAll;
-  var a = q ? smActiveAll.filter(function(m){ return (m.name||'').toLowerCase().indexOf(q) !== -1; }) : smActiveAll;
+  var p = q ? smPendingAll.filter(function(m){ return (m.name||'').toLowerCase().indexOf(q) !== -1; }) : smPendingAll.slice();
+  var a = q ? smActiveAll.filter(function(m){ return (m.name||'').toLowerCase().indexOf(q) !== -1; }) : smActiveAll.slice();
+  if (smSortAZ) {
+    var byName = function(x, y) { return (x.name||'').localeCompare(y.name||''); };
+    p.sort(byName);
+    a.sort(byName);
+  }
   renderSiteMembers(p, 'sm-pending-list', 'pending');
   renderSiteMembers(a, 'sm-active-list',  'active');
 }
