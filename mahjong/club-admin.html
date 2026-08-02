@@ -1045,11 +1045,19 @@ function closeTablePopup(){
   document.getElementById('table-popup').style.display='none';
 }
 
-async function showTablePopup(tableNo, slotLabel, date, playerIds, category, count){
+var manualAlertCtx = null;
+async function showTablePopup(tableNo, slotLabel, date, playerIds, category, count, slotId){
   document.getElementById('table-popup').style.display='flex';
   var catLabel = {beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'}[category]||category||'—';
   document.getElementById('popup-title').textContent = 'Table '+tableNo+' · '+slotLabel;
   var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">'+date+' · '+catLabel+' · '+count+'/4 seats</div>';
+  // Manual, on-demand fill alert - only makes sense once a category is set
+  // (someone has already started this table) and it's not full yet.
+  if(category && count>0 && count<4){
+    manualAlertCtx = {clubId:club.id, slotId:slotId, tableNo:tableNo, date:date, category:category, playersNeeded:4-count};
+    html += '<button class="btn btn-orange btn-full btn-sm" id="manual-alert-btn" onclick="sendManualFillAlert()" style="margin-bottom:12px;">📢 Notify: '+(4-count)+' more player'+((4-count)>1?'s':'')+' needed for '+catLabel+'</button>'
+      +'<div id="manual-alert-msg"></div>';
+  }
   if(playerIds.length){
     var pids = playerIds.filter(Boolean);
     if(pids.length){
@@ -1076,6 +1084,42 @@ async function showTablePopup(tableNo, slotLabel, date, playerIds, category, cou
       +'</div>';
   }
   document.getElementById('popup-content').innerHTML=html;
+}
+
+// Manual, on-demand version of the automatic Fill Alerts flow - organiser
+// picks the table/slot themselves (via the Overview popup) instead of
+// waiting for the scheduled check, since Vijay wants this send-able
+// "whenever admin wants," not on a fixed timer.
+async function sendManualFillAlert(){
+  var ctx = manualAlertCtx;
+  if(!ctx) return;
+  var btn = document.getElementById('manual-alert-btn');
+  var msgEl = document.getElementById('manual-alert-msg');
+  if(!confirm('Send "'+ctx.playersNeeded+' more player(s) needed" to every approved member who hasn\'t booked this slot?')) return;
+  btn.disabled=true; btn.textContent='Sending...';
+  try{
+    var alertId = await sb('rpc/mj_create_manual_fill_alert','POST',{
+      p_club_id: ctx.clubId,
+      p_slot_id: ctx.slotId,
+      p_table_number: ctx.tableNo,
+      p_booking_date: ctx.date,
+      p_playing_category: ctx.category,
+      p_players_needed: ctx.playersNeeded
+    });
+    var res = await fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{redirect:'manual'});
+    var data = await res.json();
+    if(data.ok){
+      msgEl.innerHTML = '<div class="status-box status-success">Sent to '+(data.sentCount||0)+' member(s)!</div>';
+      btn.style.display='none';
+      toast('Alert sent!');
+    }else{
+      msgEl.innerHTML = '<div class="status-box status-error">Error: '+(data.error||'Unknown error')+'</div>';
+      btn.disabled=false; btn.textContent='📢 Notify: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
+    }
+  }catch(e){
+    msgEl.innerHTML = '<div class="status-box status-error">Error: '+e.message+'</div>';
+    btn.disabled=false; btn.textContent='📢 Notify: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
+  }
 }
 
 async function loadOverviewMatrix(){
@@ -1133,7 +1177,7 @@ async function loadOverviewMatrix(){
         var cardClass = tableBookings.length>=4?'full':tableBookings.length>0?'partial':isPending?'partial':'empty';
         var playerIds = tableBookings.map(function(b){return b.player_id;});
         var playerIdsStr = JSON.stringify(playerIds).replace(/"/g,'&quot;');
-        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+tableBookings.length+')">'
+        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+tableBookings.length+',\''+slot.id+'\')">'
           +'<div class="t-num">T'+t+'</div>'
           +'<div class="t-cat">'+catLabel+(isPending?' ⏳':'')+'</div>'
           +'<div class="t-count">'+count+'/4</div>'
