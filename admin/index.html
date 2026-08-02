@@ -492,6 +492,13 @@ function renderSiteMembers(list, elId, status) {
     var name = m.name || '-';
     var waText = 'Hi ' + name + '! Your SportBook account has been approved. Login at sportbook.in and join Mahjong clubs. Welcome!';
     var waLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText);
+    // A real connected chat id is a plain number - members approved before
+    // the Telegram step existed have telegram_id null/empty, and a couple
+    // have a stray non-numeric value from before that field meant anything.
+    var tgConnected = !!(m.telegram_id && /^\d+$/.test(m.telegram_id));
+    var tgLink = 'https://t.me/SportBookNotifyBot?start=' + m.id;
+    var tgText = 'Hi ' + name + '! Please tap this link and hit Send in Telegram so you keep getting your Mahjong Club alerts: ' + tgLink;
+    var tgWaLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(tgText);
     var actions = '';
     if (status === 'pending') {
       actions = '<button class="action-btn approve-btn" data-id="' + m.id + '" data-mobile="' + mobile + '" data-name="' + name + '" data-email="' + (m.email||'') + '" onclick="approveMember(this)">Approve</button>'
@@ -499,6 +506,7 @@ function renderSiteMembers(list, elId, status) {
     } else {
       actions = '<span class="approved-badge">Active</span>'
               + '<a href="' + waLink + '" target="_blank" class="action-btn wa-btn">WhatsApp</a>'
+              + (tgConnected ? '' : '<a href="' + tgWaLink + '" target="_blank" class="action-btn pause-btn">Send TG Link</a>')
               + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="deleteSiteM(this)">Remove</button>';
     }
     return '<div class="member-card">'
