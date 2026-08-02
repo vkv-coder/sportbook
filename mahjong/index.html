@@ -760,9 +760,10 @@ async function loadDiscover(){
   }catch(e){document.getElementById('discover-loading').style.display='none';}
 }
 
-// Layer 2: only Green Mahjong Club has its own bot set up so far. Any other
-// club just won't show a connect option below - nothing else changes for them.
-const GREEN_MAHJONG_CLUB_ID = 'c243fe89-0b06-42be-950f-f85cb9ac9633';
+// Layer 2: one shared bot (green_mahjong_bot) used for every club's
+// membership-approval alerts, same pattern as SportBookNotifyBot being one
+// shared site-wide bot - not actually per-club, so this applies to every
+// club a player requests to join, not just one hardcoded club id.
 const GREEN_MAHJONG_BOT_USERNAME = 'green_mahjong_bot';
 // Layer 1 (site-wide) bot - same one used at registration. Joining a club
 // requires this to already be connected, not just the optional Layer 2 one.
@@ -783,7 +784,7 @@ async function doRequestMembership(clubId,clubName,btn){
     await tg('🀄 <b>New Membership Request</b>\n\nClub: <b>'+clubName+'</b>\nPlayer: <b>'+player.name+'</b>\nMobile: '+player.mobile+'\nEmail: '+player.email+'\nGender: '+player.gender+'\n\nApprove from Club Dashboard.',clubId);
     btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
     var mjMemberId=inserted&&inserted[0]&&inserted[0].id;
-    if(mjMemberId&&clubId===GREEN_MAHJONG_CLUB_ID){
+    if(mjMemberId){
       var connectEl=document.getElementById('tg-connect-'+clubId);
       if(connectEl) connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId);
     }
