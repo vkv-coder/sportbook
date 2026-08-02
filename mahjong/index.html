@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mahjong — SportBook</title>
 <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0f0e17" />
+<meta name="theme-color" content="#EAF4EA" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+:root{--bg:#EAF4EA;--surface:#F5FAF6;--card:#FFFFFF;--border:#D7E8DA;--gold:#2E9E60;--gold-light:#3FBE79;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#1B4D2E;--muted:#5B6B5B;--radius:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
@@ -24,7 +24,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .tab-content{display:none;}.tab-content.active{display:block;}
 .date-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;}
 .date-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
-.date-input{width:100%;background:#1a1930;border:1px solid var(--gold);color:#e8e6f0;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark;}
+.date-input{width:100%;background:#F5FAF6;border:1px solid var(--gold);color:#1B4D2E;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:light;}
 .date-input:focus{border-color:var(--gold);}
 .btn-check{width:100%;padding:12px;border:none;border-radius:8px;background:var(--gold);color:#0f0e17;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;font-family:'Inter',sans-serif;}
 .btn-check:hover{background:var(--gold-light);}
@@ -40,25 +40,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .btn-book-seat{width:100%;padding:11px;border:none;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
 .btn-book-seat:hover{background:#1e8449;}
 .btn-book-seat:disabled{opacity:0.5;cursor:not-allowed;}
-.btn-booked{width:100%;padding:11px;border:none;border-radius:8px;background:#1a2a3a;color:#5dade2;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--blue);}
-.btn-full{width:100%;padding:11px;border:none;border-radius:8px;background:#2a1a3a;color:#bb8fce;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid #8e44ad;}
-.btn-blocked{width:100%;padding:11px;border:1px solid #555;border-radius:8px;background:#1a1a2a;color:#666;font-size:13px;font-weight:600;cursor:not-allowed;font-family:'Inter',sans-serif;}
+.btn-booked{width:100%;padding:11px;border:none;border-radius:8px;background:#EAF3FA;color:#1F618D;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--blue);}
+.btn-full{width:100%;padding:11px;border:none;border-radius:8px;background:#F3E8FA;color:#7D3C98;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid #8e44ad;}
+.btn-blocked{width:100%;padding:11px;border:1px solid #555;border-radius:8px;background:#F3F4F6;color:#6B7280;font-size:13px;font-weight:600;cursor:not-allowed;font-family:'Inter',sans-serif;}
 .status-box{border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px;text-align:center;}
-.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
-.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
-.status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
-.status-warn{background:#3a2a1a;border:1px solid var(--orange);color:#f0b27a;}
+.status-success{background:#E3F5E8;border:1px solid var(--green);color:#1E7A46;}
+.status-error{background:#FDECEA;border:1px solid var(--red);color:#A93226;}
+.status-info{background:#EAF3FA;border:1px solid var(--blue);color:#1F618D;}
+.status-warn{background:#FDF3E7;border:1px solid var(--orange);color:#B9770E;}
 .discover-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
 .discover-name{font-size:15px;font-weight:600;color:var(--gold-light);margin-bottom:8px;}
 .discover-meta{font-size:12px;color:var(--muted);margin-bottom:4px;}
 .discover-meta span{color:var(--text);}
 .badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
-.badge-mixed{background:#1a3a5c;color:#5dade2;}.badge-male{background:#1a2e1a;color:#58d68d;}.badge-female{background:#3a1a2e;color:#f1948a;}.badge-pending{background:#3a2a1a;color:#f0b27a;}
+.badge-mixed{background:#EAF3FA;color:#1F618D;}.badge-male{background:#E3F5E8;color:#1E7A46;}.badge-female{background:#FCE8F3;color:#A93226;}.badge-pending{background:#FDF3E7;color:#B9770E;}
 .booking-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
 .booking-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .booking-date{font-size:14px;font-weight:600;color:var(--gold-light);}
 .booking-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
-.badge-confirmed{background:#1a3a1a;color:#58d68d;}.badge-cancelled{background:#2a1a1a;color:#777;}.badge-waiting{background:#2a1a3a;color:#bb8fce;}
+.badge-confirmed{background:#E3F5E8;color:#1E7A46;}.badge-cancelled{background:#F3F4F6;color:#6B7280;}.badge-waiting{background:#F3E8FA;color:#7D3C98;}
 .btn{padding:10px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s;}
 .btn-sm{padding:7px 12px;font-size:11px;}
 .btn-gold{background:var(--gold);color:#0f0e17;}.btn-gold:hover{background:var(--gold-light);}
@@ -305,13 +305,13 @@ async function loadMyClubs(){
       var waDigits=(c.whatsapp_no||'').replace(/[^0-9]/g,'');
       var waLink=waDigits?'https://wa.me/'+waDigits:'';
       var contactHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);">'
-        +'<div style="font-size:11px;color:#8b89a8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Contact Club Admin</div>'
+        +'<div style="font-size:11px;color:#5B6B5B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Contact Club Admin</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
-        +(c.email?'<a href="mailto:'+c.email+'" style="font-size:12px;background:#22213a;color:#e8e6f0;padding:6px 12px;border-radius:20px;text-decoration:none;">✉️ Email</a>':'')
-        +(waLink?'<a href="'+waLink+'" target="_blank" style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:6px 12px;border-radius:20px;text-decoration:none;">💬 WhatsApp</a>':'')
-        +(!c.email&&!waLink?'<span style="font-size:12px;color:#8b89a8;">No contact info on file — ask the club to add one.</span>':'')
+        +(c.email?'<a href="mailto:'+c.email+'" style="font-size:12px;background:#F3F4F6;color:#1B4D2E;padding:6px 12px;border-radius:20px;text-decoration:none;">✉️ Email</a>':'')
+        +(waLink?'<a href="'+waLink+'" target="_blank" style="font-size:12px;background:#E3F5E8;color:#1E7A46;padding:6px 12px;border-radius:20px;text-decoration:none;">💬 WhatsApp</a>':'')
+        +(!c.email&&!waLink?'<span style="font-size:12px;color:#5B6B5B;">No contact info on file — ask the club to add one.</span>':'')
         +'</div></div>';
-      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+c.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(c.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+c.total_tables+'</span></div><div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;background:#1a3a1a;color:#58d68d;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Member</span><span style="font-size:13px;color:var(--gold);font-weight:700;">🎫 '+bal+' slots left</span></div>'+contactHtml+'</div>';
+      return '<div class="discover-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;"><div class="discover-name">🏯 '+c.club_name+'</div><span class="badge '+bc+'">'+gL+'</span></div><div class="discover-meta">📍 <span>'+(c.city||'N/A')+'</span></div><div class="discover-meta">🀄 Tables: <span>'+c.total_tables+'</span></div><div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;background:#E3F5E8;color:#1E7A46;padding:4px 10px;border-radius:20px;font-weight:600;">✓ Member</span><span style="font-size:13px;color:var(--gold);font-weight:700;">🎫 '+bal+' slots left</span></div>'+contactHtml+'</div>';
     }).join('');
     renderBalanceBar();
     populateGroupClubSelect();
@@ -369,7 +369,7 @@ async function loadAvailability(){
         var bal=membershipsCache[club.id]?membershipsCache[club.id].slot_balance||0:0;
         var btnHtml='';
         if(isMineInSlot){btnHtml='<button class="btn-booked" onclick="openCancelModal(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\')">✓ Your Seat Booked — Cancel?</button>';}
-        else if(onWaitlist){btnHtml='<button class="btn-booked" style="border-color:#8e44ad;color:#bb8fce;">⏳ On Waitlist</button>';}
+        else if(onWaitlist){btnHtml='<button class="btn-booked" style="border-color:#8e44ad;color:#7D3C98;">⏳ On Waitlist</button>';}
         else if(seatsLeft<=0){btnHtml='<button class="btn-full" onclick="openWaitlistModal(\''+club.id+'\',\''+slot.id+'\',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\',\''+club.club_name.replace(/'/g,"\\'")+'\')">Full — Join Waitlist</button>';}
         else if(myBookingInThisSlot){btnHtml='<button class="btn-blocked">Already booked this time slot at another club</button>';}
         else if(bal<=0){
@@ -619,8 +619,8 @@ async function loadGroupRequests(){
     document.getElementById('grp-list').innerHTML=reqs.map(function(r){
       var club=myClubs.find(function(c){return c.id===r.club_id;});
       var slot=(slotsCache[r.club_id]||[]).find(function(s){return s.id===r.slot_id;});
-      var sc=r.status==='approved'?'#58d68d':r.status==='rejected'?'#f1948a':'#f0b27a';
-      return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+r.booking_date+'</div><span style="font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;background:#1a1930;color:'+sc+';">'+r.status.toUpperCase()+'</span></div><div class="booking-meta">🏯 Club: <span>'+(club?club.club_name:'—')+'</span></div><div class="booking-meta">🕐 Slot: <span>'+(slot?slot.start_time+'-'+slot.end_time:'—')+'</span></div><div class="booking-meta">👥 Friends: <span>'+r.mobile2+', '+r.mobile3+', '+r.mobile4+'</span></div>'+(r.table_number?'<div class="booking-meta">🀄 Table Assigned: <span>'+r.table_number+'</span></div>':'')+'</div>';
+      var sc=r.status==='approved'?'#1E7A46':r.status==='rejected'?'#A93226':'#B9770E';
+      return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+r.booking_date+'</div><span style="font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;background:#F5FAF6;color:'+sc+';">'+r.status.toUpperCase()+'</span></div><div class="booking-meta">🏯 Club: <span>'+(club?club.club_name:'—')+'</span></div><div class="booking-meta">🕐 Slot: <span>'+(slot?slot.start_time+'-'+slot.end_time:'—')+'</span></div><div class="booking-meta">👥 Friends: <span>'+r.mobile2+', '+r.mobile3+', '+r.mobile4+'</span></div>'+(r.table_number?'<div class="booking-meta">🀄 Table Assigned: <span>'+r.table_number+'</span></div>':'')+'</div>';
     }).join('');
   }catch(e){document.getElementById('grp-list-loading').style.display='none';}
 }
@@ -651,7 +651,7 @@ async function loadMyBookings(){
         var sl=sMap[w.slot_id];
         var key=w.club_id+'_'+w.slot_id+'_'+w.booking_date;
         var pos=(wlBySlot[key]||[]).findIndex(function(x){return x.id===w.id;})+1;
-        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">WL/'+pos+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta" style="color:#bb8fce;font-weight:600;">⏳ Position: WL/'+pos+'</div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')" >Opt Out from Waitlist</button></div></div>';
+        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+w.booking_date+'</div><span class="booking-badge badge-waiting">WL/'+pos+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[w.club_id]?cMap[w.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div><div class="booking-meta" style="color:#7D3C98;font-weight:600;">⏳ Position: WL/'+pos+'</div><div style="margin-top:10px;"><button class="btn btn-sm btn-red" onclick="cancelWaitlist(\''+w.id+'\')" >Opt Out from Waitlist</button></div></div>';
       }).join('');
     }
     if(pendingReqs.length){
@@ -679,7 +679,7 @@ async function loadMyBookings(){
       html+=bookings.map(function(b){
         var sl=sMap[b.slot_id];
         var isGrp=grpSet.has(b.slot_id+'_'+b.booking_date+'_'+b.table_number);
-        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+b.booking_date+'</div><span class="booking-badge '+(b.status==='confirmed'?'badge-confirmed':'badge-cancelled')+'">'+b.status+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[b.club_id]?cMap[b.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div>'+(isGrp?'<div style="margin-top:6px;"><span style="font-size:11px;background:#1a2a3a;color:#5dade2;padding:3px 8px;border-radius:20px;font-weight:600;">👥 Group Booking</span></div>':'')+'</div>';
+        return '<div class="booking-item"><div class="booking-header"><div class="booking-date">📅 '+b.booking_date+'</div><span class="booking-badge '+(b.status==='confirmed'?'badge-confirmed':'badge-cancelled')+'">'+b.status+'</span></div><div class="booking-meta">🏯 Club: <span>'+(cMap[b.club_id]?cMap[b.club_id].club_name:'—')+'</span></div><div class="booking-meta">🕐 Time: <span>'+(sl?sl.start_time+'-'+sl.end_time:'—')+'</span></div>'+(isGrp?'<div style="margin-top:6px;"><span style="font-size:11px;background:#EAF3FA;color:#1F618D;padding:3px 8px;border-radius:20px;font-weight:600;">👥 Group Booking</span></div>':'')+'</div>';
       }).join('');
     }
     document.getElementById('bookings-list').innerHTML=html;
@@ -716,27 +716,27 @@ async function loadDiscover(){
       var gL=club.gender_condition==='male'?'👨 Male Only':club.gender_condition==='female'?'👩 Female Only':'👥 Mixed';
       var bc=club.gender_condition==='male'?'badge-male':club.gender_condition==='female'?'badge-female':'badge-mixed';
       var actionBtn=genderBlocked
-        ?'<span style="font-size:12px;color:#f1948a;background:#3a1a1a;padding:4px 10px;border-radius:20px;">🚫 '+(club.gender_condition==='male'?'Male':'Female')+' members only</span>'
+        ?'<span style="font-size:12px;color:#A93226;background:#FDECEA;padding:4px 10px;border-radius:20px;">🚫 '+(club.gender_condition==='male'?'Male':'Female')+' members only</span>'
         :status==='pending'
           ?'<span class="badge badge-pending">⏳ Request Pending</span>'
           :'<button class="btn btn-outline btn-sm" onclick="requestMembership(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+club.gender_condition+'\',this)">Request to Join</button>';
       var venueEvts=venueMap[club.id]||[];
-      var venueHtml=venueEvts.length?'<div style="margin-top:10px;background:#1a3a1a;border:1px solid #27ae60;border-radius:8px;padding:10px;">'
-        +'<div style="font-size:10px;color:#58d68d;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📍 Upcoming Special Venues</div>'
-        +venueEvts.map(function(ev){return '<div style="font-size:12px;color:var(--text);margin-bottom:4px;">📅 '+ev.event_date+' — <b>'+ev.venue_name+'</b>'+(ev.map_link?' <a href="'+ev.map_link+'" target="_blank" style="color:#5dade2;font-size:11px;text-decoration:none;">🗺️ Map</a>':'')+'</div>';}).join('')
+      var venueHtml=venueEvts.length?'<div style="margin-top:10px;background:#E3F5E8;border:1px solid #27ae60;border-radius:8px;padding:10px;">'
+        +'<div style="font-size:10px;color:#1E7A46;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📍 Upcoming Special Venues</div>'
+        +venueEvts.map(function(ev){return '<div style="font-size:12px;color:var(--text);margin-bottom:4px;">📅 '+ev.event_date+' — <b>'+ev.venue_name+'</b>'+(ev.map_link?' <a href="'+ev.map_link+'" target="_blank" style="color:#1F618D;font-size:11px;text-decoration:none;">🗺️ Map</a>':'')+'</div>';}).join('')
         +'</div>':'';
       if(club.banner_url){
-        return '<div class="discover-card" style="background:#1a2a1a;border:1px solid #86efac;padding:0;overflow:hidden;border-radius:var(--radius);">'
-          +'<img src="'+club.banner_url+'" style="width:100%;height:auto;object-fit:contain;display:block;background:#0f1a0f;max-height:320px;" alt="'+club.club_name+'" />'
+        return '<div class="discover-card" style="background:#FFFFFF;border:1px solid #86efac;padding:0;overflow:hidden;border-radius:var(--radius);">'
+          +'<img src="'+club.banner_url+'" style="width:100%;height:auto;object-fit:contain;display:block;background:#F5FAF6;max-height:320px;" alt="'+club.club_name+'" />'
           +'<div style="padding:14px;">'
           +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
-          +'<div class="discover-name" style="color:#e8f5e9;">🏯 '+club.club_name+'</div>'
+          +'<div class="discover-name" style="color:#1B4D2E;">🏯 '+club.club_name+'</div>'
           +'<span class="badge '+bc+'">'+gL+'</span></div>'
           +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-bottom:12px;">'
-          +'<div style="font-size:12px;color:#a5d6a7;">📍 <span style="color:#e8f5e9;">'+(club.city||'N/A')+'</span></div>'
-          +'<div style="font-size:12px;color:#a5d6a7;">🀄 <span style="color:#e8f5e9;">'+club.total_tables+' Tables</span></div>'
-          +(club.address?'<div style="font-size:12px;color:#a5d6a7;grid-column:1/-1;">🏠 <span style="color:#e8f5e9;">'+club.address+'</span></div>':'')
-          +(club.email?'<div style="font-size:12px;color:#a5d6a7;grid-column:1/-1;">✉️ <span style="color:#e8f5e9;">'+club.email+'</span></div>':'')
+          +'<div style="font-size:12px;color:#2E9E60;">📍 <span style="color:#1B4D2E;">'+(club.city||'N/A')+'</span></div>'
+          +'<div style="font-size:12px;color:#2E9E60;">🀄 <span style="color:#1B4D2E;">'+club.total_tables+' Tables</span></div>'
+          +(club.address?'<div style="font-size:12px;color:#2E9E60;grid-column:1/-1;">🏠 <span style="color:#1B4D2E;">'+club.address+'</span></div>':'')
+          +(club.email?'<div style="font-size:12px;color:#2E9E60;grid-column:1/-1;">✉️ <span style="color:#1B4D2E;">'+club.email+'</span></div>':'')
           +'</div>'
           +'<div>'+actionBtn+'</div>'
           +'<div id="tg-connect-'+club.id+'"></div>'
@@ -786,27 +786,27 @@ async function requestMembership(clubId,clubName,genderCondition,btn){
 function tgConnectHtml(clubId,mjMemberId){
   return '<div id="tg-msg-'+clubId+'" style="margin-top:6px;"></div>'
     +'<a href="https://t.me/'+GREEN_MAHJONG_BOT_USERNAME+'?start='+mjMemberId+'" target="_blank" '
-    +'style="display:inline-block;font-size:12px;background:#22213a;color:#e8c97a;padding:6px 12px;border-radius:20px;text-decoration:none;margin-top:6px;" '
+    +'style="display:inline-block;font-size:12px;background:#F3F4F6;color:#2E9E60;padding:6px 12px;border-radius:20px;text-decoration:none;margin-top:6px;" '
     +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Green Mahjong Bot (optional)</a>';
 }
 
 let clubTgPollTimers={};
 
 function startClubTgPolling(clubId,mjMemberId){
-  showClubTgMsg(clubId,'Waiting for you to tap Start in Telegram...','#5dade2');
+  showClubTgMsg(clubId,'Waiting for you to tap Start in Telegram...','#1F618D');
   var startedAt=Date.now();
   clearInterval(clubTgPollTimers[clubId]);
   clubTgPollTimers[clubId]=setInterval(async function(){
     if(Date.now()-startedAt>120000){
       clearInterval(clubTgPollTimers[clubId]);
-      showClubTgMsg(clubId,"Didn't catch that yet — you can try the link again anytime.",'#f0b27a');
+      showClubTgMsg(clubId,"Didn't catch that yet — you can try the link again anytime.",'#B9770E');
       return;
     }
     try{
       var rows=await sb('mj_members?id=eq.'+mjMemberId+'&select=telegram_id');
       if(rows.length&&rows[0].telegram_id){
         clearInterval(clubTgPollTimers[clubId]);
-        showClubTgMsg(clubId,'✅ Connected!','#58d68d');
+        showClubTgMsg(clubId,'✅ Connected!','#1E7A46');
       }
     }catch(e){}
   },3000);
@@ -824,12 +824,12 @@ async function loadVenueBanner(date){
     if(!events.length){document.getElementById('venue-banner').innerHTML='';return;}
     var html=events.map(function(e){
       var club=myClubs.find(function(c){return c.id===e.club_id;});
-      return '<div style="background:linear-gradient(135deg,#1a3a1a,#1a2a1a);border:1px solid var(--green);border-radius:10px;padding:14px;margin-bottom:14px;">'
-        +'<div style="font-size:11px;color:#58d68d;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📍 Special Venue Today'+(club?' — '+club.club_name:'')+'</div>'
-        +'<div style="font-size:15px;font-weight:700;color:#e8e6f0;margin-bottom:4px;">'+e.venue_name+'</div>'
+      return '<div style="background:linear-gradient(135deg,#E3F5E8,#F5FAF6);border:1px solid var(--green);border-radius:10px;padding:14px;margin-bottom:14px;">'
+        +'<div style="font-size:11px;color:#1E7A46;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📍 Special Venue Today'+(club?' — '+club.club_name:'')+'</div>'
+        +'<div style="font-size:15px;font-weight:700;color:#1B4D2E;margin-bottom:4px;">'+e.venue_name+'</div>'
         +'<div style="font-size:12px;color:var(--muted);">🏠 '+e.address+'</div>'
         +(e.note?'<div style="font-size:12px;color:var(--muted);margin-top:3px;">💬 '+e.note+'</div>':'')
-        +(e.map_link?'<a href="'+e.map_link+'" target="_blank" style="display:inline-block;margin-top:8px;background:rgba(255,255,255,0.1);color:#58d68d;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">🗺️ Open in Google Maps</a>':'')
+        +(e.map_link?'<a href="'+e.map_link+'" target="_blank" style="display:inline-block;margin-top:8px;background:rgba(255,255,255,0.1);color:#1E7A46;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">🗺️ Open in Google Maps</a>':'')
         +'</div>';
     }).join('');
     document.getElementById('venue-banner').innerHTML=html;

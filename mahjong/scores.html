@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Score Entry — Mahjong SportBook</title>
 <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0f0e17" />
+<meta name="theme-color" content="#EAF4EA" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+:root{--bg:#EAF4EA;--surface:#F5FAF6;--card:#FFFFFF;--border:#D7E8DA;--gold:#2E9E60;--gold-light:#3FBE79;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#1B4D2E;--muted:#5B6B5B;--radius:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
@@ -32,10 +32,10 @@ select option{background:var(--surface);}
 .btn-sm{padding:6px 12px;font-size:12px;}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
 .status-box{border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:12px;text-align:center;}
-.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
-.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
-.status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
-.status-warn{background:#3a2a1a;border:1px solid var(--orange);color:#f0b27a;}
+.status-success{background:#E3F5E8;border:1px solid var(--green);color:#1E7A46;}
+.status-error{background:#FDECEA;border:1px solid var(--red);color:#A93226;}
+.status-info{background:#EAF3FA;border:1px solid var(--blue);color:#1F618D;}
+.status-warn{background:#FDF3E7;border:1px solid var(--orange);color:#B9770E;}
 .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
 .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -52,8 +52,8 @@ select option{background:var(--surface);}
 .score-input{width:100%;background:var(--card);border:2px solid var(--border);color:var(--text);padding:12px 14px;border-radius:8px;font-size:18px;font-weight:700;font-family:'Inter',sans-serif;outline:none;text-align:center;}
 .score-input:focus{border-color:var(--gold);}
 .score-diff{font-size:12px;text-align:center;margin-top:6px;font-weight:600;}
-.score-diff.positive{color:#58d68d;}
-.score-diff.negative{color:#f1948a;}
+.score-diff.positive{color:#1E7A46;}
+.score-diff.negative{color:#A93226;}
 .score-diff.neutral{color:var(--muted);}
 
 /* CONFIRMATION */
@@ -61,8 +61,8 @@ select option{background:var(--surface);}
 .confirm-player{font-size:14px;font-weight:600;color:var(--text);}
 .confirm-points{font-size:16px;font-weight:700;color:var(--gold);}
 .confirm-status{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;}
-.confirm-yes{background:#1a3a1a;color:#58d68d;}
-.confirm-no{background:#3a2a1a;color:#f0b27a;}
+.confirm-yes{background:#E3F5E8;color:#1E7A46;}
+.confirm-no{background:#FDF3E7;color:#B9770E;}
 
 /* ROOM LIST */
 .room-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s;}
@@ -71,9 +71,9 @@ select option{background:var(--surface);}
 .room-title{font-size:14px;font-weight:600;color:var(--gold-light);}
 .room-meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
 .badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
-.badge-open{background:#3a2a1a;color:#f0b27a;}
-.badge-confirmed{background:#1a3a1a;color:#58d68d;}
-.badge-reset{background:#3a1a1a;color:#f1948a;}
+.badge-open{background:#FDF3E7;color:#B9770E;}
+.badge-confirmed{background:#E3F5E8;color:#1E7A46;}
+.badge-reset{background:#FDECEA;color:#A93226;}
 
 /* TABS */
 .nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);}
@@ -348,14 +348,14 @@ async function openRoom(roomId){
           var p=confPMap[e.player_id];
           var diff=e.final_points-e.starting_points;
           var diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
-          var diffColor=diff>0?'#58d68d':diff<0?'#f1948a':'var(--muted)';
+          var diffColor=diff>0?'#1E7A46':diff<0?'#A93226':'var(--muted)';
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">'
             +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">'+medals[i]+'</span>'
             +'<div><div style="font-size:13px;font-weight:600;color:var(--text);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div>'
             +'<div style="font-size:11px;color:'+diffColor+';">'+diffStr+' pts</div></div></div>'
             +'<div style="text-align:right;">'
             +'<div style="font-size:14px;font-weight:700;color:var(--gold);">'+e.final_points.toLocaleString()+'</div>'
-            +'<div style="font-size:11px;color:#bb8fce;font-weight:600;">+'+rankPoints[i]+' rank pts</div>'
+            +'<div style="font-size:11px;color:#7D3C98;font-weight:600;">+'+rankPoints[i]+' rank pts</div>'
             +'</div></div>';
         }).join('')
         +'</div>'
@@ -380,7 +380,7 @@ async function openRoom(roomId){
         const p=pMap[e.player_id];
         const diff=e.final_points-35000;
         const diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
-        const diffColor=diff>0?'#58d68d':diff<0?'#f1948a':'var(--muted)';
+        const diffColor=diff>0?'#1E7A46':diff<0?'#A93226':'var(--muted)';
         return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'
           +'<div style="display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">'+medals[i]+'</div>'
           +'<div><div style="font-size:14px;font-weight:600;color:var(--gold-light);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div>'

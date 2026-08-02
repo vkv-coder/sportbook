@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Dashboard — Mahjong SportBook</title>
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#0f0e17" />
+  <meta name="theme-color" content="#EAF4EA" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap');
-    :root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+    :root{--bg:#EAF4EA;--surface:#F5FAF6;--card:#FFFFFF;--border:#D7E8DA;--gold:#2E9E60;--gold-light:#3FBE79;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--text:#1B4D2E;--muted:#5B6B5B;--radius:12px;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
     .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
@@ -38,12 +38,12 @@
     .tables-row{display:flex;flex-wrap:wrap;gap:8px;}
     .table-chip{padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;border:1px solid;text-align:center;min-width:80px;}
     .table-chip .table-label{font-size:11px;font-weight:400;display:block;margin-top:2px;}
-    .table-open{background:#1a3a1a;border-color:var(--green);color:#58d68d;}
+    .table-open{background:#E3F5E8;border-color:var(--green);color:#1E7A46;}
     .table-open:hover{background:var(--green);color:#fff;}
-    .table-filling{background:#3a2a1a;border-color:#e67e22;color:#f0b27a;}
+    .table-filling{background:#FDF3E7;border-color:#e67e22;color:#B9770E;}
     .table-filling:hover{background:#e67e22;color:#fff;}
-    .table-full{background:#2a1a1a;border-color:#555;color:#777;cursor:not-allowed;}
-    .table-mine{background:#1a2a3a;border-color:var(--blue);color:#5dade2;cursor:default;}
+    .table-full{background:#F3F4F6;border-color:#555;color:#6B7280;cursor:not-allowed;}
+    .table-mine{background:#EAF3FA;border-color:var(--blue);color:#1F618D;cursor:default;}
     .form-group{margin-bottom:14px;}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
     input,select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color 0.2s;}
@@ -57,16 +57,16 @@
     .btn-sm{padding:7px 14px;font-size:12px;}
     .btn:disabled{opacity:0.5;cursor:not-allowed;}
     .status-box{border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px;text-align:center;}
-    .status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
-    .status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
-    .status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
-    .status-warn{background:#3a2a1a;border:1px solid #e67e22;color:#f0b27a;}
+    .status-success{background:#E3F5E8;border:1px solid var(--green);color:#1E7A46;}
+    .status-error{background:#FDECEA;border:1px solid var(--red);color:#A93226;}
+    .status-info{background:#EAF3FA;border:1px solid var(--blue);color:#1F618D;}
+    .status-warn{background:#FDF3E7;border:1px solid #e67e22;color:#B9770E;}
     .booking-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
     .booking-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
     .booking-date{font-size:14px;font-weight:600;color:var(--gold-light);}
     .booking-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
-    .badge-confirmed{background:#1a3a1a;color:#58d68d;}
-    .badge-cancelled{background:#2a1a1a;color:#777;}
+    .badge-confirmed{background:#E3F5E8;color:#1E7A46;}
+    .badge-cancelled{background:#F3F4F6;color:#6B7280;}
     .booking-meta{font-size:12px;color:var(--muted);margin-bottom:4px;}
     .booking-meta span{color:var(--text);}
     .avail-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
@@ -74,9 +74,9 @@
     .avail-date{font-weight:600;color:var(--gold-light);}
     .avail-slot{color:var(--muted);font-size:12px;margin-top:3px;}
     .avail-status{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
-    .avail-open{background:#1a3a1a;color:#58d68d;}
-    .avail-matched{background:#1a2a3a;color:#5dade2;}
-    .avail-cancelled{background:#2a1a1a;color:#777;}
+    .avail-open{background:#E3F5E8;color:#1E7A46;}
+    .avail-matched{background:#EAF3FA;color:#1F618D;}
+    .avail-cancelled{background:#F3F4F6;color:#6B7280;}
     .loading{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
     .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;}
     @keyframes spin{to{transform:rotate(360deg);}}

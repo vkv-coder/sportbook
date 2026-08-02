@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Organiser Dashboard — Mahjong SportBook</title>
 <link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#0f0e17" />
+<meta name="theme-color" content="#EAF4EA" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f0e17;--surface:#1a1930;--card:#22213a;--border:#2e2d4a;--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#e8e6f0;--muted:#8b89a8;--radius:12px;}
+:root{--bg:#EAF4EA;--surface:#F5FAF6;--card:#FFFFFF;--border:#D7E8DA;--gold:#2E9E60;--gold-light:#3FBE79;--red:#c0392b;--green:#27ae60;--blue:#2980b9;--orange:#e67e22;--text:#1B4D2E;--muted:#5B6B5B;--radius:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
@@ -49,10 +49,10 @@ select option{background:var(--surface);}
 .btn-sm{padding:6px 12px;font-size:12px;}
 .btn:disabled{opacity:0.5;cursor:not-allowed;}
 .status-box{border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:12px;text-align:center;}
-.status-success{background:#1a3a1a;border:1px solid var(--green);color:#58d68d;}
-.status-error{background:#3a1a1a;border:1px solid var(--red);color:#f1948a;}
-.status-info{background:#1a2a3a;border:1px solid var(--blue);color:#5dade2;}
-.status-warn{background:#3a2a1a;border:1px solid var(--orange);color:#f0b27a;}
+.status-success{background:#E3F5E8;border:1px solid var(--green);color:#1E7A46;}
+.status-error{background:#FDECEA;border:1px solid var(--red);color:#A93226;}
+.status-info{background:#EAF3FA;border:1px solid var(--blue);color:#1F618D;}
+.status-warn{background:#FDF3E7;border:1px solid var(--orange);color:#B9770E;}
 .member-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
 .member-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
 .member-name{font-size:15px;font-weight:600;color:var(--gold-light);}
@@ -60,11 +60,11 @@ select option{background:var(--surface);}
 .member-meta span{color:var(--text);}
 .member-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center;}
 .badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600;text-transform:uppercase;}
-.badge-pending{background:#3a2a1a;color:#f0b27a;}
-.badge-approved{background:#1a3a1a;color:#58d68d;}
-.badge-rejected{background:#2a1a1a;color:#777;}
-.badge-full{background:#1a2a3a;color:#5dade2;}
-.badge-filling{background:#2a2a1a;color:#f0b27a;}
+.badge-pending{background:#FDF3E7;color:#B9770E;}
+.badge-approved{background:#E3F5E8;color:#1E7A46;}
+.badge-rejected{background:#F3F4F6;color:#6B7280;}
+.badge-full{background:#EAF3FA;color:#1F618D;}
+.badge-filling{background:#FDF3E7;color:#B9770E;}
 .session-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
 .session-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .session-title{font-size:14px;font-weight:600;color:var(--gold-light);}
@@ -92,12 +92,12 @@ select option{background:var(--surface);}
 .table-card.empty{background:rgba(192,57,43,0.15);border-color:rgba(192,57,43,0.3);}
 .table-card .t-num{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:3px;}
 .table-card .t-cat{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;min-height:12px;}
-.table-card.full .t-cat{color:#58d68d;}
-.table-card.partial .t-cat{color:#f0b27a;}
+.table-card.full .t-cat{color:#1E7A46;}
+.table-card.partial .t-cat{color:#B9770E;}
 .table-card.empty .t-cat{color:#555;}
 .table-card .t-count{font-size:16px;font-weight:700;}
-.table-card.full .t-count{color:#58d68d;}
-.table-card.partial .t-count{color:#f0b27a;}
+.table-card.full .t-count{color:#1E7A46;}
+.table-card.partial .t-count{color:#B9770E;}
 .table-card.empty .t-count{color:#555;}
 .table-card .t-dot{width:8px;height:8px;border-radius:50%;margin:4px auto 0;}
 .table-card.full .t-dot{background:#27ae60;}
@@ -115,8 +115,8 @@ select option{background:var(--surface);}
 .lb-podium-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.3;}
 .lb-podium-points{font-size:13px;font-weight:700;color:var(--gold);}
 .lb-podium-base{border-radius:8px 8px 0 0;width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif Display',serif;font-size:18px;font-weight:700;}
-.lb-podium-base.gold{background:linear-gradient(135deg,#f1c40f33,#e67e2222);border:1px solid #f1c40f44;height:60px;color:#f1c40f;}
-.lb-podium-base.silver{background:linear-gradient(135deg,#bdc3c733,#95a5a622);border:1px solid #bdc3c744;height:44px;color:#bdc3c7;}
+.lb-podium-base.gold{background:linear-gradient(135deg,#f1c40f33,#e67e2222);border:1px solid #f1c40f44;height:60px;color:#B7950B;}
+.lb-podium-base.silver{background:linear-gradient(135deg,#bdc3c733,#95a5a622);border:1px solid #bdc3c744;height:44px;color:#707B7C;}
 .lb-podium-base.bronze{background:linear-gradient(135deg,#e67e2233,#d3540022);border:1px solid #e67e2244;height:32px;color:#e67e22;}
 .lb-rank-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
 .lb-rank-num{font-size:16px;font-weight:700;color:var(--muted);min-width:24px;text-align:center;}
@@ -170,8 +170,8 @@ select option{background:var(--surface);}
           <button class="btn btn-gold btn-full" onclick="sendResetLink(this)">Send Reset Link →</button>
         </div>
         <div id="fp-step-done" style="display:none;">
-          <div style="background:#1a3a1a;border:1px solid var(--green);border-radius:8px;padding:14px;text-align:center;">
-            <div style="font-size:13px;font-weight:600;color:#58d68d;">✅ Check your email</div>
+          <div style="background:#E3F5E8;border:1px solid var(--green);border-radius:8px;padding:14px;text-align:center;">
+            <div style="font-size:13px;font-weight:600;color:#1E7A46;">✅ Check your email</div>
             <div style="font-size:11px;color:var(--muted);margin-top:6px;">If that email is registered, a password reset link has been sent. It expires in 30 minutes.</div>
           </div>
         </div>
@@ -230,7 +230,7 @@ select option{background:var(--surface);}
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="flex:1;">
             <label style="display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Select Date</label>
-            <input type="date" id="overview-date" style="width:100%;background:#1a1930;border:1px solid #2e2d4a;color:#e8e6f0;padding:10px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark;" onchange="loadOverviewMatrix()"/>
+            <input type="date" id="overview-date" style="width:100%;background:#F5FAF6;border:1px solid #D7E8DA;color:#1B4D2E;padding:10px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:light;" onchange="loadOverviewMatrix()"/>
           </div>
           <button onclick="loadOverviewMatrix()" style="margin-top:20px;background:var(--gold);color:#0f0e17;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">View</button>
         </div>
@@ -274,7 +274,7 @@ select option{background:var(--surface);}
       <div class="card" style="margin-bottom:16px;">
         <div class="form-group" style="margin-bottom:10px;">
           <label>View Date</label>
-          <input type="date" id="session-date-filter" onchange="loadSessions()" style="width:100%;background:#1a1930;border:1px solid #2e2d4a;color:#e8e6f0;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark;"/>
+          <input type="date" id="session-date-filter" onchange="loadSessions()" style="width:100%;background:#F5FAF6;border:1px solid #D7E8DA;color:#1B4D2E;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:light;"/>
         </div>
         <button class="btn btn-gold btn-full" onclick="copyTableAssignments()" style="display:flex;align-items:center;justify-content:center;gap:8px;">
           📋 Copy Table Assignments for WhatsApp Group
@@ -328,7 +328,7 @@ select option{background:var(--surface);}
       <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When 4 players of same category request same slot, they are auto-confirmed. You can also manually confirm here.</p>
       <div class="form-group">
         <label>Filter by Date</label>
-        <input type="date" id="req-date-filter" onchange="loadBookingRequests()" style="width:100%;background:#1a1930;border:1px solid #2e2d4a;color:#e8e6f0;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark;"/>
+        <input type="date" id="req-date-filter" onchange="loadBookingRequests()" style="width:100%;background:#F5FAF6;border:1px solid #D7E8DA;color:#1B4D2E;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:light;"/>
       </div>
       <div id="requests-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="requests-list"></div>
@@ -591,11 +591,11 @@ async function loadApprovedMembers(){
           <div style="display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;">
             <label style="font-size:11px;color:var(--muted);white-space:nowrap;">Taiw Pts:</label>
             ${(m.initial_points_taiwanese||0)>0
-              ? '<span style="color:#58d68d;font-weight:700;font-size:13px;">'+(m.initial_points_taiwanese)+' ✅</span>'
+              ? '<span style="color:#1E7A46;font-weight:700;font-size:13px;">'+(m.initial_points_taiwanese)+' ✅</span>'
               : '<input type="number" id="init-tw-'+m.id+'" placeholder="Taiwanese pts" min="0" style="flex:1;padding:7px 10px;font-size:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:Inter,sans-serif;"/><button class="btn btn-gold btn-sm" onclick="saveInitialPoints(\''+m.id+'\',\'taiwanese\','+(m.initial_points_taiwanese||0)+')">Save</button>'
             }
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Trad: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span> · Taiw: <span style="color:#58d68d;font-weight:600;">${m.initial_points_taiwanese||0}</span></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Trad: <span style="color:var(--gold);font-weight:600;">${m.initial_points||0}</span> · Taiw: <span style="color:#1E7A46;font-weight:600;">${m.initial_points_taiwanese||0}</span></div>
         </div>
         <div class="member-actions" style="margin-top:6px;">
           <div style="display:flex;align-items:center;gap:8px;width:100%;">
@@ -741,13 +741,13 @@ async function loadSessions(){
         +(()=>{
           var slotWl=wlBySlot[s.slot_id]||[];
           if(!slotWl.length)return '';
-          var wlHtml='<div style="margin-top:10px;background:#1a1a2e;border:1px solid #2e2d4a;border-radius:8px;padding:10px;">';
-          wlHtml+='<div style="font-size:11px;color:#bb8fce;font-weight:600;margin-bottom:8px;">⏳ Waitlist ('+slotWl.length+')</div>';
+          var wlHtml='<div style="margin-top:10px;background:#F3E8FA;border:1px solid #D7E8DA;border-radius:8px;padding:10px;">';
+          wlHtml+='<div style="font-size:11px;color:#7D3C98;font-weight:600;margin-bottom:8px;">⏳ Waitlist ('+slotWl.length+')</div>';
           slotWl.forEach((w,i)=>{
             var wp=wlPMap[w.player_id]||{};
             var waMsg=encodeURIComponent('Hi '+wp.name+'! Great news — a seat has opened up for your waitlisted slot on '+date+'. Your seat is now confirmed at '+club.club_name+'. See you there! 🀄');
             wlHtml+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
-              +'<div><span style="font-size:11px;background:#2a1a3a;color:#bb8fce;padding:2px 7px;border-radius:10px;font-weight:700;">WL/'+(i+1)+'</span>'
+              +'<div><span style="font-size:11px;background:#F3E8FA;color:#7D3C98;padding:2px 7px;border-radius:10px;font-weight:700;">WL/'+(i+1)+'</span>'
               +' <span style="font-size:12px;color:var(--text);">'+wp.name+'</span>'
               +' <span style="font-size:11px;color:var(--muted);">('+wp.mobile+')</span></div>'
               +'<a href="https://wa.me/91'+(wp.whatsapp||wp.mobile)+'?text='+waMsg+'" target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;padding:4px 8px;font-size:10px;">💬 Notify</a>'
@@ -936,14 +936,14 @@ async function loadVenueEvents(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
           <div style="font-size:14px;font-weight:600;color:var(--gold-light);">📍 ${e.venue_name}</div>
           <div style="display:flex;gap:6px;align-items:center;">
-            <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${isToday?'var(--gold)':isPast?'var(--surface)':'#1a3a1a'};color:${isToday?'#0f0e17':isPast?'var(--muted)':'#58d68d'};">${isToday?'TODAY':isPast?'PAST':'UPCOMING'}</span>
+            <span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;background:${isToday?'var(--gold)':isPast?'var(--surface)':'#E3F5E8'};color:${isToday?'#0f0e17':isPast?'var(--muted)':'#1E7A46'};">${isToday?'TODAY':isPast?'PAST':'UPCOMING'}</span>
             <button class="btn btn-red btn-sm" onclick="deleteVenueEvent('${e.id}')">Delete</button>
           </div>
         </div>
         <div style="font-size:12px;color:var(--muted);">📅 ${e.event_date}</div>
         <div style="font-size:12px;color:var(--text);margin-top:4px;">🏠 ${e.address}</div>
         ${e.note?`<div style="font-size:12px;color:var(--muted);margin-top:4px;">💬 ${e.note}</div>`:''}
-        ${e.map_link?`<a href="${e.map_link}" target="_blank" style="display:inline-block;margin-top:8px;background:#1a3a5c;color:#5dade2;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">🗺️ Open in Google Maps</a>`:''}
+        ${e.map_link?`<a href="${e.map_link}" target="_blank" style="display:inline-block;margin-top:8px;background:#EAF3FA;color:#1F618D;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;">🗺️ Open in Google Maps</a>`:''}
       </div>`;
     }).join('');
   }catch(e){document.getElementById('venue-loading').style.display='none';}
@@ -987,9 +987,9 @@ async function loadBookingRequests(){
       var isReady=count>=4;
       html+='<div style="background:var(--surface);border:1px solid '+(isReady?'var(--green)':'var(--border)')+';border-radius:10px;margin-bottom:14px;overflow:hidden;">';
       html+='<div style="padding:12px 14px;display:flex;justify-content:space-between;align-items:center;background:'+(isReady?'rgba(39,174,96,0.1)':'var(--card)')+'">';
-      html+='<div><div style="font-size:14px;font-weight:600;color:'+(isReady?'#58d68d':'var(--gold-light)')+';">'+(catLabels[g.category]||g.category)+'</div>';
+      html+='<div><div style="font-size:14px;font-weight:600;color:'+(isReady?'#1E7A46':'var(--gold-light)')+';">'+(catLabels[g.category]||g.category)+'</div>';
       html+='<div style="font-size:12px;color:var(--muted);">🕐 '+(sl?sl.start_time+'-'+sl.end_time:'—')+'</div></div>';
-      html+='<div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:'+(isReady?'#58d68d':'var(--orange)')+';">'+count+'/4</div>';
+      html+='<div style="text-align:right;"><div style="font-size:20px;font-weight:700;color:'+(isReady?'#1E7A46':'var(--orange)')+';">'+count+'/4</div>';
       html+='<div style="font-size:10px;color:var(--muted);">'+(isReady?'READY TO CONFIRM':'waiting')+'</div></div></div>';
       html+='<div style="padding:12px 14px;">';
       g.requests.forEach(function(r,i){
@@ -1142,7 +1142,7 @@ async function loadOverviewMatrix(){
       }
       if(Object.keys(pendingByCategory).length){
         var pendingStr=Object.keys(pendingByCategory).map(function(c){return pendingByCategory[c]+' '+c;}).join(', ');
-        html+='<div style="grid-column:1/-1;font-size:11px;color:#bb8fce;padding:4px 2px;">⏳ Pending: '+pendingStr+'</div>';
+        html+='<div style="grid-column:1/-1;font-size:11px;color:#7D3C98;padding:4px 2px;">⏳ Pending: '+pendingStr+'</div>';
       }
       html += '</div></div>';
     });
