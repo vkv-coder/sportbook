@@ -231,6 +231,20 @@ async function notifyEmail(to, subject, html) {
 }
 
 // LOGIN
+// Stays logged in for the rest of the browser session (sessionStorage
+// clears on browser close, survives refreshes/tab nav in the meantime) -
+// so checking approvals over the next few days doesn't re-ask for the PIN
+// unless the browser is fully closed.
+function enterDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('navRight').textContent = 'Admin: Vijay';
+  loadAll();
+  loadMjClubs();
+  loadSiteMembers();
+}
+if (sessionStorage.getItem('sb_admin_ok') === '1') { enterDashboard(); }
+
 async function adminLogin() {
   var pin = document.getElementById('adminPin').value;
   document.getElementById('loginErr').textContent = '';
@@ -246,12 +260,8 @@ async function adminLogin() {
     document.getElementById('loginErr').textContent = 'Login check failed. Try again.';
     return;
   }
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('navRight').textContent = 'Admin: Vijay';
-  loadAll();
-  loadMjClubs();
-  loadSiteMembers();
+  sessionStorage.setItem('sb_admin_ok', '1');
+  enterDashboard();
 }
 document.getElementById('adminPin').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') adminLogin();
