@@ -462,8 +462,12 @@ async function notifyClubOwnerApproved(clubId, clubName) {
 }
 
 // SITE MEMBERS
+// otp is column-locked from anon SELECT (see sportbook_khursilo_security_fixes) -
+// select=* fails outright once any requested column is restricted, so list
+// only the columns the dashboard actually needs.
+var SP_MEMBERS_COLS = 'id,name,mobile,email,gender,whatsapp,telegram_id,status,created_at';
 async function loadSiteMembers() {
-  var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc', {
+  var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=' + SP_MEMBERS_COLS + '&order=created_at.desc', {
     headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
   });
   var all = await resp.json();
@@ -555,7 +559,7 @@ async function deleteSiteM(btn) {
 // CSV EXPORT
 async function exportMembersCSV() {
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=*&order=created_at.desc', {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?select=' + SP_MEMBERS_COLS + '&order=created_at.desc', {
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
     });
     var data = await resp.json();
