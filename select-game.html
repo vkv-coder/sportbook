@@ -552,7 +552,12 @@ async function verifyPlayerOTP() {
       }
       showMsg('p-otp-msg','✅ OTP verified!','success');
       setTimeout(() => {
-        if (isBrandNew) {
+        // Route by whether Telegram is actually connected, not just
+        // whether this is a brand-new signup — a returning login from
+        // someone who abandoned step 3 last time must land back here too,
+        // otherwise they're stuck on the approval overlay with no way to
+        // finish the now-mandatory Telegram step.
+        if (!member.telegram_id) {
           newMemberId = member.id;
           showTelegramConnectStep();
         } else {
