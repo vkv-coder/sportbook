@@ -521,8 +521,6 @@ function renderSiteMembers(list, elId, status) {
     var date = m.created_at ? new Date(m.created_at).toLocaleDateString('en-IN') : '-';
     var mobile = m.mobile || '';
     var name = m.name || '-';
-    var waText = 'Hi ' + name + '! Your SportBook account has been approved. Login at sportbook.in and join Mahjong clubs. Welcome!';
-    var waLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText);
     // A real connected chat id is a plain number - members approved before
     // the Telegram step existed have telegram_id null/empty, and a couple
     // have a stray non-numeric value from before that field meant anything.
@@ -530,6 +528,13 @@ function renderSiteMembers(list, elId, status) {
     var tgLink = 'https://t.me/SportBookNotifyBot?start=' + m.id;
     var tgText = 'Hi ' + name + '! Please tap this link and hit Send in Telegram so you keep getting your Mahjong Club alerts: ' + tgLink;
     var tgWaLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(tgText);
+    // Members who haven't connected yet can't join a club regardless of
+    // being approved - the WhatsApp message reflects that instead of
+    // inviting them to join clubs they're actually still blocked from.
+    var waText = tgConnected
+      ? 'Hi ' + name + '! Your SportBook account has been approved. Login at sportbook.in and join Mahjong clubs. Welcome!'
+      : 'Hi ' + name + '! Your SportBook account has been approved. Please wait for our Telegram connect link and tap that first — you cannot join a Mahjong club until Telegram is connected. Welcome!';
+    var waLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText);
     var actions = '';
     if (status === 'pending') {
       actions = '<button class="action-btn approve-btn" data-id="' + m.id + '" data-mobile="' + mobile + '" data-name="' + name + '" data-email="' + (m.email||'') + '" onclick="approveMember(this)">Approve</button>'
@@ -565,7 +570,7 @@ async function approveMember(btn) {
   await notifyTelegram('New Member Approved: ' + name + ' | ' + mobile + ' | ' + email);
   await notifyPlayerApprovedOnTelegram(id);
   // Open WhatsApp to notify player
-  var waText = 'Hi ' + name + '! Your SportBook account has been approved. Login at sportbook.in and join Mahjong clubs. Welcome!';
+  var waText = 'Hi ' + name + '! Your SportBook account has been approved. Please wait for our next message with your Telegram connect link — tap that first. You cannot join a Mahjong club until Telegram is connected. Welcome!';
   window.open('https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText), '_blank');
   loadSiteMembers();
 }

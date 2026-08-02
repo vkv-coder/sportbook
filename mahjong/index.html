@@ -764,9 +764,17 @@ async function loadDiscover(){
 // club just won't show a connect option below - nothing else changes for them.
 const GREEN_MAHJONG_CLUB_ID = 'c243fe89-0b06-42be-950f-f85cb9ac9633';
 const GREEN_MAHJONG_BOT_USERNAME = 'green_mahjong_bot';
+// Layer 1 (site-wide) bot - same one used at registration. Joining a club
+// requires this to already be connected, not just the optional Layer 2 one.
+const NOTIFY_BOT_USERNAME = 'SportBookNotifyBot';
 
 async function requestMembership(clubId,clubName,genderCondition,btn){
   if((genderCondition==='male'&&player.gender==='female')||(genderCondition==='female'&&player.gender==='male')){alert('Sorry! This club accepts '+genderCondition+' members only.');return;}
+  if(!player.telegram_id){ showJoinTelegramGate(clubId,clubName,btn); return; }
+  await doRequestMembership(clubId,clubName,btn);
+}
+
+async function doRequestMembership(clubId,clubName,btn){
   btn.disabled=true;btn.textContent='Sending...';
   try{
     var ex=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&select=id');
@@ -780,6 +788,49 @@ async function requestMembership(clubId,clubName,genderCondition,btn){
       if(connectEl) connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId);
     }
   }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
+}
+
+// Blocks joining a club until the player's own site-wide Telegram is
+// connected - shows the same tap-to-connect flow used at registration,
+// right inline, and auto-continues the join request once connected.
+let joinTgPollTimers={};
+function showJoinTelegramGate(clubId,clubName,btn){
+  var gateId='join-tg-gate-'+clubId;
+  var safeClubName=clubName.replace(/'/g,"\\'");
+  btn.outerHTML='<div id="'+gateId+'" style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Connect Telegram first to join a club — it opens with Start ready, just send it.</div>'
+    +'<a href="https://t.me/'+NOTIFY_BOT_USERNAME+'?start='+player.id+'" target="_blank" class="btn btn-gold btn-sm" onclick="pollJoinTelegramConnect(\''+clubId+'\',\''+safeClubName+'\')">📩 Connect Telegram →</a>'
+    +'<div id="'+gateId+'-msg" style="margin-top:8px;"></div>'
+    +'</div>';
+}
+
+function pollJoinTelegramConnect(clubId,clubName){
+  var gateId='join-tg-gate-'+clubId;
+  var msgEl=document.getElementById(gateId+'-msg');
+  msgEl.innerHTML='<span style="font-size:11px;color:#1F618D;">Waiting for you to tap Start in Telegram...</span>';
+  var startedAt=Date.now();
+  clearInterval(joinTgPollTimers[clubId]);
+  joinTgPollTimers[clubId]=setInterval(async function(){
+    if(Date.now()-startedAt>120000){
+      clearInterval(joinTgPollTimers[clubId]);
+      msgEl.innerHTML='<span style="font-size:11px;color:#B9770E;">Didn\'t catch that yet — tap Connect Telegram again.</span>';
+      return;
+    }
+    try{
+      var rows=await sb('sp_members?id=eq.'+player.id+'&select=telegram_id');
+      if(rows.length&&rows[0].telegram_id){
+        clearInterval(joinTgPollTimers[clubId]);
+        player.telegram_id=rows[0].telegram_id;
+        localStorage.setItem('sp_member',JSON.stringify(player));
+        msgEl.innerHTML='<span style="font-size:11px;color:#1E7A46;">✅ Connected! Sending your join request...</span>';
+        setTimeout(function(){
+          var gateEl=document.getElementById(gateId);
+          gateEl.outerHTML='<button class="btn btn-outline btn-sm" id="rejoin-btn-'+clubId+'">Request to Join</button>';
+          doRequestMembership(clubId,clubName,document.getElementById('rejoin-btn-'+clubId));
+        },900);
+      }
+    }catch(e){}
+  },3000);
 }
 
 // ── TELEGRAM CONNECT for a pending club join request (optional) ──
