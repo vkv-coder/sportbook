@@ -247,7 +247,6 @@ function enterDashboard() {
   loadMjClubs();
   loadSiteMembers();
 }
-if (sessionStorage.getItem('sb_admin_ok') === '1') { enterDashboard(); }
 
 async function adminLogin() {
   var pin = document.getElementById('adminPin').value;
@@ -620,6 +619,12 @@ async function exportMembersCSV() {
     toast('Downloaded!');
   } catch(e) { toast('Error: ' + e.message); }
 }
+
+// Must run after every var above (SP_MEMBERS_COLS etc.) has actually been
+// assigned, not just hoisted - putting this near the top of the script
+// instead caused loadSiteMembers() to fire before SP_MEMBERS_COLS existed
+// on a refresh, sending "select=undefined" and breaking that tab silently.
+if (sessionStorage.getItem('sb_admin_ok') === '1') { enterDashboard(); }
 </script>
 </body>
 </html>
