@@ -170,6 +170,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 
   <!-- TAB 3: MY CLUBS -->
   <div class="tab-content" id="tab-my-clubs">
+    <div id="pending-clubs-list"></div>
     <div id="my-clubs-loading" class="loading"><div class="spinner"></div>Loading your clubs...</div>
     <div id="my-clubs-list"></div>
   </div>
@@ -246,6 +247,7 @@ window.addEventListener('DOMContentLoaded',async()=>{
   document.getElementById('avail-date').min=today;
   document.getElementById('grp-date').min=today;
   await loadMyClubs();
+  loadPendingClubRequests();
   loadMyBookings();
   loadDiscover();
   loadGroupRequests();
@@ -788,6 +790,7 @@ async function doRequestMembership(clubId,clubName,btn){
       var connectEl=document.getElementById('tg-connect-'+clubId);
       if(connectEl) connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId);
     }
+    loadPendingClubRequests();
   }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
 }
 
@@ -839,7 +842,36 @@ function tgConnectHtml(clubId,mjMemberId){
   return '<div id="tg-msg-'+clubId+'" style="margin-top:6px;"></div>'
     +'<a href="https://t.me/'+GREEN_MAHJONG_BOT_USERNAME+'?start='+mjMemberId+'" target="_blank" '
     +'style="display:inline-block;font-size:12px;background:#F3F4F6;color:#2E9E60;padding:6px 12px;border-radius:20px;text-decoration:none;margin-top:6px;" '
-    +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Green Mahjong Bot (optional)</a>';
+    +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Telegram (required to be notified)</a>';
+}
+
+// Shows any club-join requests still pending, since a request that's
+// pending-but-not-yet-connected otherwise vanishes from view entirely -
+// it's excluded from Discover (already requested) and from My Clubs
+// (not approved yet), so this is the only place a player can come back
+// and finish connecting if they didn't do it right after requesting.
+async function loadPendingClubRequests(){
+  try{
+    var pend=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.pending&select=id,club_id,telegram_id');
+    if(!pend.length){document.getElementById('pending-clubs-list').innerHTML='';return;}
+    var clubIds=pend.map(function(p){return p.club_id;});
+    var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name');
+    var cMap={};clubs.forEach(function(c){cMap[c.id]=c;});
+    document.getElementById('pending-clubs-list').innerHTML=pend.map(function(p){
+      var club=cMap[p.club_id];
+      var clubName=club?club.club_name:'Club';
+      var connected=!!(p.telegram_id&&/^\d+$/.test(p.telegram_id));
+      var body=connected
+        ?'<div style="font-size:12px;color:#5B6B5B;">✅ Telegram connected — you\'ll be notified here when approved.</div>'
+        :('<div style="font-size:12px;color:#B9770E;margin-bottom:8px;">⚠️ Connect Telegram so '+clubName+' can notify you once approved.</div>'
+          +tgConnectHtml(p.club_id,p.id));
+      return '<div class="discover-card" style="border-left:4px solid var(--orange);margin-bottom:12px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
+        +'<div class="discover-name">⏳ '+clubName+'</div>'
+        +'<span class="badge badge-pending">Pending</span></div>'
+        +body+'</div>';
+    }).join('');
+  }catch(e){}
 }
 
 let clubTgPollTimers={};
