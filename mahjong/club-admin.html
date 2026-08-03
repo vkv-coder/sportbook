@@ -401,22 +401,24 @@ select option{background:var(--surface);}
 <script>
 const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-const FILL_ALERT_GAS_URL='https://script.google.com/macros/s/AKfycby60m-9xnQNqoe3k5mAPDhh7eTPiqkoHWJSEdNFdtmsrgewHFRgmcUc5v8Zk4bzVwIx/exec';
-const GREEN_MAHJONG_BOT_USERNAME='green_mahjong_bot';
 let club=null,allSlots=[];
 
 // Organiser's own Telegram connect - tap-to-connect, same pattern as every
 // other Telegram connect in this app, replacing the old "type in your own
 // numeric chat ID" field that used to be on the registration form (nobody
-// can realistically know that number without help).
+// can realistically know that number without help). Each club has its OWN
+// bot (own branding, own deployment) - club.telegram_bot_username, not a
+// shared global bot - so this card only works once that's been set up.
 function renderAdminTgStatus(){
   var el=document.getElementById('admin-tg-status');
   var connected=!!(club.telegram_admin_id&&/^\d+$/.test(club.telegram_admin_id));
   if(connected){
     el.innerHTML='<div style="font-size:13px;color:var(--muted);">✅ Connected — you\'ll get Telegram alerts here for new membership requests and more.</div>';
+  }else if(!club.telegram_bot_username){
+    el.innerHTML='<div style="font-size:13px;color:var(--muted);">Your club\'s Telegram bot hasn\'t been set up yet — contact SportBook admin to get one created for '+club.club_name+'.</div>';
   }else{
     el.innerHTML='<div style="font-size:13px;color:var(--muted);margin-bottom:10px;">Connect Telegram so you get alerted here when someone requests to join your club.</div>'
-      +'<a href="https://t.me/'+GREEN_MAHJONG_BOT_USERNAME+'?start=admin_'+club.id+'" target="_blank" class="btn btn-gold btn-sm" onclick="pollAdminTgConnect()">📩 Connect Telegram →</a>'
+      +'<a href="https://t.me/'+club.telegram_bot_username+'?start=admin_'+club.id+'" target="_blank" class="btn btn-gold btn-sm" onclick="pollAdminTgConnect()">📩 Connect Telegram →</a>'
       +'<div id="admin-tg-msg" style="margin-top:8px;"></div>';
   }
 }
@@ -528,6 +530,18 @@ function adminLogout(){
 }
 
 async function loadDashboard(){
+  // Refresh the club's own Telegram bot config from the DB every time -
+  // a persisted (localStorage) session from before this club had its own
+  // bot connected would otherwise keep showing stale/missing values.
+  try{
+    var tgRows=await sb('mj_clubs?id=eq.'+club.id+'&select=telegram_bot_username,telegram_gas_url,telegram_admin_id');
+    if(tgRows.length){
+      club.telegram_bot_username=tgRows[0].telegram_bot_username;
+      club.telegram_gas_url=tgRows[0].telegram_gas_url;
+      club.telegram_admin_id=tgRows[0].telegram_admin_id;
+      localStorage.setItem('mj_admin_club',JSON.stringify(club));
+    }
+  }catch(e){}
   document.getElementById('login-screen').style.display='none';
   document.getElementById('dashboard-screen').style.display='block';
   document.getElementById('club-name-header').textContent=club.club_name;
@@ -723,14 +737,14 @@ async function updateMember(memId,status,name){
   }catch(e){alert('Error: '+e.message);}
 }
 
-// Pings Green Mahjong Bot for this membership, if they connected during their
-// join request - does nothing if they never connected. Wrapped so a failure
-// here never blocks the actual approval above. redirect:'manual' stops the
-// browser from auto-following Apps Script's response redirect, which would
-// otherwise trigger the script (and the Telegram send) a second time.
+// Pings this club's own Telegram bot for this membership, if the club has
+// one set up and the player connected during their join request - does
+// nothing otherwise. Wrapped so a failure here never blocks the actual
+// approval above.
 async function notifyClubMemberApprovedOnTelegram(mjMemberId){
+  if(!club.telegram_gas_url) return;
   try{
-    await fetch(FILL_ALERT_GAS_URL+'?action=notifyClubApproved&memberId='+mjMemberId,{redirect:'manual'});
+    await fetch(club.telegram_gas_url+'?action=notifyClubApproved&memberId='+mjMemberId,{mode:'no-cors'});
   }catch(e){}
 }
 
@@ -1142,6 +1156,7 @@ async function sendManualFillAlert(){
   if(!ctx) return;
   var btn = document.getElementById('manual-alert-btn');
   var msgEl = document.getElementById('manual-alert-msg');
+  if(!club.telegram_gas_url){ alert('Your club\'s Telegram bot hasn\'t been set up yet - contact SportBook admin.'); return; }
   if(!confirm('Send "'+ctx.playersNeeded+' more player(s) needed" to every approved member who hasn\'t booked this slot?')) return;
   btn.disabled=true; btn.textContent='Sending...';
   try{
@@ -1162,7 +1177,7 @@ async function sendManualFillAlert(){
     // anymore, so confirm success by polling the alert row's own status
     // instead of trusting the fetch result.
     msgEl.innerHTML = '<div class="status-box status-info">Sending...</div>';
-    fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{mode:'no-cors'}).catch(function(){});
+    fetch(club.telegram_gas_url+'?action=sendAlert&alertId='+alertId,{mode:'no-cors'}).catch(function(){});
     var confirmed=false;
     for(var i=0;i<6;i++){
       await new Promise(function(r){ setTimeout(r,2500); });
@@ -1468,6 +1483,7 @@ async function loadFillAlerts(){
 }
 
 async function sendFillAlertNow(alertId, btn){
+  if(!club.telegram_gas_url){ alert('Your club\'s Telegram bot hasn\'t been set up yet - contact SportBook admin.'); return; }
   btn.disabled=true;btn.textContent='Sending...';
   try{
     // The bot's response has no CORS headers, so a normal fetch() rejects
@@ -1476,7 +1492,7 @@ async function sendFillAlertNow(alertId, btn){
     // mode:'no-cors' still dispatches the request identically but never
     // rejects; can't read the response body anymore, so confirm success
     // by polling the alert row's own status instead of trusting fetch.
-    fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{mode:'no-cors'}).catch(function(){});
+    fetch(club.telegram_gas_url+'?action=sendAlert&alertId='+alertId,{mode:'no-cors'}).catch(function(){});
     var confirmed=false;
     for(var i=0;i<6;i++){
       await new Promise(function(r){ setTimeout(r,2500); });

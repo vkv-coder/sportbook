@@ -762,11 +762,9 @@ async function loadDiscover(){
   }catch(e){document.getElementById('discover-loading').style.display='none';}
 }
 
-// Layer 2: one shared bot (green_mahjong_bot) used for every club's
-// membership-approval alerts, same pattern as SportBookNotifyBot being one
-// shared site-wide bot - not actually per-club, so this applies to every
-// club a player requests to join, not just one hardcoded club id.
-const GREEN_MAHJONG_BOT_USERNAME = 'green_mahjong_bot';
+// Layer 2: each club has its OWN independent Telegram bot (own branding,
+// own token/deployment) - not a shared bot. mj_clubs.telegram_bot_username
+// holds which bot this specific club uses, read per-club, never hardcoded.
 // Layer 1 (site-wide) bot - same one used at registration. Joining a club
 // requires this to already be connected, not just the optional Layer 2 one.
 const NOTIFY_BOT_USERNAME = 'SportBookNotifyBot';
@@ -788,7 +786,11 @@ async function doRequestMembership(clubId,clubName,btn){
     var mjMemberId=inserted&&inserted[0]&&inserted[0].id;
     if(mjMemberId){
       var connectEl=document.getElementById('tg-connect-'+clubId);
-      if(connectEl) connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId);
+      if(connectEl){
+        var cRows=await sb('mj_clubs?id=eq.'+clubId+'&select=telegram_bot_username');
+        var botUsername=cRows.length?cRows[0].telegram_bot_username:null;
+        connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId,botUsername);
+      }
     }
     loadPendingClubRequests();
   }catch(e){btn.disabled=false;btn.textContent='Request to Join';alert('Error: '+e.message);}
@@ -838,9 +840,10 @@ function pollJoinTelegramConnect(clubId,clubName){
 }
 
 // ── TELEGRAM CONNECT for a pending club join request (optional) ──
-function tgConnectHtml(clubId,mjMemberId){
+function tgConnectHtml(clubId,mjMemberId,botUsername){
+  if(!botUsername) return '<div style="font-size:11px;color:var(--muted);margin-top:6px;">This club hasn\'t set up its Telegram bot yet - you\'ll be notified another way.</div>';
   return '<div id="tg-msg-'+clubId+'" style="margin-top:6px;"></div>'
-    +'<a href="https://t.me/'+GREEN_MAHJONG_BOT_USERNAME+'?start='+mjMemberId+'" target="_blank" '
+    +'<a href="https://t.me/'+botUsername+'?start='+mjMemberId+'" target="_blank" '
     +'style="display:inline-block;font-size:12px;background:#F3F4F6;color:#2E9E60;padding:6px 12px;border-radius:20px;text-decoration:none;margin-top:6px;" '
     +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Telegram (required to be notified)</a>';
 }
@@ -855,7 +858,7 @@ async function loadPendingClubRequests(){
     var pend=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.pending&select=id,club_id,telegram_id');
     if(!pend.length){document.getElementById('pending-clubs-list').innerHTML='';return;}
     var clubIds=pend.map(function(p){return p.club_id;});
-    var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name');
+    var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name,telegram_bot_username');
     var cMap={};clubs.forEach(function(c){cMap[c.id]=c;});
     document.getElementById('pending-clubs-list').innerHTML=pend.map(function(p){
       var club=cMap[p.club_id];
@@ -864,7 +867,7 @@ async function loadPendingClubRequests(){
       var body=connected
         ?'<div style="font-size:12px;color:#5B6B5B;">✅ Telegram connected — you\'ll be notified here when approved.</div>'
         :('<div style="font-size:12px;color:#B9770E;margin-bottom:8px;">⚠️ Connect Telegram so '+clubName+' can notify you once approved.</div>'
-          +tgConnectHtml(p.club_id,p.id));
+          +tgConnectHtml(p.club_id,p.id,club?club.telegram_bot_username:null));
       return '<div class="discover-card" style="border-left:4px solid var(--orange);margin-bottom:12px;">'
         +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">'
         +'<div class="discover-name">⏳ '+clubName+'</div>'
