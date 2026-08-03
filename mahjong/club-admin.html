@@ -1222,7 +1222,7 @@ async function loadOverviewMatrix(){
         var cardClass = tableBookings.length>=4?'full':tableBookings.length>0?'partial':isPending?'partial':'empty';
         var playerIds = tableBookings.map(function(b){return b.player_id;});
         var playerIdsStr = JSON.stringify(playerIds).replace(/"/g,'&quot;');
-        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+tableBookings.length+',\''+slot.id+'\')">'
+        html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+count+',\''+slot.id+'\')">'
           +'<div class="t-num">T'+t+'</div>'
           +'<div class="t-cat">'+catLabel+(isPending?' ⏳':'')+'</div>'
           +'<div class="t-count">'+count+'/4</div>'
