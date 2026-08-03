@@ -1153,14 +1153,28 @@ async function sendManualFillAlert(){
       p_playing_category: ctx.category,
       p_players_needed: ctx.playersNeeded
     });
-    var res = await fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{redirect:'manual'});
-    var data = await res.json();
-    if(data.ok){
-      msgEl.innerHTML = '<div class="status-box status-success">Sent to '+(data.sentCount||0)+' member(s)!</div>';
+    // The bot's response has no CORS headers, so a normal fetch() rejects
+    // with "Failed to fetch" even when the send fully succeeds server-side
+    // - confirmed live (message delivered, DB row marked sent, browser
+    // still reported failure), which risked a well-intentioned but real
+    // duplicate send on retry. mode:'no-cors' still dispatches the request
+    // identically but never rejects; we just can't read the response body
+    // anymore, so confirm success by polling the alert row's own status
+    // instead of trusting the fetch result.
+    msgEl.innerHTML = '<div class="status-box status-info">Sending...</div>';
+    fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{mode:'no-cors'}).catch(function(){});
+    var confirmed=false;
+    for(var i=0;i<6;i++){
+      await new Promise(function(r){ setTimeout(r,2500); });
+      var rows=await sb('mj_fill_alerts?id=eq.'+alertId+'&select=status');
+      if(rows.length&&rows[0].status==='sent'){ confirmed=true; break; }
+    }
+    if(confirmed){
+      msgEl.innerHTML = '<div class="status-box status-success">✅ Sent!</div>';
       btn.style.display='none';
       toast('Alert sent!');
     }else{
-      msgEl.innerHTML = '<div class="status-box status-error">Error: '+(data.error||'Unknown error')+'</div>';
+      msgEl.innerHTML = '<div class="status-box status-warn">Taking longer than expected - check the Fill Alerts tab to confirm before sending again.</div>';
       btn.disabled=false; btn.textContent='📢 Notify: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
     }
   }catch(e){
@@ -1456,16 +1470,24 @@ async function loadFillAlerts(){
 async function sendFillAlertNow(alertId, btn){
   btn.disabled=true;btn.textContent='Sending...';
   try{
-    // redirect:'manual' is defensive here - the bot's sendAlert response no longer
-    // redirects at all (fixed on the bot side), so this has nothing to suppress in
-    // practice, but keeps this call safe if that ever changes back.
-    var res=await fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{redirect:'manual'});
-    var data=await res.json();
-    if(data.ok){
-      toast('Alert sent to '+(data.sentCount||0)+' member(s)!');
+    // The bot's response has no CORS headers, so a normal fetch() rejects
+    // with "Failed to fetch" even when the send fully succeeds server-side
+    // (confirmed live via the manual fill-alert flow - same endpoint).
+    // mode:'no-cors' still dispatches the request identically but never
+    // rejects; can't read the response body anymore, so confirm success
+    // by polling the alert row's own status instead of trusting fetch.
+    fetch(FILL_ALERT_GAS_URL+'?action=sendAlert&alertId='+alertId,{mode:'no-cors'}).catch(function(){});
+    var confirmed=false;
+    for(var i=0;i<6;i++){
+      await new Promise(function(r){ setTimeout(r,2500); });
+      var rows=await sb('mj_fill_alerts?id=eq.'+alertId+'&select=status');
+      if(rows.length&&rows[0].status==='sent'){ confirmed=true; break; }
+    }
+    if(confirmed){
+      toast('Alert sent!');
       loadFillAlerts();
     }else{
-      alert('Error: '+(data.error||'Unknown error'));
+      alert('Taking longer than expected - check the Fill Alerts list to confirm before sending again.');
       btn.disabled=false;btn.textContent='📢 Send Alert';
     }
   }catch(e){
