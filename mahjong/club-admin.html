@@ -546,7 +546,9 @@ async function loadDashboard(){
   renderAdminTgStatus();
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('session-date-filter').value=today;
+  document.getElementById('session-date-filter').min=today;
   document.getElementById('overview-date').value=today;
+  document.getElementById('overview-date').min=today;
   allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
   loadStats();loadOverviewMatrix();loadPendingMembers();loadApprovedMembers();loadSessions();loadSlotsAdmin();loadGroupRequests();
 }
@@ -1480,7 +1482,7 @@ function switchTab(tabId){
   if(tabId==='tab-leaderboard')loadLeaderboardAdmin();
   if(tabId==='tab-venue')loadVenueEvents();
   if(tabId==='tab-fillalerts')loadFillAlerts();
-  if(tabId==='tab-requests'){var today=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=today;loadBookingRequests();}
+  if(tabId==='tab-requests'){var today=new Date().toISOString().split('T')[0];document.getElementById('req-date-filter').value=today;document.getElementById('req-date-filter').min=today;loadBookingRequests();}
   if(tabId==='tab-sessions'){
     var today=new Date().toISOString().split('T')[0];
     var sdf=document.getElementById('session-date-filter');
