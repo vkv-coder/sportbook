@@ -377,6 +377,14 @@ select option{background:var(--surface);}
         <div id="admin-tg-status"></div>
       </div>
       <div class="card">
+        <div class="card-title">🚪 New Join Requests</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer;">
+          <input type="checkbox" id="accepting-requests" style="width:16px;height:16px;"/>
+          Currently accepting new join requests
+        </label>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">When off, players won't see a "Request to Join" button for your club. Requests already pending are unaffected — you can still approve them below.</div>
+      </div>
+      <div class="card">
         <div class="card-title">📋 Cancellation Policy</div>
         <div class="form-group">
           <label>Policy Description (shown to members)</label>
@@ -534,11 +542,12 @@ async function loadDashboard(){
   // a persisted (localStorage) session from before this club had its own
   // bot connected would otherwise keep showing stale/missing values.
   try{
-    var tgRows=await sb('mj_clubs?id=eq.'+club.id+'&select=telegram_bot_username,telegram_gas_url,telegram_admin_id');
+    var tgRows=await sb('mj_clubs?id=eq.'+club.id+'&select=telegram_bot_username,telegram_gas_url,telegram_admin_id,accepting_requests');
     if(tgRows.length){
       club.telegram_bot_username=tgRows[0].telegram_bot_username;
       club.telegram_gas_url=tgRows[0].telegram_gas_url;
       club.telegram_admin_id=tgRows[0].telegram_admin_id;
+      club.accepting_requests=tgRows[0].accepting_requests;
       localStorage.setItem('mj_admin_club',JSON.stringify(club));
     }
   }catch(e){}
@@ -557,6 +566,7 @@ async function loadDashboard(){
   document.getElementById('cancel-policy').value=club.cancellation_policy||'';
   document.getElementById('cancel-hours').value=club.cancellation_hours||24;
   document.getElementById('code-prefix').value=club.code_prefix||'GM';
+  document.getElementById('accepting-requests').checked=club.accepting_requests!==false;
   renderAdminTgStatus();
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('session-date-filter').value=today;
@@ -941,10 +951,11 @@ async function saveSettings(){
   const policy=document.getElementById('cancel-policy').value.trim();
   const hours=parseInt(document.getElementById('cancel-hours').value)||24;
   const prefix=(document.getElementById('code-prefix').value.trim()||'GM').toUpperCase();
+  const accepting=document.getElementById('accepting-requests').checked;
   showMsg('settings-msg','Saving...','info');
   try{
-    await sbPatch(`mj_clubs?id=eq.${club.id}`,{cancellation_policy:policy,cancellation_hours:hours,code_prefix:prefix});
-    club.cancellation_policy=policy;club.cancellation_hours=hours;club.code_prefix=prefix;
+    await sbPatch(`mj_clubs?id=eq.${club.id}`,{cancellation_policy:policy,cancellation_hours:hours,code_prefix:prefix,accepting_requests:accepting});
+    club.cancellation_policy=policy;club.cancellation_hours=hours;club.code_prefix=prefix;club.accepting_requests=accepting;
     localStorage.setItem('mj_admin_club',JSON.stringify(club));
     showMsg('settings-msg','✅ Settings saved!','success');
   }catch(e){showMsg('settings-msg','Error: '+e.message,'error');}

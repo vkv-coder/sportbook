@@ -719,9 +719,11 @@ async function loadDiscover(){
       var bc=club.gender_condition==='male'?'badge-male':club.gender_condition==='female'?'badge-female':'badge-mixed';
       var actionBtn=genderBlocked
         ?'<span style="font-size:12px;color:#A93226;background:#FDECEA;padding:4px 10px;border-radius:20px;">🚫 '+(club.gender_condition==='male'?'Male':'Female')+' members only</span>'
-        :status==='pending'
-          ?'<span class="badge badge-pending">⏳ Request Pending</span>'
-          :'<button class="btn btn-outline btn-sm" onclick="requestMembership(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+club.gender_condition+'\',this)">Request to Join</button>';
+        :club.accepting_requests===false
+          ?'<span style="font-size:12px;color:#7D7D7D;background:#F0F0F0;padding:4px 10px;border-radius:20px;">⏸️ Not accepting requests right now</span>'
+          :status==='pending'
+            ?'<span class="badge badge-pending">⏳ Request Pending</span>'
+            :'<button class="btn btn-outline btn-sm" onclick="requestMembership(\''+club.id+'\',\''+club.club_name.replace(/'/g,"\\'")+'\',\''+club.gender_condition+'\',this)">Request to Join</button>';
       var venueEvts=venueMap[club.id]||[];
       var venueHtml=venueEvts.length?'<div style="margin-top:10px;background:#E3F5E8;border:1px solid #27ae60;border-radius:8px;padding:10px;">'
         +'<div style="font-size:10px;color:#1E7A46;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">📍 Upcoming Special Venues</div>'
@@ -778,6 +780,12 @@ async function requestMembership(clubId,clubName,genderCondition,btn){
 async function doRequestMembership(clubId,clubName,btn){
   btn.disabled=true;btn.textContent='Sending...';
   try{
+    var clubCheck=await sb('mj_clubs?id=eq.'+clubId+'&select=accepting_requests');
+    if(clubCheck.length&&clubCheck[0].accepting_requests===false){
+      alert('This club is not accepting new join requests right now.');
+      loadDiscover();
+      return;
+    }
     var ex=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&select=id');
     if(ex.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
     var inserted=await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
