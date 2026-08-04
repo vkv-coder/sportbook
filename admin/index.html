@@ -347,6 +347,13 @@ async function approveOwner(id, venue, ownerName, phone, email) {
   if (res.error) { toast('⚠️ Could not approve ' + venue + ': ' + res.error.message); return; }
   toast(venue + ' approved!');
   await notifyTelegram('OWNER APPROVED: ' + venue + ' | ' + ownerName + ' | ' + phone);
+  if (email) {
+    await notifyEmail(email, 'Your SportBook venue is approved!',
+      '<p>Hi ' + ownerName + ',</p>'
+      + '<p>Great news — <b>' + venue + '</b> has been approved on SportBook.</p>'
+      + '<p><a href="https://sportbook.in" style="background:#1A6BFF;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Go to SportBook</a></p>'
+      + '<p>— SportBook</p>');
+  }
   loadAll();
 }
 async function revokeOwner(id) {
@@ -599,6 +606,13 @@ async function approveMember(btn) {
   toast(name + ' approved!');
   await notifyTelegram('New Member Approved: ' + name + ' | ' + mobile + ' | ' + email);
   await notifyPlayerApprovedOnTelegram(id);
+  if (email) {
+    await notifyEmail(email, 'Your SportBook account is approved!',
+      '<p>Hi ' + name + ',</p>'
+      + '<p>Your SportBook account has been approved. You can now log in and join Mahjong clubs:</p>'
+      + '<p><a href="https://sportbook.in" style="background:#1A6BFF;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Go to SportBook</a></p>'
+      + '<p>— SportBook</p>');
+  }
   // Open WhatsApp to notify player
   var waText = 'Hi ' + name + '! Your SportBook account has been approved. Please wait for our next message with your Telegram connect link — tap that first. You cannot join a Mahjong club until Telegram is connected. Welcome!';
   window.open('https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText), '_blank');
