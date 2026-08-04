@@ -563,7 +563,10 @@ async function loadDashboard(){
   document.getElementById('session-date-filter').min=today;
   document.getElementById('overview-date').value=today;
   document.getElementById('overview-date').min=today;
-  allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
+  // Every consumer below (loadSessions, loadSlotsAdmin, loadOverviewMatrix) already
+  // re-fetches allSlots itself if it's empty, inside its own try/catch — so a failure
+  // here must not block the rest of the dashboard from loading, it can just retry later.
+  try{ allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`); }catch(e){ allSlots=[]; }
   loadStats();loadOverviewMatrix();loadPendingMembers();loadApprovedMembers();loadSessions();loadSlotsAdmin();loadGroupRequests();
 }
 
