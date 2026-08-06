@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Select Your Game — SportBook</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0047AB">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -658,6 +660,12 @@ async function sendResetLink(btn) {
     document.getElementById('forgot-step1').style.display = 'none';
     document.getElementById('forgot-step-done').style.display = 'block';
   } catch(e) { document.getElementById('forgot-msg1').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>'; btn.disabled=false; }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 </script>
 </body>

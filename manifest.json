@@ -2,7 +2,7 @@
   "name": "SportBook",
   "short_name": "SportBook",
   "description": "Book sports courts in Vadodara instantly",
-  "start_url": "/sportbook/",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0047AB",
   "theme_color": "#0047AB",
