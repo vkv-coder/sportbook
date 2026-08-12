@@ -789,14 +789,21 @@ async function doRequestMembership(clubId,clubName,btn){
     var ex=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&select=id');
     if(ex.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
     var inserted=await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
-    await tg('🀄 <b>New Membership Request</b>\n\nClub: <b>'+clubName+'</b>\nPlayer: <b>'+player.name+'</b>\nMobile: '+player.mobile+'\nEmail: '+player.email+'\nGender: '+player.gender+'\n\nApprove from Club Dashboard.',clubId);
     btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
     var mjMemberId=inserted&&inserted[0]&&inserted[0].id;
+    var cRows=await sb('mj_clubs?id=eq.'+clubId+'&select=telegram_bot_username,telegram_gas_url');
+    var botUsername=cRows.length?cRows[0].telegram_bot_username:null;
+    var gasUrl=cRows.length?cRows[0].telegram_gas_url:null;
+    if(mjMemberId&&gasUrl){
+      // Notify via the club's OWN bot, not the shared telegram-notify
+      // worker - that worker is a different bot from every club's own
+      // bot, so it can't message an admin who only connected via their
+      // club's bot (Telegram requires the SAME bot to have been started).
+      fetch(gasUrl+'?action=notifyNewJoinRequest&memberId='+mjMemberId,{mode:'no-cors'}).catch(function(){});
+    }
     if(mjMemberId){
       var connectEl=document.getElementById('tg-connect-'+clubId);
       if(connectEl){
-        var cRows=await sb('mj_clubs?id=eq.'+clubId+'&select=telegram_bot_username');
-        var botUsername=cRows.length?cRows[0].telegram_bot_username:null;
         connectEl.innerHTML=tgConnectHtml(clubId,mjMemberId,botUsername);
       }
     }
