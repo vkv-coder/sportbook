@@ -188,8 +188,10 @@ window.addEventListener('DOMContentLoaded', async()=>{
 
 async function sb(path,method='GET',body=null){
   const res=await fetch(SB_URL+'/rest/v1/'+path,{method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
-  if(!res.ok){const e=await res.json();throw new Error(e.message||JSON.stringify(e));}
-  return method==='DELETE'?null:res.json();
+  const text=await res.text();
+  const data=text?JSON.parse(text):null;
+  if(!res.ok){throw new Error((data&&data.message)||'Request failed.');}
+  return data;
 }
 async function sbPatch(path,body){
   return fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});

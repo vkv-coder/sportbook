@@ -165,16 +165,6 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
       <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
       <button class="link-btn" onclick="goPlayerBack()">← Go Back</button>
     </div>
-
-    <div class="step" id="player-step3">
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:32px;margin-bottom:8px;">📩</div>
-        <div style="font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#e8c97a;">Connect Telegram to Continue</div>
-        <div style="font-size:12px;color:#8b89a8;margin-top:6px;">Tap the button below — it opens Telegram with Start already filled in, just send it.</div>
-      </div>
-      <div id="tg-connect-msg"></div>
-      <a id="tg-connect-link" class="btn-gold" style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;" target="_blank" onclick="startTelegramPolling()">Connect Telegram →</a>
-    </div>
   </div>
 </div>
 
@@ -359,12 +349,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 let currentRole = 'player';
 let currentMode = 'new';
-let newMemberId = null;
-let tgPollTimer = null;
-let tgPollStart = 0;
-
-// Vijay: replace with the bot's real @username once you create it via @BotFather
-const NOTIFY_BOT_USERNAME = 'SportBookNotifyBot';
 
 window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
@@ -428,8 +412,13 @@ async function sb(path, method='GET', body=null) {
     },
     body: body ? JSON.stringify(body) : null
   });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.message); }
-  return res.json();
+  // Void-returning RPCs (e.g. request_club_password_reset) reply 204 with
+  // an empty body - res.json() on that throws "Unexpected end of JSON
+  // input" even on success, so read as text first and only parse if non-empty.
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) { throw new Error((data && data.message) || 'Request failed.'); }
+  return data;
 }
 
 // Shows enough of the email for the player to recognise which of their addresses it is, without exposing the whole thing
@@ -554,55 +543,11 @@ async function verifyPlayerOTP() {
       }
       showMsg('p-otp-msg','✅ OTP verified!','success');
       setTimeout(() => {
-        // Route by whether Telegram is actually connected, not just
-        // whether this is a brand-new signup — a returning login from
-        // someone who abandoned step 3 last time must land back here too,
-        // otherwise they're stuck on the approval overlay with no way to
-        // finish the now-mandatory Telegram step.
-        if (!member.telegram_id) {
-          newMemberId = member.id;
-          showTelegramConnectStep();
-        } else {
-          document.getElementById('approval-overlay').classList.add('open');
-        }
+        document.getElementById('approval-overlay').classList.add('open');
       }, 600);
     }
 
   } catch(e) { showMsg('p-otp-msg','Error: '+e.message,'error'); }
-}
-
-// ── TELEGRAM CONNECT (optional, shown once right after registration) ──
-function showTelegramConnectStep() {
-  document.getElementById('tg-connect-link').href = 'https://t.me/' + NOTIFY_BOT_USERNAME + '?start=' + newMemberId;
-  document.getElementById('tg-connect-msg').innerHTML = '';
-  showStep('player-step3');
-}
-
-function startTelegramPolling() {
-  showMsg('tg-connect-msg', 'Waiting for you to tap Start in Telegram...', 'info');
-  tgPollStart = Date.now();
-  clearInterval(tgPollTimer);
-  tgPollTimer = setInterval(checkTelegramConnected, 3000);
-}
-
-async function checkTelegramConnected() {
-  if (Date.now() - tgPollStart > 120000) {
-    clearInterval(tgPollTimer);
-    showMsg('tg-connect-msg', "Didn't catch that yet — tap Connect Telegram again to continue.", 'warn');
-    return;
-  }
-  try {
-    const rows = await sb(`sp_members?id=eq.${newMemberId}&select=telegram_id`);
-    if (rows.length && rows[0].telegram_id) {
-      clearInterval(tgPollTimer);
-      showMsg('tg-connect-msg', '✅ Connected!', 'success');
-      setTimeout(finishRegistration, 900);
-    }
-  } catch(e) {}
-}
-
-function finishRegistration() {
-  document.getElementById('approval-overlay').classList.add('open');
 }
 
 async function notifyAdmin(member) {
