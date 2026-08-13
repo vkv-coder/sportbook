@@ -162,7 +162,7 @@ footer{text-align:center;padding:16px;font-size:12px;color:var(--muted);border-t
       <div class="otp-note" id="otp-note-text" style="margin-bottom:14px;">📧 We've emailed a 6-digit code to your registered email address. Enter it below.</div>
       <div class="form-group"><label>Enter Code</label><input type="number" id="p-otp-input" placeholder="6-digit code"/></div>
       <div id="p-otp-msg"></div>
-      <button class="btn-gold" onclick="verifyPlayerOTP()">Verify & Continue →</button>
+      <button class="btn-gold" id="p-otp-verify-btn" onclick="verifyPlayerOTP()">Verify & Continue →</button>
       <button class="link-btn" onclick="goPlayerBack()">← Go Back</button>
     </div>
   </div>
@@ -497,7 +497,17 @@ async function sendPlayerOTP(mode) {
 }
 
 // ── VERIFY OTP ────────────────────────────────────────────────
+let otpVerifyInFlight = false;
 async function verifyPlayerOTP() {
+  // Guards against the RPC firing (and notifyAdmin firing) multiple times
+  // when a member taps "Verify & Continue" repeatedly before the first
+  // request finishes - verify_player_otp only checks the code, it doesn't
+  // consume it, so nothing else stops duplicate taps from all succeeding.
+  if (otpVerifyInFlight) return;
+  otpVerifyInFlight = true;
+  const verifyBtn = document.getElementById('p-otp-verify-btn');
+  if (verifyBtn) verifyBtn.disabled = true;
+
   const entered = document.getElementById('p-otp-input').value.trim();
   const mobile = currentMode==='new'
     ? document.getElementById('p-mobile').value.trim()
@@ -554,6 +564,10 @@ async function verifyPlayerOTP() {
     }
 
   } catch(e) { showMsg('p-otp-msg','Error: '+e.message,'error'); }
+  finally {
+    otpVerifyInFlight = false;
+    if (verifyBtn) verifyBtn.disabled = false;
+  }
 }
 
 async function notifyAdmin(member) {
