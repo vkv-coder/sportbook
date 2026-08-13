@@ -205,6 +205,12 @@ var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 var NOTIFY_BOT_URL = 'https://script.google.com/macros/s/AKfycbwyAuD2SAU8fkC1-SzKA2jMaFrt3_Li8Z7qSwjZDnlY0YCr4yjR0o-HKQubjxbD3RQvKA/exec';
 
+// Green Mahjong Circle - hardcoded here on purpose, since sportbook.in's
+// signup link is currently only being shared within that one club's
+// circle (see "Also add to Green Mahjong" checkbox in approveMember).
+// Safe to remove this whole feature once that's no longer true.
+var GREEN_MAHJONG_CLUB_ID = '87c20ae0-ff75-4042-8b01-7475be316479';
+
 function toast(msg) {
   var el = document.getElementById('toast');
   el.textContent = msg;
@@ -568,7 +574,14 @@ function renderSiteMembers(list, elId, status) {
     var waLink = 'https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText);
     var actions = '';
     if (status === 'pending') {
-      actions = '<button class="action-btn approve-btn" data-id="' + m.id + '" data-mobile="' + mobile + '" data-name="' + name + '" data-email="' + (m.email||'') + '" onclick="approveMember(this)">Approve</button>'
+      // Green Mahjong-specific: since sportbook.in's signup link is
+      // currently only being shared within that one club's circle, this
+      // lets Vijay enroll someone into it in the same click as the site
+      // approval, instead of a separate step. Off by default so it stays
+      // a deliberate per-person choice if an unrelated signup ever shows up.
+      actions = '<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted,#888);margin-right:6px;">'
+              + '<input type="checkbox" class="gm-auto-approve" data-for="' + m.id + '"> Also add to Green Mahjong</label>'
+              + '<button class="action-btn approve-btn" data-id="' + m.id + '" data-mobile="' + mobile + '" data-name="' + name + '" data-email="' + (m.email||'') + '" onclick="approveMember(this)">Approve</button>'
               + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="deleteSiteM(this)">Reject</button>';
     } else {
       actions = '<span class="approved-badge">Active</span>'
@@ -591,7 +604,9 @@ async function approveMember(btn) {
   var name   = btn.getAttribute('data-name');
   var mobile = btn.getAttribute('data-mobile');
   var email  = btn.getAttribute('data-email');
-  if (!confirm('Approve ' + name + ' as a SportBook member?')) return;
+  var gmCheckbox = document.querySelector('.gm-auto-approve[data-for="' + id + '"]');
+  var alsoGreenMahjong = !!(gmCheckbox && gmCheckbox.checked);
+  if (!confirm('Approve ' + name + ' as a SportBook member' + (alsoGreenMahjong ? ' and add to Green Mahjong Circle' : '') + '?')) return;
   try {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
       method: 'PATCH',
@@ -613,10 +628,58 @@ async function approveMember(btn) {
       + '<p><a href="https://sportbook.in" style="background:#1A6BFF;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">Go to SportBook</a></p>'
       + '<p>— SportBook</p>');
   }
+
+  var alsoJoinedGreenMahjong = false;
+  if (alsoGreenMahjong) {
+    alsoJoinedGreenMahjong = await approveIntoGreenMahjong(id, name);
+  }
+
   // Open WhatsApp to notify player
-  var waText = 'Hi ' + name + '! Your SportBook account has been approved. Please wait for our next message with your Telegram connect link — tap that first. You cannot join a Mahjong club until Telegram is connected. Welcome!';
+  var waText = alsoJoinedGreenMahjong
+    ? 'Hi ' + name + '! You are approved on sportbook.in and also approved as a member of Green Mahjong Circle. Contact Mita for further process. Welcome!'
+    : 'Hi ' + name + '! Your SportBook account has been approved. Please wait for our next message with your Telegram connect link — tap that first. You cannot join a Mahjong club until Telegram is connected. Welcome!';
   window.open('https://wa.me/91' + mobile + '?text=' + encodeURIComponent(waText), '_blank');
   loadSiteMembers();
+}
+
+// Enrolls a just-approved site member straight into Green Mahjong Circle as
+// an approved member (bypassing the normal Request to Join step), assigning
+// the next sequential member code the same way club-admin.html's own Approve
+// button does. Returns true only on full success, so the caller can pick the
+// right WhatsApp message - a failure here should never block the site
+// approval that already happened above.
+async function approveIntoGreenMahjong(playerId, name) {
+  try {
+    var inserted = await fetch(SUPABASE_URL + '/rest/v1/mj_members', {
+      method: 'POST',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation'},
+      body: JSON.stringify({club_id: GREEN_MAHJONG_CLUB_ID, player_id: playerId, status: 'pending'})
+    }).then(function(r){ return r.json(); });
+    var mjId = inserted && inserted[0] && inserted[0].id;
+    if (!mjId) throw new Error('insert did not return a row');
+
+    var existing = await fetch(SUPABASE_URL + '/rest/v1/mj_members?club_id=eq.' + GREEN_MAHJONG_CLUB_ID + '&member_code=not.is.null&select=member_code', {
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
+    }).then(function(r){ return r.json(); });
+    var nextNum = 1;
+    if (existing && existing.length) {
+      var nums = existing.map(function(r){ return parseInt((r.member_code||'').replace('GM',''), 10); }).filter(function(n){ return !isNaN(n); });
+      if (nums.length) nextNum = Math.max.apply(null, nums) + 1;
+    }
+    var code = 'GM' + String(nextNum).padStart(3, '0');
+
+    var patched = await fetch(SUPABASE_URL + '/rest/v1/mj_members?id=eq.' + mjId, {
+      method: 'PATCH',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({status: 'approved', member_code: code, slot_balance: 0})
+    });
+    if (!patched.ok) throw new Error('approve step failed (status ' + patched.status + ')');
+    toast(name + ' added to Green Mahjong Circle as ' + code);
+    return true;
+  } catch (e) {
+    toast('⚠️ Site approval OK, but Green Mahjong enrollment failed for ' + name + ' — ' + e.message);
+    return false;
+  }
 }
 
 // Pings the player's own connected chat, if any - does nothing if they never connected.
