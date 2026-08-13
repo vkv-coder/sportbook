@@ -178,6 +178,7 @@ main{padding:24px;max-width:700px;margin:0 auto;}
         <div class="stat-card"><div class="stat-val" id="sm-stat-total">-</div><div class="stat-label">Total</div></div>
         <div class="stat-card"><div class="stat-val" id="sm-stat-active">-</div><div class="stat-label">Active</div></div>
         <div class="stat-card"><div class="stat-val" id="sm-stat-pending">-</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card"><div class="stat-val" id="sm-stat-paused">-</div><div class="stat-label">Paused</div></div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <input class="form-input" id="sm-search" placeholder="🔍 Search by name..." oninput="filterSiteMembers()" style="margin-bottom:0;flex:1;">
@@ -520,10 +521,15 @@ async function loadSiteMembers() {
     var all = await resp.json();
     if (!resp.ok || !Array.isArray(all)) throw new Error((all && all.message) || ('status ' + resp.status));
     smPendingAll = all.filter(function(m){ return m.status === 'pending'; });
-    smActiveAll  = all.filter(function(m){ return m.status === 'active';  });
+    // The "Active" tab shows both active and paused members together (each
+    // row renders its own state/actions) - a paused account isn't pending
+    // approval, so it belongs here, not in the Pending tab.
+    smActiveAll  = all.filter(function(m){ return m.status === 'active' || m.status === 'paused'; });
+    var pausedCount = all.filter(function(m){ return m.status === 'paused'; }).length;
     document.getElementById('sm-stat-total').textContent   = all.length;
-    document.getElementById('sm-stat-active').textContent  = smActiveAll.length;
+    document.getElementById('sm-stat-active').textContent  = smActiveAll.length - pausedCount;
     document.getElementById('sm-stat-pending').textContent = smPendingAll.length;
+    document.getElementById('sm-stat-paused').textContent  = pausedCount;
     filterSiteMembers();
   } catch(e) {
     ['sm-pending-list','sm-active-list'].forEach(function(id){
@@ -582,12 +588,18 @@ function renderSiteMembers(list, elId, status) {
       actions = '<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted,#888);margin-right:6px;">'
               + '<input type="checkbox" class="gm-auto-approve" data-for="' + m.id + '"> Also add to Green Mahjong</label>'
               + '<button class="action-btn approve-btn" data-id="' + m.id + '" data-mobile="' + mobile + '" data-name="' + name + '" data-email="' + (m.email||'') + '" onclick="approveMember(this)">Approve</button>'
-              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="deleteSiteM(this)">Reject</button>';
+              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="rejectPendingMember(this)">Reject</button>';
+    } else if (m.status === 'paused') {
+      // Paused = blocked from sportbook.in only. No effect on any club
+      // membership - each club handles its own membership removal
+      // separately, independent of the person's site-wide account state.
+      actions = '<span class="approved-badge" style="background:#F0F0F0;color:#7D7D7D;">⏸️ Paused</span>'
+              + '<button class="action-btn approve-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="unpauseSiteMember(this)">Reactivate</button>';
     } else {
       actions = '<span class="approved-badge">Active</span>'
               + '<a href="' + waLink + '" target="_blank" class="action-btn wa-btn">WhatsApp</a>'
               + (tgConnected ? '<span class="approved-badge">Telegram ✅</span>' : '<a href="' + tgWaLink + '" target="_blank" class="action-btn pause-btn">Send TG Link</a>')
-              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="deleteSiteM(this)">Remove</button>';
+              + '<button class="action-btn reject-btn" data-id="' + m.id + '" data-name="' + name + '" onclick="pauseSiteMember(this)">Pause</button>';
     }
     var waDiff = m.whatsapp && m.whatsapp !== mobile;
     return '<div class="member-card">'
@@ -693,21 +705,69 @@ async function notifyPlayerApprovedOnTelegram(memberId) {
   } catch(e) {}
 }
 
-async function deleteSiteM(btn) {
+// Rejects a signup that was never approved - a real hard delete, since a
+// still-pending row can never have a club membership to begin with, so
+// there's nothing else to clean up. Routed through a SECURITY DEFINER RPC
+// since plain DELETE isn't granted to the anon key; the RPC itself only
+// deletes rows still in 'pending' status as a defense-in-depth check.
+async function rejectPendingMember(btn) {
   var id   = btn.getAttribute('data-id');
   var name = btn.getAttribute('data-name');
-  if (!confirm('Remove ' + name + ' from SportBook?')) return;
+  if (!confirm('Reject ' + name + '\'s signup?')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'DELETE',
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal'}
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_reject_pending_member', {
+      method: 'POST',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({p_id: id})
     });
-    if (!resp.ok) throw new Error('server rejected the delete (status ' + resp.status + ')');
+    if (!resp.ok) { var err = await resp.json().catch(function(){ return {}; }); throw new Error(err.message || ('server rejected the delete (status ' + resp.status + ')')); }
   } catch(e) {
-    toast('⚠️ Could not remove ' + name + ' — ' + e.message);
+    toast('⚠️ Could not reject ' + name + ' — ' + e.message);
     return;
   }
-  toast(name + ' removed.');
+  toast(name + ' rejected.');
+  loadSiteMembers();
+}
+
+// Pausing/reactivating is a plain status update - already covered by the
+// same anon UPDATE grant Approve uses, no RPC needed. Pausing only blocks
+// sportbook.in login (see select-game.html's status check); it has zero
+// effect on any club membership - each club manages its own membership
+// removal independently via its own admin dashboard.
+async function pauseSiteMember(btn) {
+  var id   = btn.getAttribute('data-id');
+  var name = btn.getAttribute('data-name');
+  if (!confirm('Pause ' + name + '\'s SportBook account? They will not be able to log in until reactivated. This does not affect any club membership.')) return;
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
+      method: 'PATCH',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({status: 'paused'})
+    });
+    if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
+  } catch(e) {
+    toast('⚠️ Could not pause ' + name + ' — ' + e.message);
+    return;
+  }
+  toast(name + ' paused.');
+  loadSiteMembers();
+}
+
+async function unpauseSiteMember(btn) {
+  var id   = btn.getAttribute('data-id');
+  var name = btn.getAttribute('data-name');
+  try {
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
+      method: 'PATCH',
+      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({status: 'active'})
+    });
+    if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
+  } catch(e) {
+    toast('⚠️ Could not reactivate ' + name + ' — ' + e.message);
+    return;
+  }
+  toast(name + ' reactivated.');
   loadSiteMembers();
 }
 

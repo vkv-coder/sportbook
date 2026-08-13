@@ -528,6 +528,12 @@ async function verifyPlayerOTP() {
     // (it already ran above), so no separate PATCH is needed here.
 
     // Save to localStorage
+    if (member.status === 'paused') {
+      localStorage.removeItem('sp_member');
+      showMsg('p-otp-msg','Your account has been paused. Please contact the SportBook admin.','error');
+      return;
+    }
+
     localStorage.setItem('sp_member', JSON.stringify(member));
 
     if (member.status === 'active') {
