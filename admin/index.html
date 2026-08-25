@@ -620,10 +620,10 @@ async function approveMember(btn) {
   var alsoGreenMahjong = !!(gmCheckbox && gmCheckbox.checked);
   if (!confirm('Approve ' + name + ' as a SportBook member' + (alsoGreenMahjong ? ' and add to Green Mahjong Circle' : '') + '?')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'active'})
+      body: JSON.stringify({p_id: id, p_status: 'active'})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
@@ -739,10 +739,10 @@ async function pauseSiteMember(btn) {
   var name = btn.getAttribute('data-name');
   if (!confirm('Pause ' + name + '\'s SportBook account? They will not be able to log in until reactivated. This does not affect any club membership.')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'paused'})
+      body: JSON.stringify({p_id: id, p_status: 'paused'})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
@@ -757,10 +757,10 @@ async function unpauseSiteMember(btn) {
   var id   = btn.getAttribute('data-id');
   var name = btn.getAttribute('data-name');
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'active'})
+      body: JSON.stringify({p_id: id, p_status: 'active'})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
