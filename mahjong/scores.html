@@ -107,26 +107,28 @@ select option{background:var(--surface);}
     <div id="rooms-list"></div>
   </div>
 
-  <!-- TAB: CREATE ROOM -->
+  <!-- TAB: LOG A NEW MATCH -->
   <div class="tab-content" id="tab-create">
       <div class="card">
-        <div class="card-title">🎯 Start a New Game</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Mahjong needs exactly 4 players. Enter the other 3 players' member codes (find them via Group Request or ask your club admin) - no booking needed.</div>
+        <div class="card-title">🎯 Log a New Match</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Mahjong needs exactly 4 players. Enter everyone's member code and final score in one go - no separate "start game" step, no booking needed.</div>
         <div class="form-group"><label>Club</label><select id="create-club"></select></div>
-        <div class="form-group"><label>Date</label><input type="date" id="create-date"/></div>
-        <div class="form-group"><label>Playing Category</label>
-          <select id="create-category">
-            <option value="beginner">🟢 Beginner</option>
-            <option value="intermediate">🟡 Intermediate</option>
-            <option value="advanced">🔴 Advanced</option>
-            <option value="taiwanese">🏆 Taiwanese</option>
+        <div class="form-group"><label>Category</label>
+          <select id="create-category" onchange="updateCategoryHint()">
+            <option value="traditional">🀄 Traditional (scores sum to 140,000)</option>
+            <option value="taiwanese">🏆 Taiwanese (scores sum to 2,040)</option>
           </select>
         </div>
-        <div class="form-group"><label>Player 2 Member Code</label><input type="text" id="create-m2" placeholder="e.g. GM002"/></div>
-        <div class="form-group"><label>Player 3 Member Code</label><input type="text" id="create-m3" placeholder="e.g. GM003"/></div>
-        <div class="form-group"><label>Player 4 Member Code</label><input type="text" id="create-m4" placeholder="e.g. GM004"/></div>
+        <div class="form-group"><label>Match Date</label><input type="date" id="create-date"/></div>
+
+        <div class="form-group"><label id="create-my-label">Your Score</label><input type="number" id="create-my-score" placeholder="Your final score"/></div>
+
+        <div class="form-group" style="display:flex;gap:8px;"><input type="text" id="create-m2" placeholder="Member Code (e.g. GM002)" style="flex:1;"/><input type="number" id="create-s2" placeholder="Score" style="width:100px;"/></div>
+        <div class="form-group" style="display:flex;gap:8px;"><input type="text" id="create-m3" placeholder="Member Code (e.g. GM003)" style="flex:1;"/><input type="number" id="create-s3" placeholder="Score" style="width:100px;"/></div>
+        <div class="form-group" style="display:flex;gap:8px;"><input type="text" id="create-m4" placeholder="Member Code (e.g. GM004)" style="flex:1;"/><input type="number" id="create-s4" placeholder="Score" style="width:100px;"/></div>
+
         <div id="create-msg"></div>
-        <button class="btn btn-gold btn-full" onclick="createAdHocRoom()">Start Game →</button>
+        <button class="btn btn-gold btn-full" onclick="logNewMatch()">Submit Match for Confirmation →</button>
       </div>
   </div>
 
@@ -148,7 +150,7 @@ select option{background:var(--surface);}
     <div id="entry-section">
       <div class="card">
         <div class="card-title">📝 Enter Final Points</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Each player starts with <span style="color:var(--gold);font-weight:700;">35,000</span> points. Enter their final balance.</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Enter each player's final score.</div>
         <div id="score-rows"></div>
         <div id="entry-msg"></div>
         <div style="display:flex;gap:10px;margin-top:4px;">
@@ -217,7 +219,7 @@ function switchTab(tabId){
   document.getElementById(tabId).classList.add('active');
   const idx=['tab-rooms','tab-create'].indexOf(tabId);
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
-  if(tabId==='tab-create') populateCreateClubs();
+  if(tabId==='tab-create'){populateCreateClubs();updateCategoryHint();}
 }
 
 async function populateCreateClubs(){
@@ -232,17 +234,34 @@ async function populateCreateClubs(){
   }catch(e){sel.innerHTML='<option value="">Error loading clubs</option>';}
 }
 
-async function createAdHocRoom(){
+function updateCategoryHint(){
+  var isTaiwanese=document.getElementById('create-category').value==='taiwanese';
+  document.getElementById('create-my-label').textContent='Your Score';
+}
+
+async function logNewMatch(){
   var clubId=document.getElementById('create-club').value;
   var date=document.getElementById('create-date').value;
   var category=document.getElementById('create-category').value;
+  var myScore=parseInt(document.getElementById('create-my-score').value);
   var codes=[document.getElementById('create-m2').value,document.getElementById('create-m3').value,document.getElementById('create-m4').value]
     .map(function(v){return v.trim().toUpperCase();});
+  var oppScores=[document.getElementById('create-s2').value,document.getElementById('create-s3').value,document.getElementById('create-s4').value]
+    .map(function(v){return parseInt(v);});
 
   if(!clubId){showMsg('create-msg','Select a club.','error');return;}
   if(!date){showMsg('create-msg','Select a date.','error');return;}
+  if(isNaN(myScore)||myScore<0){showMsg('create-msg','Enter your score.','error');return;}
   if(codes.indexOf('')>-1){showMsg('create-msg','Enter all 3 other players\' member codes - Mahjong needs exactly 4 players.','error');return;}
   if(new Set(codes).size!==3){showMsg('create-msg','Enter 3 different member codes.','error');return;}
+  if(oppScores.some(function(s){return isNaN(s)||s<0;})){showMsg('create-msg','Enter a valid score for all 3 other players.','error');return;}
+
+  var requiredTotal=category==='taiwanese'?2040:140000;
+  var total=myScore+oppScores.reduce(function(a,b){return a+b;},0);
+  if(total!==requiredTotal){
+    showMsg('create-msg','Please check scores. '+(category==='taiwanese'?'Taiwanese':'Traditional')+' total must be '+requiredTotal.toLocaleString()+'. Current total: '+total.toLocaleString(),'error');
+    return;
+  }
 
   showMsg('create-msg','Looking up players...','info');
   try{
@@ -250,19 +269,28 @@ async function createAdHocRoom(){
     var foundCodes=members.map(function(m){return m.member_code;});
     var missing=codes.filter(function(c){return foundCodes.indexOf(c)===-1;});
     if(missing.length){showMsg('create-msg','Member code(s) not found in this club: '+missing.join(', '),'error');return;}
-    var opponentIds=members.map(function(m){return m.player_id;});
+    var codeToPlayer={};members.forEach(function(m){codeToPlayer[m.member_code]=m.player_id;});
+    var opponentIds=codes.map(function(c){return codeToPlayer[c];});
     if(opponentIds.indexOf(player.id)>-1){showMsg('create-msg','Don\'t enter your own member code - you\'re already Player 1.','error');return;}
 
-    await sb('mj_score_rooms','POST',{
+    var startingPoints=category==='taiwanese'?0:35000;
+    var room=await sb('mj_score_rooms','POST',{
       club_id:clubId,session_date:date,table_number:1,
       created_by:player.id,
       player1_id:player.id,player2_id:opponentIds[0],player3_id:opponentIds[1],player4_id:opponentIds[2],
-      status:'open',playing_category:category
+      status:'pending_confirm',playing_category:category
     });
-    showMsg('create-msg','✅ Game started! Go to My Rooms tab to enter scores.','success');
-    document.getElementById('create-m2').value='';
-    document.getElementById('create-m3').value='';
-    document.getElementById('create-m4').value='';
+    var roomId=room[0].id;
+    var allPids=[player.id,opponentIds[0],opponentIds[1],opponentIds[2]];
+    var allScores=[myScore,oppScores[0],oppScores[1],oppScores[2]];
+    for(var i=0;i<4;i++){
+      await sb('mj_score_entries','POST',{room_id:roomId,player_id:allPids[i],starting_points:startingPoints,final_points:allScores[i],playing_category:category});
+    }
+    showMsg('create-msg','✅ Match logged! All 4 players must now confirm.','success');
+    document.getElementById('create-my-score').value='';
+    document.getElementById('create-m2').value='';document.getElementById('create-s2').value='';
+    document.getElementById('create-m3').value='';document.getElementById('create-s3').value='';
+    document.getElementById('create-m4').value='';document.getElementById('create-s4').value='';
     setTimeout(function(){switchTab('tab-rooms');loadRooms();},1500);
   }catch(e){showMsg('create-msg','Error: '+e.message,'error');}
 }
@@ -329,8 +357,7 @@ async function openRoom(roomId){
           const isMe=pid===player.id;
           return '<div class="player-score-row">'
             +'<div class="player-score-header"><div class="player-score-name">'+( p?p.name:'Unknown')+'</div>'+(isMe?'<span class="player-score-you">YOU</span>':'')+'</div>'
-            +'<input class="score-input" type="number" id="score-'+pid+'" value="35000" min="0" oninput="updateDiff(\''+pid+'\')" />'
-            +'<div class="score-diff neutral" id="diff-'+pid+'">± 0</div>'
+            +'<input class="score-input" type="number" id="score-'+pid+'" placeholder="Final score" min="0" />'
             +'</div>';
         }).join('');
       } else {
@@ -367,13 +394,9 @@ async function openRoom(roomId){
         +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Rank Preview</div>'
         +sortedEntries.map(function(e,i){
           var p=confPMap[e.player_id];
-          var diff=e.final_points-e.starting_points;
-          var diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
-          var diffColor=diff>0?'#1E7A46':diff<0?'#A93226':'var(--muted)';
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">'
             +'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">'+medals[i]+'</span>'
-            +'<div><div style="font-size:13px;font-weight:600;color:var(--text);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div>'
-            +'<div style="font-size:11px;color:'+diffColor+';">'+diffStr+' pts</div></div></div>'
+            +'<div style="font-size:13px;font-weight:600;color:var(--text);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div></div>'
             +'<div style="text-align:right;">'
             +'<div style="font-size:14px;font-weight:700;color:var(--gold);">'+e.final_points.toLocaleString()+'</div>'
             +'<div style="font-size:11px;color:#7D3C98;font-weight:600;">+'+rankPoints[i]+' rank pts</div>'
@@ -393,13 +416,10 @@ async function openRoom(roomId){
       const medals=['🥇','🥈','🥉','4️⃣'];
       document.getElementById('result-rows').innerHTML=entries.map((e,i)=>{
         const p=pMap[e.player_id];
-        const diff=e.final_points-35000;
-        const diffStr=diff>0?'+'+diff.toLocaleString():diff.toLocaleString();
-        const diffColor=diff>0?'#1E7A46':diff<0?'#A93226':'var(--muted)';
         return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'
           +'<div style="display:flex;align-items:center;gap:12px;"><div style="font-size:24px;">'+medals[i]+'</div>'
           +'<div><div style="font-size:14px;font-weight:600;color:var(--gold-light);">'+(p?p.name:'—')+(e.player_id===player.id?' (You)':'')+'</div>'
-          +'<div style="font-size:11px;color:'+diffColor+';">'+diffStr+' points</div></div></div>'
+          +'<div style="font-size:11px;color:#7D3C98;font-weight:600;">+'+(e.rank_points||0)+' rank pts</div></div></div>'
           +'<div style="font-size:20px;font-weight:700;color:var(--gold);">'+e.final_points.toLocaleString()+'</div>'
           +'</div>';
       }).join('');
@@ -407,14 +427,6 @@ async function openRoom(roomId){
 
     document.getElementById('score-panel').style.display='block';
   }catch(e){alert('Error: '+e.message);}
-}
-
-function updateDiff(pid){
-  const val=parseInt(document.getElementById('score-'+pid).value)||0;
-  const diff=val-35000;
-  const el=document.getElementById('diff-'+pid);
-  el.textContent=(diff>0?'+':'')+diff.toLocaleString()+' points';
-  el.className='score-diff '+(diff>0?'positive':diff<0?'negative':'neutral');
 }
 
 async function submitScores(){
