@@ -726,6 +726,13 @@ async function updateMember(memId,status,name){
     }
     if(status==='approved'){
       notifyClubMemberApprovedOnTelegram(memId);
+      // Green Mahjong Circle only (2026-08-26 club decision, not a
+      // platform-wide default) - every newly approved member there starts
+      // with a 500-point welcome bonus. Wrapped so a failure here never
+      // undoes the approval that already succeeded.
+      if(club.id==='87c20ae0-ff75-4042-8b01-7475be316479'){
+        try{await sb('rpc/mj_admin_set_initial_points','POST',{p_id:memId,p_category:'traditional',p_points:500});}catch(e){}
+      }
     }
     loadPendingMembers();loadApprovedMembers();loadStats();
   }catch(e){alert('Error: '+e.message);}
