@@ -59,12 +59,7 @@ select option{background:var(--surface);}
 </div>
 
 <div class="main">
-  <div class="club-selector">
-    <label>Select Club</label>
-    <select id="club-select" onchange="loadLeaderboard()">
-      <option value="">Select a club...</option>
-    </select>
-  </div>
+  <div class="club-selector" id="club-selector-wrap"></div>
 
   <div id="lb-loading" style="display:none;" class="loading"><div class="spinner"></div>Loading leaderboard...</div>
 
@@ -87,7 +82,7 @@ select option{background:var(--surface);}
 <script>
 var SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-var player=null,myClubs=[];
+var player=null,myClubs=[],activeClubId='';
 
 window.addEventListener('DOMContentLoaded',async function(){
   var saved=localStorage.getItem('sp_member');
@@ -120,13 +115,22 @@ async function loadClubs(){
   if(!myClubs.length){
     myClubs=await sb('mj_clubs?status=eq.active&select=id,club_name');
   }
-  var sel=document.getElementById('club-select');
-  sel.innerHTML='<option value="">Select a club...</option>'+myClubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('');
-  if(myClubs.length===1){sel.value=myClubs[0].id;loadLeaderboard();}
+  var wrap=document.getElementById('club-selector-wrap');
+  if(myClubs.length===1){
+    // Only one club to show - a dropdown here would just be a single
+    // option pretending to be a choice, so show it as a plain label
+    // instead and skip selection entirely.
+    activeClubId=myClubs[0].id;
+    wrap.innerHTML='<label>Club</label><div style="font-size:15px;font-weight:600;color:var(--text);padding:4px 0;">🏯 '+myClubs[0].club_name+'</div>';
+    loadLeaderboard();
+  } else {
+    wrap.innerHTML='<label>Select Club</label><select id="club-select" onchange="activeClubId=this.value;loadLeaderboard()"><option value="">Select a club...</option>'
+      +myClubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('')+'</select>';
+  }
 }
 
 async function loadLeaderboard(){
-  var clubId=document.getElementById('club-select').value;
+  var clubId=activeClubId;
   if(!clubId)return;
   document.getElementById('lb-loading').style.display='block';
   document.getElementById('lb-content').style.display='none';

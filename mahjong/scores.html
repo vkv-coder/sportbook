@@ -112,7 +112,7 @@ select option{background:var(--surface);}
       <div class="card">
         <div class="card-title">🎯 Log a New Match</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Mahjong needs exactly 4 players. Enter everyone's member code and final score in one go - no separate "start game" step, no booking needed.</div>
-        <div class="form-group"><label>Club</label><select id="create-club"></select></div>
+        <div class="form-group" id="create-club-wrap"></div>
         <div class="form-group"><label>Category</label>
           <select id="create-category" onchange="updateCategoryHint()">
             <option value="traditional">🀄 Traditional (scores sum to 140,000)</option>
@@ -190,7 +190,7 @@ select option{background:var(--surface);}
 <script>
 const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
-let player=null, currentRoom=null, currentEntries=[];
+let player=null, currentRoom=null, currentEntries=[], activeCreateClubId='';
 
 window.addEventListener('DOMContentLoaded', async()=>{
   const saved=localStorage.getItem('sp_member');
@@ -223,15 +223,24 @@ function switchTab(tabId){
 }
 
 async function populateCreateClubs(){
-  var sel=document.getElementById('create-club');
-  sel.innerHTML='<option>Loading...</option>';
+  var wrap=document.getElementById('create-club-wrap');
+  wrap.innerHTML='<label>Club</label><div style="font-size:13px;color:var(--muted);">Loading...</div>';
   try{
     var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
     var clubIds=mems.map(function(m){return m.club_id;});
-    if(!clubIds.length){sel.innerHTML='<option value="">Not a member of any club</option>';return;}
+    if(!clubIds.length){wrap.innerHTML='<label>Club</label><div style="font-size:13px;color:var(--muted);">Not a member of any club</div>';activeCreateClubId='';return;}
     var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name&order=club_name.asc');
-    sel.innerHTML=clubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('');
-  }catch(e){sel.innerHTML='<option value="">Error loading clubs</option>';}
+    if(clubs.length===1){
+      // Only one club - a dropdown here would just be a single option
+      // pretending to be a choice, so show it as a plain label instead.
+      activeCreateClubId=clubs[0].id;
+      wrap.innerHTML='<label>Club</label><div style="font-size:14px;font-weight:600;color:var(--gold-light);">🏯 '+clubs[0].club_name+'</div>';
+    } else {
+      wrap.innerHTML='<label>Club</label><select id="create-club" onchange="activeCreateClubId=this.value;">'
+        +clubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('')+'</select>';
+      activeCreateClubId=clubs[0].id;
+    }
+  }catch(e){wrap.innerHTML='<label>Club</label><div style="font-size:13px;color:var(--muted);">Error loading clubs</div>';}
 }
 
 function updateCategoryHint(){
@@ -240,7 +249,7 @@ function updateCategoryHint(){
 }
 
 async function logNewMatch(){
-  var clubId=document.getElementById('create-club').value;
+  var clubId=activeCreateClubId;
   var date=document.getElementById('create-date').value;
   var category=document.getElementById('create-category').value;
   var myScore=parseInt(document.getElementById('create-my-score').value);
