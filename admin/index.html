@@ -668,22 +668,9 @@ async function approveIntoGreenMahjong(playerId, name) {
     var mjId = inserted && inserted[0] && inserted[0].id;
     if (!mjId) throw new Error('insert did not return a row');
 
-    var existing = await fetch(SUPABASE_URL + '/rest/v1/mj_members?club_id=eq.' + GREEN_MAHJONG_CLUB_ID + '&member_code=not.is.null&select=member_code', {
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
-    }).then(function(r){ return r.json(); });
-    var nextNum = 1;
-    if (existing && existing.length) {
-      var nums = existing.map(function(r){ return parseInt((r.member_code||'').replace('GM',''), 10); }).filter(function(n){ return !isNaN(n); });
-      if (nums.length) nextNum = Math.max.apply(null, nums) + 1;
-    }
-    var code = 'GM' + String(nextNum).padStart(3, '0');
-
-    var patched = await fetch(SUPABASE_URL + '/rest/v1/mj_members?id=eq.' + mjId, {
-      method: 'PATCH',
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'approved', member_code: code, slot_balance: 0})
-    });
-    if (!patched.ok) throw new Error('approve step failed (status ' + patched.status + ')');
+    var approveRes = await sb.rpc('mj_admin_approve_member', {p_id: mjId});
+    if (approveRes.error || !approveRes.data) throw new Error(approveRes.error ? approveRes.error.message : 'approve step failed');
+    var code = approveRes.data;
     toast(name + ' added to Green Mahjong Circle as ' + code);
     return true;
   } catch (e) {

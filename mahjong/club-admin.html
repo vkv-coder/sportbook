@@ -702,51 +702,27 @@ async function addSlotBalance(memId,currentBal){
   const add=parseInt(inp.value);
   if(!add||add<1){alert('Enter a valid number of slots to add.');return;}
   const newBal=currentBal+add;
-  try{await sbPatch(`mj_members?id=eq.${memId}`,{slot_balance:newBal});inp.value='';loadApprovedMembers();}
+  try{await sb('rpc/mj_admin_set_slot_balance','POST',{p_id:memId,p_balance:newBal});inp.value='';loadApprovedMembers();}
   catch(e){alert('Error: '+e.message);}
 }
 
 async function setSlotBalance(memId,val){
   if(!confirm(`Reset slot balance to ${val}?`))return;
-  try{await sbPatch(`mj_members?id=eq.${memId}`,{slot_balance:val});loadApprovedMembers();}
+  try{await sb('rpc/mj_admin_set_slot_balance','POST',{p_id:memId,p_balance:val});loadApprovedMembers();}
   catch(e){alert('Error: '+e.message);}
 }
 
 async function updateMember(memId,status,name){
   if(!confirm(`${status} ${name}?`))return;
   try{
-    var updateData={status};
+    var memberCode=null;
     if(status==='approved'){
-      // Auto-assign next sequential member code (e.g. GM001, GM002...)
-      var clubData=await sb('mj_clubs?id=eq.'+club.id+'&select=code_prefix');
-      var prefix=(clubData&&clubData.length&&clubData[0].code_prefix)?clubData[0].code_prefix:'GM';
-      var existing=await sb('mj_members?club_id=eq.'+club.id+'&member_code=not.is.null&select=member_code&order=member_code.asc');
-      var nextNum=1;
-      if(existing&&existing.length){
-        // Find highest number used so far
-        var nums=existing.map(function(r){return parseInt((r.member_code||'').replace(prefix,''),10);}).filter(function(n){return !isNaN(n);});
-        if(nums.length) nextNum=Math.max.apply(null,nums)+1;
-      }
-      // Retry with the next number if another admin claimed this code first (rare race condition).
-      // Only retry on an actual duplicate-key conflict — any other error should fail immediately.
-      var attempts=0;
-      while(true){
-        updateData.member_code=prefix+String(nextNum).padStart(3,'0');
-        try{
-          await sbPatch('mj_members?id=eq.'+memId,updateData);
-          break;
-        }catch(codeErr){
-          var isDupe=/duplicate|unique|already exists/i.test(codeErr.message||'');
-          attempts++;
-          if(!isDupe||attempts>=5) throw codeErr;
-          nextNum++;
-        }
-      }
+      memberCode=await sb('rpc/mj_admin_approve_member','POST',{p_id:memId});
     } else {
-      await sbPatch('mj_members?id=eq.'+memId,updateData);
+      await sb('rpc/mj_admin_reject_member','POST',{p_id:memId});
     }
-    if(status==='approved'&&updateData.member_code){
-      toast('Approved! Member code assigned: '+updateData.member_code);
+    if(status==='approved'&&memberCode){
+      toast('Approved! Member code assigned: '+memberCode);
     }
     if(status==='approved'){
       notifyClubMemberApprovedOnTelegram(memId);
@@ -888,9 +864,7 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,c2,c3,c4){
     if(existing.length>0){alert(`Table ${tableNo} already has bookings for this slot. Please choose another table.`);return;}
     for(const pid of pids){
       await sb('mj_bookings','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,player_id:pid,booking_date:date,status:'confirmed'});
-      const memData=await sb(`mj_members?player_id=eq.${pid}&club_id=eq.${club.id}&select=slot_balance`);
-      const currentBal=memData[0]?.slot_balance||0;
-      if(currentBal>0){await sbPatch(`mj_members?player_id=eq.${pid}&club_id=eq.${club.id}`,{slot_balance:currentBal-1});}
+      await sb('rpc/mj_self_adjust_slot_balance','POST',{p_player_id:pid,p_club_id:club.id,p_delta:-1});
     }
     await sb('mj_table_sessions','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,booking_date:date,player1_id:pids[0],player2_id:pids[1],player3_id:pids[2],player4_id:pids[3],status:'full'});
     await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'approved',table_number:tableNo});
@@ -1107,9 +1081,7 @@ async function manualConfirmRequests(btn){
     for(var i=0;i<toConfirm.length;i++){
       var req=toConfirm[i];
       await sb('mj_bookings','POST',{club_id:club.id,slot_id:slotId,table_number:assignedTable,player_id:req.player_id,booking_date:date,status:'confirmed',playing_category:category});
-      var mem=await sb('mj_members?player_id=eq.'+req.player_id+'&club_id=eq.'+club.id+'&select=slot_balance');
-      var bal=mem[0]?mem[0].slot_balance||0:0;
-      if(bal>0)await sbPatch('mj_members?player_id=eq.'+req.player_id+'&club_id=eq.'+club.id,{slot_balance:bal-1});
+      await sb('rpc/mj_self_adjust_slot_balance','POST',{p_player_id:req.player_id,p_club_id:club.id,p_delta:-1});
       await sbPatch('mj_booking_requests?id=eq.'+req.id,{status:'confirmed'});
       var pinfo=await sb('sp_members?id=eq.'+req.player_id+'&select=name,mobile,whatsapp');
       var p=pinfo[0]||{};
@@ -1310,10 +1282,7 @@ async function saveInitialPoints(memId, category, current){
   var catLabel=category==='taiwanese'?'Taiwanese':'Traditional';
   if(!confirm('Set '+catLabel+' initial points to '+pts+' for this member? This cannot be changed later.'))return;
   try{
-    var updateData={};
-    if(category==='taiwanese'){updateData.initial_points_taiwanese=pts;}
-    else{updateData.initial_points=pts;}
-    await sbPatch('mj_members?id=eq.'+memId,updateData);
+    await sb('rpc/mj_admin_set_initial_points','POST',{p_id:memId,p_category:category,p_points:pts});
     toast(catLabel+' initial points saved!');
     loadApprovedMembers();
   }catch(e){alert('Error: '+e.message);}
@@ -1321,7 +1290,7 @@ async function saveInitialPoints(memId, category, current){
 
 async function updateCategory(memId, category){
   try{
-    await sbPatch(`mj_members?id=eq.${memId}`,{category});
+    await sb('rpc/mj_admin_set_category','POST',{p_id:memId,p_category:category});
     toast('Category updated!');
   }catch(e){alert('Error: '+e.message);}
 }
