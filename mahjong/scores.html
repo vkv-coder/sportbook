@@ -110,11 +110,23 @@ select option{background:var(--surface);}
   <!-- TAB: CREATE ROOM -->
   <div class="tab-content" id="tab-create">
       <div class="card">
-        <div class="card-title">🎯 Select Your Game to Score</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Select a confirmed booking to enter scores for.</div>
-        <div id="my-games-loading" class="loading"><div class="spinner"></div>Loading your games...</div>
+        <div class="card-title">🎯 Start a New Game</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Mahjong needs exactly 4 players. Enter the other 3 players' member codes (find them via Group Request or ask your club admin) - no booking needed.</div>
+        <div class="form-group"><label>Club</label><select id="create-club"></select></div>
+        <div class="form-group"><label>Date</label><input type="date" id="create-date"/></div>
+        <div class="form-group"><label>Playing Category</label>
+          <select id="create-category">
+            <option value="beginner">🟢 Beginner</option>
+            <option value="intermediate">🟡 Intermediate</option>
+            <option value="advanced">🔴 Advanced</option>
+            <option value="taiwanese">🏆 Taiwanese</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Player 2 Member Code</label><input type="text" id="create-m2" placeholder="e.g. GM002"/></div>
+        <div class="form-group"><label>Player 3 Member Code</label><input type="text" id="create-m3" placeholder="e.g. GM003"/></div>
+        <div class="form-group"><label>Player 4 Member Code</label><input type="text" id="create-m4" placeholder="e.g. GM004"/></div>
         <div id="create-msg"></div>
-        <div id="my-games-list"></div>
+        <button class="btn btn-gold btn-full" onclick="createAdHocRoom()">Start Game →</button>
       </div>
   </div>
 
@@ -183,6 +195,7 @@ window.addEventListener('DOMContentLoaded', async()=>{
   if(!saved){window.location.href='/select-game.html?role=player';return;}
   player=JSON.parse(saved);
   document.getElementById('header-sub').textContent=player.name;
+  document.getElementById('create-date').value=new Date().toISOString().split('T')[0];
   loadRooms();
 });
 
@@ -204,67 +217,53 @@ function switchTab(tabId){
   document.getElementById(tabId).classList.add('active');
   const idx=['tab-rooms','tab-create'].indexOf(tabId);
   document.querySelectorAll('.nav-tab')[idx].classList.add('active');
-  if(tabId==='tab-create') loadMyGames();
+  if(tabId==='tab-create') populateCreateClubs();
 }
 
-async function loadMyGames(){
-  document.getElementById('my-games-loading').style.display='block';
-  document.getElementById('my-games-list').innerHTML='';
+async function populateCreateClubs(){
+  var sel=document.getElementById('create-club');
+  sel.innerHTML='<option>Loading...</option>';
   try{
-    var bookings = await sb('mj_bookings?player_id=eq.'+player.id+'&status=eq.confirmed&select=*&order=booking_date.desc');
-    document.getElementById('my-games-loading').style.display='none';
-    if(!bookings.length){
-      document.getElementById('my-games-list').innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div><p>No confirmed bookings found.<br/>Book a seat first to score.</p></div>';
-      return;
-    }
-    var clubIds=[...new Set(bookings.map(function(b){return b.club_id;}))];
-    var slotIds=[...new Set(bookings.map(function(b){return b.slot_id;}))];
-    var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name');
-    var slots=await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time');
-    var cMap={};clubs.forEach(function(c){cMap[c.id]=c;});
-    var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
-    // Filter out bookings that already have a score room
-    var rooms=await sb('mj_score_rooms?or=(player1_id.eq.'+player.id+',player2_id.eq.'+player.id+',player3_id.eq.'+player.id+',player4_id.eq.'+player.id+')&select=club_id,session_date,table_number');
-    var scoredKeys=new Set(rooms.map(function(r){return r.club_id+'_'+r.session_date+'_'+r.table_number;}));
-    document.getElementById('my-games-list').innerHTML=bookings.map(function(b){
-      var club=cMap[b.club_id];
-      var slot=sMap[b.slot_id];
-      var key=b.club_id+'_'+b.booking_date+'_'+b.table_number;
-      var isScored=scoredKeys.has(key);
-      var catLabel={beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'}[b.playing_category]||b.playing_category||'';
-      return '<div class="room-item" style="'+(isScored?'opacity:0.5;cursor:default;':'')+'" '+(isScored?'':'onclick="createRoomFromBooking(\''+b.club_id+'\',\''+b.booking_date+'\','+b.table_number+',\''+b.slot_id+'\')"')+'>'
-        +'<div class="room-header"><div class="room-title">'+(club?club.club_name:'—')+' · Table '+b.table_number+'</div>'
-        +'<span class="badge '+(isScored?'badge-confirmed':'badge-open')+'">'+(isScored?'Scored':'+ Score')+'</span></div>'
-        +'<div class="room-meta">📅 '+b.booking_date+'</div>'
-        +'<div class="room-meta">🕐 '+(slot?slot.start_time+'-'+slot.end_time:'—')+'</div>'
-        +'<div class="room-meta">'+catLabel+'</div>'
-        +'</div>';
-    }).join('');
-  }catch(e){
-    document.getElementById('my-games-loading').style.display='none';
-    document.getElementById('my-games-list').innerHTML='<div class="status-box status-error">Error: '+e.message+'</div>';
-  }
+    var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
+    var clubIds=mems.map(function(m){return m.club_id;});
+    if(!clubIds.length){sel.innerHTML='<option value="">Not a member of any club</option>';return;}
+    var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name&order=club_name.asc');
+    sel.innerHTML=clubs.map(function(c){return '<option value="'+c.id+'">'+c.club_name+'</option>';}).join('');
+  }catch(e){sel.innerHTML='<option value="">Error loading clubs</option>';}
 }
 
-async function createRoomFromBooking(clubId, date, tableNo, slotId){
+async function createAdHocRoom(){
+  var clubId=document.getElementById('create-club').value;
+  var date=document.getElementById('create-date').value;
+  var category=document.getElementById('create-category').value;
+  var codes=[document.getElementById('create-m2').value,document.getElementById('create-m3').value,document.getElementById('create-m4').value]
+    .map(function(v){return v.trim().toUpperCase();});
+
+  if(!clubId){showMsg('create-msg','Select a club.','error');return;}
+  if(!date){showMsg('create-msg','Select a date.','error');return;}
+  if(codes.indexOf('')>-1){showMsg('create-msg','Enter all 3 other players\' member codes - Mahjong needs exactly 4 players.','error');return;}
+  if(new Set(codes).size!==3){showMsg('create-msg','Enter 3 different member codes.','error');return;}
+
+  showMsg('create-msg','Looking up players...','info');
   try{
-    showMsg('create-msg','Looking up players...','info');
-    var bookingsForTable=await sb('mj_bookings?club_id=eq.'+clubId+'&booking_date=eq.'+date+'&table_number=eq.'+tableNo+'&status=eq.confirmed&select=player_id,playing_category');
-    if(bookingsForTable.length<2){showMsg('create-msg','Less than 2 confirmed players for this table.','error');return;}
-    var pids=bookingsForTable.map(function(b){return b.player_id;});
-    while(pids.length<4) pids.push(null);
-    var roomCategory=bookingsForTable[0].playing_category||'beginner';
-    var catRes=await sb('mj_bookings?club_id=eq.'+clubId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date+'&status=eq.confirmed&select=playing_category&limit=1');
-    roomCategory=catRes.length?catRes[0].playing_category:'beginner';
-    var room=await sb('mj_score_rooms','POST',{
-      club_id:clubId,session_date:date,table_number:tableNo,
+    var members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&member_code=in.('+codes.join(',')+')'+'&select=player_id,member_code');
+    var foundCodes=members.map(function(m){return m.member_code;});
+    var missing=codes.filter(function(c){return foundCodes.indexOf(c)===-1;});
+    if(missing.length){showMsg('create-msg','Member code(s) not found in this club: '+missing.join(', '),'error');return;}
+    var opponentIds=members.map(function(m){return m.player_id;});
+    if(opponentIds.indexOf(player.id)>-1){showMsg('create-msg','Don\'t enter your own member code - you\'re already Player 1.','error');return;}
+
+    await sb('mj_score_rooms','POST',{
+      club_id:clubId,session_date:date,table_number:1,
       created_by:player.id,
-      player1_id:pids[0]||null,player2_id:pids[1]||null,
-      player3_id:pids[2]||null,player4_id:pids[3]||null,
-      status:'open',playing_category:roomCategory
+      player1_id:player.id,player2_id:opponentIds[0],player3_id:opponentIds[1],player4_id:opponentIds[2],
+      status:'open',playing_category:category
     });
-    showMsg('create-msg','✅ Score room created! Go to My Rooms tab.','success');
-    setTimeout(function(){switchTab('tab-rooms');loadRooms();loadMyGames();},1500);
+    showMsg('create-msg','✅ Game started! Go to My Rooms tab to enter scores.','success');
+    document.getElementById('create-m2').value='';
+    document.getElementById('create-m3').value='';
+    document.getElementById('create-m4').value='';
+    setTimeout(function(){switchTab('tab-rooms');loadRooms();},1500);
   }catch(e){showMsg('create-msg','Error: '+e.message,'error');}
 }
 
@@ -282,14 +281,20 @@ async function loadRooms(){
     const clubIds=[...new Set(rooms.map(r=>r.club_id))];
     const clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name');
     const cMap={};clubs.forEach(c=>{cMap[c.id]=c;});
+    const allPids=[...new Set(rooms.flatMap(r=>[r.player1_id,r.player2_id,r.player3_id,r.player4_id]).filter(Boolean))];
+    const players=allPids.length?await sb('sp_members?id=in.('+allPids.join(',')+')'+'&select=id,name'):[];
+    const pMap={};players.forEach(p=>{pMap[p.id]=p;});
     document.getElementById('rooms-list').innerHTML=rooms.map(r=>{
       const club=cMap[r.club_id];
       const badgeClass=r.status==='confirmed'?'badge-confirmed':r.status==='reset'?'badge-reset':'badge-open';
       const badgeLabel=r.status==='confirmed'?'✅ Confirmed':r.status==='reset'?'🔄 Reset':'⏳ Pending';
       const isLeader=r.created_by===player.id;
+      const opponents=[r.player1_id,r.player2_id,r.player3_id,r.player4_id].filter(pid=>pid&&pid!==player.id)
+        .map(pid=>pMap[pid]?pMap[pid].name:'—').join(', ');
       return '<div class="room-item" onclick="openRoom(\''+r.id+'\')">'
-        +'<div class="room-header"><div class="room-title">Table '+r.table_number+' · '+(club?club.club_name:'—')+'</div><span class="badge '+badgeClass+'">'+badgeLabel+'</span></div>'
+        +'<div class="room-header"><div class="room-title">'+(club?club.club_name:'—')+'</div><span class="badge '+badgeClass+'">'+badgeLabel+'</span></div>'
         +'<div class="room-meta">📅 '+r.session_date+'</div>'
+        +(opponents?'<div class="room-meta">vs '+opponents+'</div>':'')
         +(isLeader?'<div class="room-meta" style="color:var(--gold);font-size:11px;">👑 You created this room</div>':'')
         +'</div>';
     }).join('');
@@ -306,7 +311,7 @@ async function openRoom(roomId){
     const clubs=await sb('mj_clubs?id=eq.'+currentRoom.club_id+'&select=club_name');
     const clubName=clubs[0]?clubs[0].club_name:'';
 
-    document.getElementById('score-panel-title').textContent='Table '+currentRoom.table_number+' · '+clubName;
+    document.getElementById('score-panel-title').textContent=clubName;
     document.getElementById('score-panel-sub').textContent=currentRoom.session_date;
 
     // Hide all sections first
@@ -343,6 +348,20 @@ async function openRoom(roomId){
       var pidsConf=[currentRoom.player1_id,currentRoom.player2_id,currentRoom.player3_id,currentRoom.player4_id].filter(Boolean);
       var confPlayers=pidsConf.length?await sb('sp_members?id=in.('+pidsConf.join(',')+')'+'&select=id,name'):[];
       var confPMap={};confPlayers.forEach(function(p){confPMap[p.id]=p;});
+      // Every player at the table must confirm individually (from their own
+      // login) before scores lock and count on the leaderboard - not just
+      // the room creator.
+      var confRows=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=player_id');
+      var confirmedSet={};confRows.forEach(function(c){confirmedSet[c.player_id]=true;});
+      var checklistHtml='<div style="margin-bottom:14px;">'
+        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Confirmation Status ('+confRows.length+'/'+pidsConf.length+')</div>'
+        +pidsConf.map(function(pid){
+          var p=confPMap[pid];
+          var done=!!confirmedSet[pid];
+          return '<div class="confirm-row"><div class="confirm-player">'+(p?p.name:'—')+(pid===player.id?' (You)':'')+'</div>'
+            +'<span class="confirm-status '+(done?'confirm-yes':'confirm-no')+'">'+(done?'✅ Confirmed':'⏳ Pending')+'</span></div>';
+        }).join('')
+        +'</div>';
       document.getElementById('confirm-rows').innerHTML=
         '<div style="margin-bottom:14px;padding:10px;background:var(--surface);border-radius:8px;">'
         +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Rank Preview</div>'
@@ -361,17 +380,11 @@ async function openRoom(roomId){
             +'</div></div>';
         }).join('')
         +'</div>'
-        +(currentRoom.created_by===player.id
-          ?'<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">As room creator, your confirmation locks the scores for everyone.</div>'
-          :'<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Waiting for room creator to confirm scores.</div>');
-      var isCreator=currentRoom.created_by===player.id;
-      var alreadyConfirmed=false;
-      try{
-        var myConf=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
-        alreadyConfirmed=myConf.length>0;
-      }catch(e){}
-      document.getElementById('confirm-btn').disabled=(!isCreator||alreadyConfirmed);
-      document.getElementById('confirm-btn').textContent=alreadyConfirmed?'✅ Confirmed':isCreator?'✅ Confirm & Lock Scores':'Only Creator Can Confirm';
+        +checklistHtml;
+      var isParticipant=pidsConf.indexOf(player.id)>-1;
+      var alreadyConfirmed=!!confirmedSet[player.id];
+      document.getElementById('confirm-btn').disabled=(!isParticipant||alreadyConfirmed);
+      document.getElementById('confirm-btn').textContent=alreadyConfirmed?'✅ Confirmed':isParticipant?'✅ I Confirm':'Not Part of This Table';
     } else if(currentRoom.status==='confirmed'){
       // Show final results
       const entries=await sb('mj_score_entries?room_id=eq.'+roomId+'&select=*');
@@ -443,24 +456,33 @@ async function submitScores(){
 }
 
 async function confirmScores(){
-  if(currentRoom.created_by!==player.id){
-    showMsg('confirm-msg','Only the room creator can confirm scores.','warn');
+  var pidsConf=[currentRoom.player1_id,currentRoom.player2_id,currentRoom.player3_id,currentRoom.player4_id].filter(Boolean);
+  if(pidsConf.indexOf(player.id)===-1){
+    showMsg('confirm-msg','You are not part of this table.','warn');
     return;
   }
   try{
     var existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
     if(existing.length>0){showMsg('confirm-msg','You have already confirmed.','warn');return;}
     await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:player.id});
-    // Assign ranks and rank points
-    var entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
-    entries.sort(function(a,b){return b.final_points-a.final_points;});
-    var rankPoints=[100,75,50,25];
-    for(var i=0;i<entries.length;i++){
-      await sbPatch('mj_score_entries?id=eq.'+entries[i].id,{rank:i+1,rank_points:rankPoints[i]||25,playing_category:currentRoom.playing_category||'beginner'});
+
+    // Only once every player at the table has confirmed do the ranks get
+    // assigned and the room lock - that's what makes the game count on
+    // the leaderboard, not any single player's confirmation.
+    var allConf=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=player_id');
+    if(allConf.length>=pidsConf.length){
+      var entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
+      entries.sort(function(a,b){return b.final_points-a.final_points;});
+      var rankPoints=[100,75,50,25];
+      for(var i=0;i<entries.length;i++){
+        await sbPatch('mj_score_entries?id=eq.'+entries[i].id,{rank:i+1,rank_points:rankPoints[i]||25,playing_category:currentRoom.playing_category||'beginner'});
+      }
+      await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
+      showMsg('confirm-msg','✅ All players confirmed! Scores locked and added to the leaderboard.','success');
+    } else {
+      showMsg('confirm-msg','✅ You confirmed. Waiting for '+(pidsConf.length-allConf.length)+' more player(s).','success');
     }
-    await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
-    showMsg('confirm-msg','✅ Scores confirmed and locked!','success');
-    setTimeout(function(){openRoom(currentRoom.id);},1000);
+    setTimeout(function(){openRoom(currentRoom.id);},1200);
   }catch(e){alert('Error: '+e.message);}
 }
 
