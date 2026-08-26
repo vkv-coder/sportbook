@@ -328,7 +328,7 @@ async function loadMyClubs(){
       var tgHtml='';
       if(mem&&!mem.telegram_id){
         tgHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);">'
-          +'<div style="font-size:12px;color:#B9770E;margin-bottom:6px;">⚠️ Connect Telegram to get notified and submit game scores.</div>'
+          +'<div style="font-size:12px;color:#B9770E;margin-bottom:6px;">📱 Optional: connect Telegram to get notified. Scores can be entered right in the app either way.</div>'
           +tgConnectHtml(c.id,mem.id,c.telegram_bot_username)
           +'</div>';
       }
@@ -791,34 +791,7 @@ async function loadDiscover(){
 
 async function requestMembership(clubId,clubName,genderCondition,btn){
   if((genderCondition==='male'&&player.gender==='female')||(genderCondition==='female'&&player.gender==='male')){alert('Sorry! This club accepts '+genderCondition+' members only.');return;}
-  showTelegramCheckGate(clubId,clubName,btn);
-}
-
-// Game scores for a club are submitted entirely through that club's
-// Telegram bot - there's no web form for it. So before letting someone
-// send a join request, ask upfront whether they even have Telegram,
-// rather than letting them discover this only after being approved.
-// This is a plain yes/no question, not a technical check - saying "No"
-// just stops them here with instructions, it doesn't verify anything.
-function showTelegramCheckGate(clubId,clubName,btn){
-  var gateId='tg-check-gate-'+clubId;
-  var safeClubName=clubName.replace(/'/g,"\\'");
-  btn.outerHTML='<div id="'+gateId+'" style="padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;">'
-    +'<div style="font-size:12px;color:var(--text);margin-bottom:8px;">📱 Do you have a Telegram account? Game scores for this club are submitted through Telegram, so it\'s required to fully participate.</div>'
-    +'<div style="display:flex;gap:8px;">'
-    +'<button class="btn btn-green btn-sm" onclick="confirmHasTelegram(\''+clubId+'\',\''+safeClubName+'\')">Yes, I have Telegram</button>'
-    +'<button class="btn btn-outline btn-sm" onclick="confirmNoTelegram(\''+gateId+'\')">No, I don\'t</button>'
-    +'</div></div>';
-}
-
-function confirmHasTelegram(clubId,clubName){
-  var gateEl=document.getElementById('tg-check-gate-'+clubId);
-  gateEl.outerHTML='<button class="btn btn-outline btn-sm" id="rejoin-btn-'+clubId+'">Request to Join</button>';
-  doRequestMembership(clubId,clubName,document.getElementById('rejoin-btn-'+clubId));
-}
-
-function confirmNoTelegram(gateId){
-  document.getElementById(gateId).innerHTML='<div style="font-size:12px;color:#B9770E;">Please install Telegram first (it\'s free — search "Telegram" on the Play Store or App Store), then come back and tap Request to Join again.</div>';
+  doRequestMembership(clubId,clubName,btn);
 }
 
 async function doRequestMembership(clubId,clubName,btn){
@@ -861,7 +834,7 @@ function tgConnectHtml(clubId,mjMemberId,botUsername){
   return '<div id="tg-msg-'+clubId+'" style="margin-top:6px;"></div>'
     +'<a href="https://t.me/'+botUsername+'?start='+mjMemberId+'" target="_blank" '
     +'style="display:inline-block;font-size:12px;background:#F3F4F6;color:#2E9E60;padding:6px 12px;border-radius:20px;text-decoration:none;margin-top:6px;" '
-    +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Telegram (get notified + enable score entry)</a>';
+    +'onclick="startClubTgPolling(\''+clubId+'\',\''+mjMemberId+'\')">📩 Connect Telegram (optional, for notifications)</a>';
 }
 
 // Shows any club-join requests still pending, since a request that's
