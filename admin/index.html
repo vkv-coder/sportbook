@@ -350,7 +350,7 @@ function renderOwners(list, elId, isApproved) {
 }
 
 async function approveOwner(id, venue, ownerName, phone, email) {
-  var res = await sb.from('sz_owners').update({is_approved: true}).eq('id', id);
+  var res = await sb.rpc('sz_admin_approve_owner', {p_id: id});
   if (res.error) { toast('⚠️ Could not approve ' + venue + ': ' + res.error.message); return; }
   toast(venue + ' approved!');
   await notifyTelegram('OWNER APPROVED: ' + venue + ' | ' + ownerName + ' | ' + phone);
@@ -365,14 +365,14 @@ async function approveOwner(id, venue, ownerName, phone, email) {
 }
 async function revokeOwner(id) {
   if (!confirm('Revoke access?')) return;
-  var res = await sb.from('sz_owners').update({is_approved: false}).eq('id', id);
+  var res = await sb.rpc('sz_admin_revoke_owner', {p_id: id});
   if (res.error) { toast('⚠️ Could not revoke access: ' + res.error.message); return; }
   toast('Access revoked');
   loadAll();
 }
 async function deleteOwner(id) {
   if (!confirm('Reject and delete?')) return;
-  var res = await sb.from('sz_owners').delete().eq('id', id);
+  var res = await sb.rpc('sz_admin_delete_owner', {p_id: id});
   if (res.error) { toast('⚠️ Could not remove owner: ' + res.error.message); return; }
   toast('Owner removed');
   loadAll();
@@ -388,9 +388,7 @@ async function addOwner() {
   if (phone.length !== 10) { document.getElementById('addErr').textContent='10-digit mobile required'; return; }
   if (pass.length < 6)     { document.getElementById('addErr').textContent='Min 6 char password'; return; }
   document.getElementById('addErr').textContent = '';
-  var zRes = await sb.from('sz_zones').insert({name:venue, city:city.split(',').pop().trim(), address:city, sports:[], is_active:true, open_time:'06:00:00', close_time:'22:00:00', slot_duration:60, grace_minutes:15}).select().single();
-  if (zRes.error) { document.getElementById('addErr').textContent = 'Error: ' + zRes.error.message; return; }
-  var oRes = await sb.from('sz_owners').insert({owner_name:name, venue_name:venue, city, phone, email, password:pass, zone_id:zRes.data.id, is_approved:true});
+  var oRes = await sb.rpc('sz_admin_add_owner', {p_name:name, p_venue:venue, p_city:city, p_phone:phone, p_email:email, p_password:pass});
   if (oRes.error) { document.getElementById('addErr').textContent = 'Error: ' + oRes.error.message; return; }
   toast(venue + ' added!');
   ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(function(id){ document.getElementById(id).value=''; });
