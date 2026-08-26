@@ -481,9 +481,7 @@ async function checkCategoryAutoConfirm(clubId, slotId, date, category, clubName
     for(var i=0;i<toConfirm.length;i++){
       var req = toConfirm[i];
       await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:assignedTable,player_id:req.player_id,booking_date:date,status:'confirmed',playing_category:category});
-      var mem = await sb('mj_members?player_id=eq.'+req.player_id+'&club_id=eq.'+clubId+'&select=slot_balance');
-      var bal = mem[0]?mem[0].slot_balance||0:0;
-      if(bal>0) await sbPatch('mj_members?player_id=eq.'+req.player_id+'&club_id=eq.'+clubId,{slot_balance:bal-1});
+      await sb('rpc/mj_self_adjust_slot_balance','POST',{p_player_id:req.player_id,p_club_id:clubId,p_delta:-1});
       await sbPatch('mj_booking_requests?id=eq.'+req.id,{status:'confirmed'});
       var pinfo = await sb('sp_members?id=eq.'+req.player_id+'&select=name,mobile,whatsapp,telegram_id');
       var p = pinfo[0]||{};
@@ -515,7 +513,7 @@ async function confirmCancel(){
     var remaining=await sb('mj_bookings?club_id=eq.'+c.clubId+'&slot_id=eq.'+c.slotId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+c.date+'&status=eq.confirmed&select=id');
     await sbPatch('mj_table_sessions?club_id=eq.'+c.clubId+'&slot_id=eq.'+c.slotId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+c.date,{status:remaining.length>=4?'full':'filling'});
     var mem=membershipsCache[c.clubId];
-    if(mem){var newBal=(mem.slot_balance||0)+1;await sbPatch('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+c.clubId,{slot_balance:newBal});membershipsCache[c.clubId].slot_balance=newBal;}
+    if(mem){var newBal=(mem.slot_balance||0)+1;await sb('rpc/mj_self_adjust_slot_balance','POST',{p_player_id:player.id,p_club_id:c.clubId,p_delta:1});membershipsCache[c.clubId].slot_balance=newBal;}
     var filled=await processWaitlist(c.clubId,c.slotId,tableNo,c.date,category);
     if(!filled){
       await tryConsolidationShift(c.clubId,c.slotId,tableNo,c.date,category);
@@ -536,7 +534,7 @@ async function processWaitlist(clubId,slotId,tableNo,date,category){
       return await processWaitlist(clubId,slotId,tableNo,date,category);
     }
     await sb('mj_bookings','POST',{club_id:clubId,slot_id:slotId,table_number:tableNo,player_id:next.player_id,booking_date:date,status:'confirmed',playing_category:category});
-    await sbPatch('mj_members?player_id=eq.'+next.player_id+'&club_id=eq.'+clubId,{slot_balance:bal-1});
+    await sb('rpc/mj_self_adjust_slot_balance','POST',{p_player_id:next.player_id,p_club_id:clubId,p_delta:-1});
     await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'assigned'});
     await sbPatch('mj_table_sessions?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&table_number=eq.'+tableNo+'&booking_date=eq.'+date,{status:'full'});
     var pinfo=await sb('sp_members?id=eq.'+next.player_id+'&select=name,mobile,whatsapp');

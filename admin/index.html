@@ -350,7 +350,7 @@ function renderOwners(list, elId, isApproved) {
 }
 
 async function approveOwner(id, venue, ownerName, phone, email) {
-  var res = await sb.from('sz_owners').update({is_approved: true}).eq('id', id);
+  var res = await sb.rpc('sz_admin_approve_owner', {p_id: id});
   if (res.error) { toast('⚠️ Could not approve ' + venue + ': ' + res.error.message); return; }
   toast(venue + ' approved!');
   await notifyTelegram('OWNER APPROVED: ' + venue + ' | ' + ownerName + ' | ' + phone);
@@ -365,14 +365,14 @@ async function approveOwner(id, venue, ownerName, phone, email) {
 }
 async function revokeOwner(id) {
   if (!confirm('Revoke access?')) return;
-  var res = await sb.from('sz_owners').update({is_approved: false}).eq('id', id);
+  var res = await sb.rpc('sz_admin_revoke_owner', {p_id: id});
   if (res.error) { toast('⚠️ Could not revoke access: ' + res.error.message); return; }
   toast('Access revoked');
   loadAll();
 }
 async function deleteOwner(id) {
   if (!confirm('Reject and delete?')) return;
-  var res = await sb.from('sz_owners').delete().eq('id', id);
+  var res = await sb.rpc('sz_admin_delete_owner', {p_id: id});
   if (res.error) { toast('⚠️ Could not remove owner: ' + res.error.message); return; }
   toast('Owner removed');
   loadAll();
@@ -388,9 +388,7 @@ async function addOwner() {
   if (phone.length !== 10) { document.getElementById('addErr').textContent='10-digit mobile required'; return; }
   if (pass.length < 6)     { document.getElementById('addErr').textContent='Min 6 char password'; return; }
   document.getElementById('addErr').textContent = '';
-  var zRes = await sb.from('sz_zones').insert({name:venue, city:city.split(',').pop().trim(), address:city, sports:[], is_active:true, open_time:'06:00:00', close_time:'22:00:00', slot_duration:60, grace_minutes:15}).select().single();
-  if (zRes.error) { document.getElementById('addErr').textContent = 'Error: ' + zRes.error.message; return; }
-  var oRes = await sb.from('sz_owners').insert({owner_name:name, venue_name:venue, city, phone, email, password:pass, zone_id:zRes.data.id, is_approved:true});
+  var oRes = await sb.rpc('sz_admin_add_owner', {p_name:name, p_venue:venue, p_city:city, p_phone:phone, p_email:email, p_password:pass});
   if (oRes.error) { document.getElementById('addErr').textContent = 'Error: ' + oRes.error.message; return; }
   toast(venue + ' added!');
   ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(function(id){ document.getElementById(id).value=''; });
@@ -620,10 +618,10 @@ async function approveMember(btn) {
   var alsoGreenMahjong = !!(gmCheckbox && gmCheckbox.checked);
   if (!confirm('Approve ' + name + ' as a SportBook member' + (alsoGreenMahjong ? ' and add to Green Mahjong Circle' : '') + '?')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'active'})
+      body: JSON.stringify({p_id: id, p_status: 'active'})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
@@ -670,22 +668,9 @@ async function approveIntoGreenMahjong(playerId, name) {
     var mjId = inserted && inserted[0] && inserted[0].id;
     if (!mjId) throw new Error('insert did not return a row');
 
-    var existing = await fetch(SUPABASE_URL + '/rest/v1/mj_members?club_id=eq.' + GREEN_MAHJONG_CLUB_ID + '&member_code=not.is.null&select=member_code', {
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
-    }).then(function(r){ return r.json(); });
-    var nextNum = 1;
-    if (existing && existing.length) {
-      var nums = existing.map(function(r){ return parseInt((r.member_code||'').replace('GM',''), 10); }).filter(function(n){ return !isNaN(n); });
-      if (nums.length) nextNum = Math.max.apply(null, nums) + 1;
-    }
-    var code = 'GM' + String(nextNum).padStart(3, '0');
-
-    var patched = await fetch(SUPABASE_URL + '/rest/v1/mj_members?id=eq.' + mjId, {
-      method: 'PATCH',
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'approved', member_code: code, slot_balance: 0})
-    });
-    if (!patched.ok) throw new Error('approve step failed (status ' + patched.status + ')');
+    var approveRes = await sb.rpc('mj_admin_approve_member', {p_id: mjId});
+    if (approveRes.error || !approveRes.data) throw new Error(approveRes.error ? approveRes.error.message : 'approve step failed');
+    var code = approveRes.data;
     toast(name + ' added to Green Mahjong Circle as ' + code);
     return true;
   } catch (e) {
@@ -739,10 +724,10 @@ async function pauseSiteMember(btn) {
   var name = btn.getAttribute('data-name');
   if (!confirm('Pause ' + name + '\'s SportBook account? They will not be able to log in until reactivated. This does not affect any club membership.')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'paused'})
+      body: JSON.stringify({p_id: id, p_status: 'paused'})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
@@ -757,10 +742,10 @@ async function unpauseSiteMember(btn) {
   var id   = btn.getAttribute('data-id');
   var name = btn.getAttribute('data-name');
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/sp_members?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: 'active'})
+      body: JSON.stringify({p_id: id, p_status: 'active'})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
