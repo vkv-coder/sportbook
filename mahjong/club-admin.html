@@ -607,7 +607,7 @@ async function loadPendingMembers(){
     document.getElementById('pending-members-loading').style.display='none';
     if(!mems.length){document.getElementById('pending-members').innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><p>No pending requests.</p></div>';return;}
     const pids=mems.map(m=>m.player_id);
-    const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=*`);
+    const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,email,gender`);
     const pm={};players.forEach(p=>{pm[p.id]=p;});
     document.getElementById('pending-members').innerHTML=mems.map(m=>{
       const p=pm[m.player_id]||{};
@@ -639,7 +639,7 @@ async function loadApprovedMembers(){
     document.getElementById('approved-members-loading').style.display='none';
     if(!mems.length){document.getElementById('approved-members').innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><p>No approved members yet.</p></div>';return;}
     const pids=mems.map(m=>m.player_id);
-    const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=*`);
+    const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,whatsapp,email,gender,telegram_id`);
     const pm={};players.forEach(p=>{pm[p.id]=p;});
     document.getElementById('approved-members').innerHTML=mems.map(m=>{
       const p=pm[m.player_id]||{};
