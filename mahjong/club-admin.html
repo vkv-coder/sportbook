@@ -650,7 +650,10 @@ async function loadApprovedMembers(){
         <div class="member-meta">💬 WhatsApp: <span>${p.whatsapp||p.mobile||'—'}</span></div>
         <div class="member-meta">✉️ <span>${p.email||'—'}</span></div>
         <div class="member-meta">👤 <span>${p.gender||'—'}</span></div>
-        ${p.telegram_id?`<div class="member-meta">✈️ Telegram: <span>${p.telegram_id}</span></div>`:''}
+        <div class="member-meta">✈️ Telegram: ${p.telegram_id
+          ?`<span style="color:#1E7A46;font-weight:600;">✅ Connected</span>`
+          :`<span style="color:#B9770E;font-weight:600;">❌ Not Connected</span> <a href="https://wa.me/91${p.whatsapp||p.mobile}?text=${encodeURIComponent('Hi '+(p.name||'')+'! Please connect Telegram for Green Mahjong Circle scoring - search @green_mahjong_circle_bot on Telegram and tap Start.')}" target="_blank" style="font-size:11px;color:#25d366;text-decoration:underline;">Remind via WhatsApp</a>`
+        }</div>
         <div class="member-meta" style="margin-top:8px;">🎫 Slot Balance: <span style="color:var(--gold);font-weight:700;">${bal} slots</span></div>
         <div class="member-actions">
           <div class="balance-row">
