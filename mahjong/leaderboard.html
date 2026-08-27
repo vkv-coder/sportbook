@@ -43,14 +43,15 @@ select option{background:var(--surface);}
 .podium-base.gold{background:linear-gradient(135deg,#f1c40f33,#e67e2222);border:1px solid #f1c40f44;height:64px;color:#B7950B;}
 .podium-base.silver{background:linear-gradient(135deg,#bdc3c733,#95a5a622);border:1px solid #bdc3c744;height:48px;color:#707B7C;}
 .podium-base.bronze{background:linear-gradient(135deg,#e67e2233,#d3540022);border:1px solid #e67e2244;height:36px;color:#e67e22;}
-.rank-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.rank-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:grid;grid-template-columns:24px 1fr 56px 64px;align-items:center;column-gap:8px;}
 .rank-card.me{border-color:var(--gold);background:rgba(201,168,76,0.08);}
-.rank-num{font-size:12px;font-weight:700;color:var(--muted);min-width:16px;text-align:center;}
-.rank-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
-.rank-id{font-size:11px;color:var(--muted);white-space:nowrap;}
-.rank-points{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;margin-left:auto;padding-left:8px;}
+.rank-num{font-size:12px;font-weight:700;color:var(--muted);text-align:center;}
+.rank-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.rank-id{font-size:11px;color:var(--muted);white-space:nowrap;text-align:right;}
+.rank-points{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;text-align:right;}
 .rank-header{background:transparent;border:none;padding:0 12px;margin-bottom:8px;}
-.rank-header .rank-num,.rank-header .rank-name,.rank-header .rank-id,.rank-header .rank-points{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+.rank-header .rank-num,.rank-header .rank-name,.rank-header .rank-id,.rank-header .rank-points{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;text-align:left;}
+.rank-header .rank-id,.rank-header .rank-points{text-align:right;}
 .you-badge{background:rgba(201,168,76,0.2);color:var(--gold);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;}
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;}
 </style>
