@@ -528,7 +528,11 @@ async function adminLogin(){
   if(!email||!password){showMsg('login-msg','Enter email and password.','error');return;}
   showMsg('login-msg','Logging in...','info');
   try{
-    var clubs=await sb('rpc/mj_verify_login','POST',{p_email:email,p_password:password});
+    // v2 checks the new multi-admin table (mj_club_admins) first, then
+    // falls back to the original single email/password columns on
+    // mj_clubs itself - so clubs with just one admin keep working exactly
+    // as before, while a club can now also have more than one login.
+    var clubs=await sb('rpc/mj_verify_login_v2','POST',{p_email:email,p_password:password});
     if(!clubs.length){showMsg('login-msg','Incorrect email or password.','error');return;}
     if(clubs[0].status==='pending'){showMsg('login-msg','Club approval pending. Please wait for SportBook admin to approve.','warn');return;}
     if(clubs[0].status==='paused'){showMsg('login-msg','Club is paused. Contact SportBook admin.','warn');return;}
