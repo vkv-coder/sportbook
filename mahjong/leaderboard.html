@@ -110,6 +110,12 @@ window.addEventListener('DOMContentLoaded',async function(){
   await loadClubs();
 });
 
+function ordinal(n){
+  var rem100=n%100;
+  if(rem100>=11&&rem100<=13) return n+'th';
+  switch(n%10){case 1:return n+'st';case 2:return n+'nd';case 3:return n+'rd';default:return n+'th';}
+}
+
 async function sb(path){
   var res=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
   if(!res.ok){var e=await res.json();throw new Error(e.message);}
@@ -212,14 +218,15 @@ async function loadLeaderboard(){
     document.getElementById('stat-players').textContent=allPlayers.length;
     document.getElementById('stat-top').textContent=topPoints;
 
-    // While everyone is still tied (e.g. right after the welcome bonus,
-    // before anyone has actually played), naming top-3 "winners" would be
-    // arbitrary - podium stays blank and the full list (all ranks) below
-    // carries name/code/points instead. Once real games break the tie,
-    // the podium shows the actual top 3 and the list below starts at 4th.
-    var allTied=allPlayers.every(function(p){return p.rankPoints===allPlayers[0].rankPoints;});
+    // A rank is only earned once a player's points actually rise above
+    // the flat 500 welcome bonus - i.e. they've had at least one confirmed
+    // game count for them. Everyone still sitting exactly at 500 (hasn't
+    // played yet) gets no rank number and never appears on the podium,
+    // no matter how the tied block happens to sort.
+    var ranked=allPlayers.filter(function(p){return p.rankPoints>500;});
+    var unranked=allPlayers.filter(function(p){return p.rankPoints<=500;});
 
-    if(allTied){
+    if(!ranked.length){
       document.getElementById('rest-label').textContent='All Players';
       document.getElementById('podium-section').innerHTML=
         '<div class="podium">'
@@ -227,7 +234,7 @@ async function loadLeaderboard(){
         +'<div class="podium-item"><div class="podium-base gold">1</div></div>'
         +'<div class="podium-item"><div class="podium-base bronze">3</div></div>'
         +'</div>';
-      document.getElementById('rest-section').innerHTML=allPlayers.map(function(p){
+      document.getElementById('rest-section').innerHTML=unranked.map(function(p){
         return '<div class="rank-card'+(p.isMe?' me':'')+'">'
           +'<div class="rank-num"></div>'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
@@ -237,8 +244,8 @@ async function loadLeaderboard(){
       }).join('');
     } else {
       document.getElementById('rest-label').textContent='Other Players';
-      var top3=allPlayers.slice(0,3);
-      var rest=allPlayers.slice(3);
+      var top3=ranked.slice(0,3);
+      var restRanked=ranked.slice(3);
       var podiumOrder=[1,0,2];
       var posStyles=[
         {cls:'silver',crown:'🥈',base:'silver'},
@@ -266,14 +273,23 @@ async function loadLeaderboard(){
       podiumHtml+='</div>';
       document.getElementById('podium-section').innerHTML=podiumHtml;
 
-      document.getElementById('rest-section').innerHTML=rest.map(function(p,i){
+      var rankedRowsHtml=restRanked.map(function(p,i){
         return '<div class="rank-card'+(p.isMe?' me':'')+'">'
-          +'<div class="rank-num">'+(i+4)+'</div>'
+          +'<div class="rank-num">'+ordinal(i+4)+'</div>'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
           +'<div class="rank-id">'+p.code+'</div>'
           +'<div class="rank-points">'+p.rankPoints+' pts</div>'
           +'</div>';
       }).join('');
+      var unrankedRowsHtml=unranked.map(function(p){
+        return '<div class="rank-card'+(p.isMe?' me':'')+'">'
+          +'<div class="rank-num"></div>'
+          +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
+          +'<div class="rank-id">'+p.code+'</div>'
+          +'<div class="rank-points">'+p.rankPoints+' pts</div>'
+          +'</div>';
+      }).join('');
+      document.getElementById('rest-section').innerHTML=rankedRowsHtml+unrankedRowsHtml;
     }
 
     document.getElementById('lb-loading').style.display='none';
