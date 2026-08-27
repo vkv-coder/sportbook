@@ -264,7 +264,10 @@ select option{background:var(--surface);}
       <div id="pending-members-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="pending-members"></div>
       <div class="divider"></div>
-      <div class="section-label">Approved Members</div>
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Approved Members</span>
+        <button class="btn btn-outline btn-sm" onclick="exportApprovedMembersCSV()" style="text-transform:none;letter-spacing:normal;font-weight:600;">⬇️ Download List (Excel)</button>
+      </div>
       <div id="approved-members-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="approved-members"></div>
     </div>
@@ -698,6 +701,47 @@ async function loadApprovedMembers(){
   // Set category dropdowns after render
   mems.forEach(function(m){ setCategoryDropdown(m.id, m.category); });
   }catch(e){document.getElementById('approved-members-loading').style.display='none';}
+}
+
+function csvEscape(v){
+  v=(v===null||v===undefined)?'':String(v);
+  return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+}
+
+async function exportApprovedMembersCSV(){
+  try{
+    const mems=await sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=*&order=member_code.asc`);
+    if(!mems.length){alert('No approved members to export.');return;}
+    const pids=mems.map(m=>m.player_id);
+    const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,whatsapp,email,gender,telegram_id`);
+    const pm={};players.forEach(p=>{pm[p.id]=p;});
+    const header=['Member ID','Name','Mobile','WhatsApp','Email','Gender','Telegram Connected','Slot Balance','Traditional Points','Taiwanese Points'];
+    const rows=mems.map(m=>{
+      const p=pm[m.player_id]||{};
+      return [
+        m.member_code||'',
+        p.name||'',
+        p.mobile||'',
+        p.whatsapp||p.mobile||'',
+        p.email||'',
+        p.gender||'',
+        p.telegram_id?'Yes':'No',
+        m.slot_balance||0,
+        m.initial_points||0,
+        m.initial_points_taiwanese||0
+      ];
+    });
+    const csv=[header,...rows].map(r=>r.map(csvEscape).join(',')).join('\r\n');
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=(club.club_name||'Club').replace(/[^a-z0-9]+/gi,'_')+'_Members.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }catch(e){alert('Error exporting: '+e.message);}
 }
 
 async function addSlotBalance(memId,currentBal){
