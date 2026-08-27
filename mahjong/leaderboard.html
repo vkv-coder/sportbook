@@ -42,6 +42,8 @@ select option{background:var(--surface);}
 .rank-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;}
 .rank-id{font-size:11px;color:var(--muted);white-space:nowrap;}
 .rank-points{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;margin-left:auto;padding-left:8px;}
+.rank-header{background:transparent;border:none;padding:0 12px;margin-bottom:8px;}
+.rank-header .rank-num,.rank-header .rank-name,.rank-header .rank-id,.rank-header .rank-points{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
 .you-badge{background:rgba(201,168,76,0.2);color:var(--gold);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;}
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;}
 </style>
@@ -68,6 +70,12 @@ select option{background:var(--surface);}
     </div>
     <div id="podium-section"></div>
     <div class="section-label">All Players</div>
+    <div class="rank-card rank-header">
+      <div class="rank-num">Rank</div>
+      <div class="rank-name">Name</div>
+      <div class="rank-id">ID</div>
+      <div class="rank-points">Points</div>
+    </div>
     <div id="rest-section"></div>
   </div>
 
@@ -207,11 +215,14 @@ async function loadLeaderboard(){
       +'<div class="podium-item"><div class="podium-base bronze">3</div></div>'
       +'</div>';
 
-    document.getElementById('rest-section').innerHTML=allPlayers.map(function(p){
-      // rank-num is left blank on purpose - reserved space for a future
-      // per-player rank number once ties are less common.
+    // Once real games differentiate points, each row's rank number is
+    // its sorted position - left blank while everyone is still tied
+    // (e.g. right after the welcome bonus), since numbering a pure tie
+    // would imply a ranking that doesn't actually exist yet.
+    var allTied=allPlayers.every(function(p){return p.rankPoints===allPlayers[0].rankPoints;});
+    document.getElementById('rest-section').innerHTML=allPlayers.map(function(p,i){
       return '<div class="rank-card'+(p.isMe?' me':'')+'">'
-        +'<div class="rank-num"></div>'
+        +'<div class="rank-num">'+(allTied?'':(i+1))+'</div>'
         +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
         +'<div class="rank-id">'+p.code+'</div>'
         +'<div class="rank-points">'+p.rankPoints+' pts</div>'
