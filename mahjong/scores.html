@@ -295,7 +295,15 @@ async function logNewMatch(){
     for(var i=0;i<4;i++){
       await sb('mj_score_entries','POST',{room_id:roomId,player_id:allPids[i],starting_points:startingPoints,final_points:allScores[i],playing_category:category});
     }
-    showMsg('create-msg','✅ Match logged! All 4 players must now confirm.','success');
+    // Creator is auto-confirmed by having created the room (matches the
+    // Telegram bot's model exactly) - only the other 3 get a pending row,
+    // which gets updated in place (not re-inserted) once they confirm.
+    // Sharing this exact schema/semantics with the bot is what makes it
+    // safe for a match to be confirmed through either channel.
+    for(var j=0;j<opponentIds.length;j++){
+      await sb('mj_score_confirmations','POST',{room_id:roomId,player_id:opponentIds[j],status:'pending'});
+    }
+    showMsg('create-msg','✅ Match logged! The other 3 players must now confirm.','success');
     document.getElementById('create-my-score').value='';
     document.getElementById('create-m2').value='';document.getElementById('create-s2').value='';
     document.getElementById('create-m3').value='';document.getElementById('create-s3').value='';
@@ -385,16 +393,23 @@ async function openRoom(roomId){
       var confPlayers=pidsConf.length?await sb('sp_members?id=in.('+pidsConf.join(',')+')'+'&select=id,name'):[];
       var confPMap={};confPlayers.forEach(function(p){confPMap[p.id]=p;});
       // Every player at the table must confirm individually (from their own
-      // login) before scores lock and count on the leaderboard - not just
-      // the room creator.
-      var confRows=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=player_id');
-      var confirmedSet={};confRows.forEach(function(c){confirmedSet[c.player_id]=true;});
+      // login, or via the Telegram bot) before scores lock and count on
+      // the leaderboard. The creator is auto-confirmed by having created
+      // the room (matches the bot's model) - only the other 3 have a real
+      // confirmation row, and its status field (not just row presence) is
+      // what counts, since the bot pre-creates a "pending" row for each of
+      // them immediately, before they've actually tapped anything.
+      var confRows=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=player_id,status');
+      var confirmedSet={};confRows.forEach(function(c){if(c.status==='confirmed')confirmedSet[c.player_id]=true;});
+      var neededPids=pidsConf.filter(function(pid){return pid!==currentRoom.created_by;});
+      var confirmedCount=neededPids.filter(function(pid){return confirmedSet[pid];}).length;
       var checklistHtml='<div style="margin-bottom:14px;">'
-        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Confirmation Status ('+confRows.length+'/'+pidsConf.length+')</div>'
+        +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:10px;">Confirmation Status ('+confirmedCount+'/'+neededPids.length+')</div>'
         +pidsConf.map(function(pid){
           var p=confPMap[pid];
-          var done=!!confirmedSet[pid];
-          return '<div class="confirm-row"><div class="confirm-player">'+(p?p.name:'—')+(pid===player.id?' (You)':'')+'</div>'
+          var isCreator=pid===currentRoom.created_by;
+          var done=isCreator||!!confirmedSet[pid];
+          return '<div class="confirm-row"><div class="confirm-player">'+(p?p.name:'—')+(pid===player.id?' (You)':'')+(isCreator?' 👑':'')+'</div>'
             +'<span class="confirm-status '+(done?'confirm-yes':'confirm-no')+'">'+(done?'✅ Confirmed':'⏳ Pending')+'</span></div>';
         }).join('')
         +'</div>';
@@ -414,9 +429,10 @@ async function openRoom(roomId){
         +'</div>'
         +checklistHtml;
       var isParticipant=pidsConf.indexOf(player.id)>-1;
-      var alreadyConfirmed=!!confirmedSet[player.id];
+      var isCreatorMe=player.id===currentRoom.created_by;
+      var alreadyConfirmed=isCreatorMe||!!confirmedSet[player.id];
       document.getElementById('confirm-btn').disabled=(!isParticipant||alreadyConfirmed);
-      document.getElementById('confirm-btn').textContent=alreadyConfirmed?'✅ Confirmed':isParticipant?'✅ I Confirm':'Not Part of This Table';
+      document.getElementById('confirm-btn').textContent=isCreatorMe?'✅ Confirmed (you created this)':alreadyConfirmed?'✅ Confirmed':isParticipant?'✅ I Confirm':'Not Part of This Table';
     } else if(currentRoom.status==='confirmed'){
       // Show final results
       const entries=await sb('mj_score_entries?room_id=eq.'+roomId+'&select=*');
@@ -471,7 +487,14 @@ async function submitScores(){
     }
     // Update room status to pending_confirm
     await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'pending_confirm'});
-    showMsg('entry-msg','✅ Scores submitted! All 4 players must now confirm.','success');
+    // Recreate the pending confirmation rows for the 3 non-creator
+    // players (any old ones were already cleared by Reset All) - same
+    // shape logNewMatch creates them in, so either channel can confirm.
+    var nonCreatorPids=pids.filter(function(pid){return pid!==currentRoom.created_by;});
+    for(var k=0;k<nonCreatorPids.length;k++){
+      await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:nonCreatorPids[k],status:'pending'});
+    }
+    showMsg('entry-msg','✅ Scores submitted! The other 3 players must now confirm.','success');
     setTimeout(()=>openRoom(currentRoom.id),1500);
   }catch(e){showMsg('entry-msg','Error: '+e.message,'error');}
 }
@@ -482,16 +505,33 @@ async function confirmScores(){
     showMsg('confirm-msg','You are not part of this table.','warn');
     return;
   }
+  if(player.id===currentRoom.created_by){
+    showMsg('confirm-msg','You already confirmed this by creating the room.','warn');
+    return;
+  }
   try{
-    var existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id');
-    if(existing.length>0){showMsg('confirm-msg','You have already confirmed.','warn');return;}
-    await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:player.id});
+    var existing=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&player_id=eq.'+player.id+'&select=id,status');
+    if(existing.length&&existing[0].status==='confirmed'){showMsg('confirm-msg','You have already confirmed.','warn');return;}
+    // Update the pending row in place rather than inserting a new one -
+    // this row may have been created by the app (logNewMatch) or by the
+    // Telegram bot (createRoomAndNotify); either way it already exists
+    // with status:'pending', and this is exactly how the bot's own
+    // confirm-button handler updates it, so either channel can finish
+    // the same confirmation correctly.
+    if(existing.length){
+      await sbPatch('mj_score_confirmations?id=eq.'+existing[0].id,{status:'confirmed',confirmed_at:new Date().toISOString()});
+    } else {
+      await sb('mj_score_confirmations','POST',{room_id:currentRoom.id,player_id:player.id,status:'confirmed',confirmed_at:new Date().toISOString()});
+    }
 
-    // Only once every player at the table has confirmed do the ranks get
-    // assigned and the room lock - that's what makes the game count on
-    // the leaderboard, not any single player's confirmation.
-    var allConf=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=player_id');
-    if(allConf.length>=pidsConf.length){
+    // Only once every non-creator player at the table has confirmed do the
+    // ranks get assigned and the room lock - that's what makes the game
+    // count on the leaderboard. The creator doesn't get a row at all
+    // (auto-confirmed by creating the room, matching the bot's model).
+    var neededPids=pidsConf.filter(function(pid){return pid!==currentRoom.created_by;});
+    var allConf=await sb('mj_score_confirmations?room_id=eq.'+currentRoom.id+'&select=player_id,status');
+    var confirmedCount=neededPids.filter(function(pid){return allConf.some(function(c){return c.player_id===pid&&c.status==='confirmed';});}).length;
+    if(confirmedCount>=neededPids.length){
       var entries=await sb('mj_score_entries?room_id=eq.'+currentRoom.id+'&select=*');
       entries.sort(function(a,b){return b.final_points-a.final_points;});
       var rankPoints=[100,75,50,25];
@@ -501,7 +541,7 @@ async function confirmScores(){
       await sbPatch('mj_score_rooms?id=eq.'+currentRoom.id,{status:'confirmed'});
       showMsg('confirm-msg','✅ All players confirmed! Scores locked and added to the leaderboard.','success');
     } else {
-      showMsg('confirm-msg','✅ You confirmed. Waiting for '+(pidsConf.length-allConf.length)+' more player(s).','success');
+      showMsg('confirm-msg','✅ You confirmed. Waiting for '+(neededPids.length-confirmedCount)+' more player(s).','success');
     }
     setTimeout(function(){openRoom(currentRoom.id);},1200);
   }catch(e){alert('Error: '+e.message);}
