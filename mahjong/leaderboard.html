@@ -116,6 +116,19 @@ function ordinal(n){
   switch(n%10){case 1:return n+'st';case 2:return n+'nd';case 3:return n+'rd';default:return n+'th';}
 }
 
+// Standard competition ranking: players tied on points share the same
+// rank, and the next distinct rank skips ahead by however many were tied
+// (e.g. two players tied at 3rd -> both "3rd", next player is "5th").
+// `list` must already be sorted by points descending.
+function assignRanks(list){
+  var ranks=[];
+  for(var i=0;i<list.length;i++){
+    if(i>0&&list[i].rankPoints===list[i-1].rankPoints) ranks.push(ranks[i-1]);
+    else ranks.push(i+1);
+  }
+  return ranks;
+}
+
 async function sb(path){
   var res=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
   if(!res.ok){var e=await res.json();throw new Error(e.message);}
@@ -244,6 +257,11 @@ async function loadLeaderboard(){
       }).join('');
     } else {
       document.getElementById('rest-label').textContent='Other Players';
+      // Competition ranking: players tied on points share a rank number,
+      // and the next distinct rank skips ahead accordingly - so nobody
+      // with an identical score ends up arbitrarily placed above/below
+      // someone else with the same points.
+      var ranks=assignRanks(ranked);
       var top3=ranked.slice(0,3);
       var restRanked=ranked.slice(3);
       var podiumOrder=[1,0,2];
@@ -256,7 +274,7 @@ async function loadLeaderboard(){
       podiumOrder.forEach(function(playerIdx,posIdx){
         var p=top3[playerIdx];
         var style=posStyles[posIdx];
-        var label=(playerIdx+1);
+        var label=ranks[playerIdx]||(playerIdx+1);
         if(!p){
           podiumHtml+='<div class="podium-item"><div class="podium-base '+style.base+'">'+label+'</div></div>';
           return;
@@ -275,7 +293,7 @@ async function loadLeaderboard(){
 
       var rankedRowsHtml=restRanked.map(function(p,i){
         return '<div class="rank-card'+(p.isMe?' me':'')+'">'
-          +'<div class="rank-num">'+ordinal(i+4)+'</div>'
+          +'<div class="rank-num">'+ordinal(ranks[i+3])+'</div>'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
           +'<div class="rank-id">'+p.code+'</div>'
           +'<div class="rank-points">'+p.rankPoints+' pts</div>'
