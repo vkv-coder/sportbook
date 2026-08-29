@@ -226,7 +226,7 @@ async function populateCreateClubs(){
   var wrap=document.getElementById('create-club-wrap');
   wrap.innerHTML='<label>Club</label><div style="font-size:13px;color:var(--muted);">Loading...</div>';
   try{
-    var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
+    var mems=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id,p_status:'approved'});
     var clubIds=mems.map(function(m){return m.club_id;});
     if(!clubIds.length){wrap.innerHTML='<label>Club</label><div style="font-size:13px;color:var(--muted);">Not a member of any club</div>';activeCreateClubId='';return;}
     var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name&order=club_name.asc');
@@ -274,7 +274,7 @@ async function logNewMatch(){
 
   showMsg('create-msg','Looking up players...','info');
   try{
-    var members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&member_code=in.('+codes.join(',')+')'+'&select=player_id,member_code');
+    var members=await sb('rpc/mj_members_lookup_by_code','POST',{p_club_id:clubId,p_codes:codes});
     var foundCodes=members.map(function(m){return m.member_code;});
     var missing=codes.filter(function(c){return foundCodes.indexOf(c)===-1;});
     if(missing.length){showMsg('create-msg','Member code(s) not found in this club: '+missing.join(', '),'error');return;}
