@@ -292,7 +292,7 @@ function switchTab(tabId){
 async function loadMyClubs(){
   document.getElementById('my-clubs-loading').style.display='block';
   try{
-    var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=id,club_id,slot_balance,telegram_id,member_code');
+    var mems=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id,p_status:'approved'});
     myClubIds=mems.map(function(m){return m.club_id;});
     membershipsCache={};
     mems.forEach(function(m){membershipsCache[m.club_id]=m;});
@@ -533,8 +533,8 @@ async function processWaitlist(clubId,slotId,tableNo,date,category){
     var waiting=await sb('mj_waitlist?club_id=eq.'+clubId+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.waiting&playing_category=eq.'+category+'&order=created_at.asc&select=*');
     if(!waiting.length)return false;
     var next=waiting[0];
-    var mem=await sb('mj_members?player_id=eq.'+next.player_id+'&club_id=eq.'+clubId+'&select=slot_balance');
-    var bal=mem[0]?mem[0].slot_balance||0:0;
+    var bal=await sb('rpc/mj_members_slot_balance','POST',{p_player_id:next.player_id,p_club_id:clubId});
+    bal=bal||0;
     if(bal<=0){
       await sbPatch('mj_waitlist?id=eq.'+next.id,{status:'no_balance'});
       return await processWaitlist(clubId,slotId,tableNo,date,category);
@@ -623,7 +623,7 @@ async function sendGroupRequest(){
   if(!clubId||!date||!slotId||!c2||!c3||!c4){showMsg('grp-msg','Please fill all fields.','error');return;}
   showMsg('grp-msg','Sending request...','info');
   try{
-    var mems=await sb('mj_members_view?club_id=eq.'+clubId+'&status=eq.approved&member_code=in.('+[c2,c3,c4].join(',')+')&select=member_code,system_id,name');
+    var mems=await sb('rpc/mj_members_lookup_by_code','POST',{p_club_id:clubId,p_codes:[c2,c3,c4]});
     if(mems.length<3){showMsg('grp-msg','One or more member codes are not valid approved members of this club.','error');return;}
     var codeMap={};mems.forEach(function(m){codeMap[m.member_code]=m;});
     if(!codeMap[c2]||!codeMap[c3]||!codeMap[c4]){showMsg('grp-msg','One or more member codes are not valid approved members of this club.','error');return;}
@@ -733,7 +733,7 @@ async function loadDiscover(){
   document.getElementById('discover-loading').style.display='block';
   try{
     var allClubs=await sb('mj_clubs?status=eq.active&select=*&order=club_name.asc');
-    var mems=await sb('mj_members?player_id=eq.'+player.id+'&select=club_id,status');
+    var mems=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id});
     var mMap={};mems.forEach(function(m){mMap[m.club_id]=m.status;});
     document.getElementById('discover-loading').style.display='none';
     var venueMap=await loadDiscoverVenueEvents(allClubs);
@@ -809,7 +809,7 @@ async function doRequestMembership(clubId,clubName,btn){
       loadDiscover();
       return;
     }
-    var ex=await sb('mj_members?player_id=eq.'+player.id+'&club_id=eq.'+clubId+'&select=id');
+    var ex=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id,p_club_id:clubId});
     if(ex.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
     var inserted=await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
     btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
@@ -850,7 +850,7 @@ function tgConnectHtml(clubId,mjMemberId,botUsername){
 // and finish connecting if they didn't do it right after requesting.
 async function loadPendingClubRequests(){
   try{
-    var pend=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.pending&select=id,club_id,telegram_id');
+    var pend=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id,p_status:'pending'});
     if(!pend.length){document.getElementById('pending-clubs-list').innerHTML='';return;}
     var clubIds=pend.map(function(p){return p.club_id;});
     var clubs=await sb('mj_clubs?id=in.('+clubIds.join(',')+')'+'&select=id,club_name,telegram_bot_username');
@@ -885,7 +885,7 @@ function startClubTgPolling(clubId,mjMemberId){
       return;
     }
     try{
-      var rows=await sb('mj_members?id=eq.'+mjMemberId+'&select=telegram_id');
+      var rows=await sb('rpc/mj_members_by_id','POST',{p_id:mjMemberId});
       if(rows.length&&rows[0].telegram_id){
         clearInterval(clubTgPollTimers[clubId]);
         showClubTgMsg(clubId,'✅ Connected!','#1E7A46');

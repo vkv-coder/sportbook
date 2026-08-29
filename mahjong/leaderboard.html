@@ -137,7 +137,7 @@ async function sb(path){
 async function loadClubs(){
   if(player.id){
     try{
-      var mems=await sb('mj_members?player_id=eq.'+player.id+'&status=eq.approved&select=club_id');
+      var mems=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id,p_status:'approved'});
       var ids=mems.map(function(m){return m.club_id;});
       if(ids.length){
         myClubs=await sb('mj_clubs?id=in.('+ids.join(',')+')'+'&status=eq.active&select=id,club_name');
@@ -187,7 +187,7 @@ async function loadLeaderboard(){
     }
 
     // Add initial points - both columns count toward the same combined total
-    var members=await sb('mj_members?club_id=eq.'+clubId+'&status=eq.approved&select=player_id,initial_points,initial_points_taiwanese,member_code');
+    var members=await sb('rpc/mj_members_by_club','POST',{p_club_id:clubId,p_status:'approved'});
     var codeMap={};members.forEach(function(m){codeMap[m.player_id]=m.member_code;});
     members.forEach(function(m){
       var pts=(m.initial_points||0)+(m.initial_points_taiwanese||0);

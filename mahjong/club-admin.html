@@ -596,8 +596,8 @@ async function loadStats(){
   try{
     const today=new Date().toISOString().split('T')[0];
     const[members,pending,fullSessions]=await Promise.all([
-      sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=id`),
-      sb(`mj_members?club_id=eq.${club.id}&status=eq.pending&select=id`),
+      sb(`rpc/mj_members_by_club`,'POST',{p_club_id:club.id,p_status:'approved'}),
+      sb(`rpc/mj_members_by_club`,'POST',{p_club_id:club.id,p_status:'pending'}),
       sb(`mj_table_sessions?club_id=eq.${club.id}&booking_date=eq.${today}&status=eq.full&select=id`)
     ]);
     document.getElementById('stat-members').textContent=members.length;
@@ -610,7 +610,8 @@ async function loadPendingMembers(){
   document.getElementById('pending-members-loading').style.display='block';
   document.getElementById('pending-members').innerHTML='';
   try{
-    const mems=await sb(`mj_members?club_id=eq.${club.id}&status=eq.pending&select=*&order=joined_at.asc`);
+    const mems=await sb(`rpc/mj_members_by_club`,'POST',{p_club_id:club.id,p_status:'pending'});
+    mems.sort((a,b)=>new Date(a.joined_at)-new Date(b.joined_at));
     document.getElementById('pending-members-loading').style.display='none';
     if(!mems.length){document.getElementById('pending-members').innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><p>No pending requests.</p></div>';return;}
     const pids=mems.map(m=>m.player_id);
@@ -642,7 +643,8 @@ async function loadApprovedMembers(){
   document.getElementById('approved-members-loading').style.display='block';
   document.getElementById('approved-members').innerHTML='';
   try{
-    const mems=await sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=*&order=joined_at.desc`);
+    const mems=await sb(`rpc/mj_members_by_club`,'POST',{p_club_id:club.id,p_status:'approved'});
+    mems.sort((a,b)=>new Date(b.joined_at)-new Date(a.joined_at));
     document.getElementById('approved-members-loading').style.display='none';
     if(!mems.length){document.getElementById('approved-members').innerHTML='<div class="empty-state"><div class="empty-icon">👥</div><p>No approved members yet.</p></div>';return;}
     const pids=mems.map(m=>m.player_id);
@@ -714,7 +716,8 @@ function csvEscape(v){
 
 async function exportApprovedMembersCSV(){
   try{
-    const mems=await sb(`mj_members?club_id=eq.${club.id}&status=eq.approved&select=*&order=member_code.asc`);
+    const mems=await sb(`rpc/mj_members_by_club`,'POST',{p_club_id:club.id,p_status:'approved'});
+    mems.sort((a,b)=>(a.member_code||'').localeCompare(b.member_code||''));
     if(!mems.length){alert('No approved members to export.');return;}
     const pids=mems.map(m=>m.player_id);
     const players=await sb(`sp_members?id=in.(${pids.join(',')})&select=id,name,mobile,whatsapp,email,gender,telegram_id`);
@@ -914,7 +917,7 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,c2,c3,c4){
   const tableNo=parseInt(document.getElementById(`grp-table-${reqId}`).value);
   if(!tableNo){alert('Please select a table number.');return;}
   try{
-    const codeMembers=await sb(`mj_members_view?club_id=eq.${club.id}&status=eq.approved&member_code=in.(${[c2,c3,c4].join(',')})&select=member_code,system_id`);
+    const codeMembers=await sb(`rpc/mj_members_lookup_by_code`,'POST',{p_club_id:club.id,p_codes:[c2,c3,c4]});
     const codeMap={};codeMembers.forEach(m=>{codeMap[m.member_code]=m.system_id;});
     const pids=[requestedBy,codeMap[c2],codeMap[c3],codeMap[c4]].filter(Boolean);
     if(pids.length<4){alert('Could not find all 4 players. Please check member codes.');return;}
@@ -1372,7 +1375,7 @@ async function loadLeaderboardAdmin(){
       :'playing_category=in.(beginner,intermediate,advanced,traditional)';
 
     var rooms=await sb('mj_score_rooms?club_id=eq.'+club.id+'&status=eq.confirmed&select=id');
-    var members=await sb('mj_members?club_id=eq.'+club.id+'&status=eq.approved&select=player_id,initial_points,initial_points_taiwanese');
+    var members=await sb('rpc/mj_members_by_club','POST',{p_club_id:club.id,p_status:'approved'});
     var stats={};
 
     if(rooms.length){
