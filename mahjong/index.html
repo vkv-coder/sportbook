@@ -16,8 +16,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 .header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
 .btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;}
 .btn-logout:hover{border-color:var(--red);color:var(--red);}
-.nav-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
-.nav-tab{flex:1;min-width:60px;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;white-space:nowrap;}
+.nav-tabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);}
+.nav-tabs{display:flex;background:transparent;}
+.nav-tabs+.nav-tabs{border-top:1px solid var(--border);}
+.nav-tab{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-size:10px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;font-family:'Inter',sans-serif;white-space:nowrap;}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 .nav-tab .tab-icon{display:block;font-size:16px;margin-bottom:2px;}
 .main{max-width:480px;margin:0 auto;padding:20px 16px 80px;}
@@ -99,14 +101,18 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
     <a href="/" style="background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 10px;border-radius:6px;font-size:11px;text-decoration:none;">🏠 Menu</a>
   </div>
 </div>
-<div class="nav-tabs">
-  <button class="nav-tab active" onclick="switchTab('tab-availability')"><span class="tab-icon">🗓️</span>Find & Book</button>
-  <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👥</span>Group</button>
-  <button class="nav-tab" onclick="switchTab('tab-my-clubs')"><span class="tab-icon">🏯</span>My Clubs</button>
-  <button class="nav-tab" onclick="switchTab('tab-bookings')"><span class="tab-icon">📋</span>Bookings</button>
-  <button class="nav-tab" onclick="switchTab('tab-discover')"><span class="tab-icon">🔍</span>Discover</button>
-  <button class="nav-tab" onclick="window.location.href='/mahjong/leaderboard.html'"><span class="tab-icon">🏆</span>Leaderboard</button>
-  <button class="nav-tab" onclick="window.location.href='/mahjong/scores.html'"><span class="tab-icon">🎯</span>Scores</button>
+<div class="nav-tabs-wrap">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('tab-availability')"><span class="tab-icon">🗓️</span>Find & Book</button>
+    <button class="nav-tab" onclick="switchTab('tab-group')"><span class="tab-icon">👥</span>Group</button>
+    <button class="nav-tab" onclick="switchTab('tab-my-clubs')"><span class="tab-icon">🏯</span>My Clubs</button>
+    <button class="nav-tab" onclick="switchTab('tab-bookings')"><span class="tab-icon">📋</span>Bookings</button>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab" onclick="switchTab('tab-discover')"><span class="tab-icon">🔍</span>Discover</button>
+    <button class="nav-tab" onclick="window.location.href='/mahjong/leaderboard.html'"><span class="tab-icon">🏆</span>Leaderboard</button>
+    <button class="nav-tab" onclick="window.location.href='/mahjong/scores.html'"><span class="tab-icon">🎯</span>Scores</button>
+  </div>
 </div>
 <div class="main">
 
