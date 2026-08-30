@@ -805,9 +805,9 @@ async function doRequestMembership(clubId,clubName,btn){
     }
     var ex=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id,p_club_id:clubId});
     if(ex.length>0){btn.disabled=false;btn.textContent='Request to Join';return;}
-    var inserted=await sb('mj_members','POST',{club_id:clubId,player_id:player.id,status:'pending'});
+    var inserted=await sb('rpc/mj_request_membership','POST',{p_club_id:clubId,p_player_id:player.id});
     btn.outerHTML='<span class="badge badge-pending">⏳ Request Pending</span>';
-    var mjMemberId=inserted&&inserted[0]&&inserted[0].id;
+    var mjMemberId=inserted&&inserted.id;
     var cRows=await sb('mj_clubs?id=eq.'+clubId+'&select=telegram_bot_username,telegram_gas_url');
     var botUsername=cRows.length?cRows[0].telegram_bot_username:null;
     var gasUrl=cRows.length?cRows[0].telegram_gas_url:null;

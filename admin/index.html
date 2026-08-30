@@ -660,17 +660,21 @@ async function approveMember(btn) {
 // approval that already happened above.
 async function approveIntoGreenMahjong(playerId, name) {
   try {
-    var inserted = await fetch(SUPABASE_URL + '/rest/v1/mj_members', {
-      method: 'POST',
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation'},
-      body: JSON.stringify({club_id: GREEN_MAHJONG_CLUB_ID, player_id: playerId, status: 'pending'})
-    }).then(function(r){ return r.json(); });
-    var mjId = inserted && inserted[0] && inserted[0].id;
+    var insertRes = await sb.rpc('mj_request_membership', {p_club_id: GREEN_MAHJONG_CLUB_ID, p_player_id: playerId});
+    if (insertRes.error || !insertRes.data) throw new Error(insertRes.error ? insertRes.error.message : 'insert did not return a row');
+    var mjId = insertRes.data.id;
     if (!mjId) throw new Error('insert did not return a row');
 
     var approveRes = await sb.rpc('mj_admin_approve_member', {p_id: mjId});
     if (approveRes.error || !approveRes.data) throw new Error(approveRes.error ? approveRes.error.message : 'approve step failed');
     var code = approveRes.data;
+    // Every Green Mahjong Circle member gets a 500-point welcome bonus -
+    // club-admin.html's own Approve button already does this, but this
+    // shortcut (approve-and-auto-join from the site-wide panel) bypasses
+    // that code path entirely, so it needs its own copy of the same call.
+    // Wrapped so a failure here never undoes the enrollment that already
+    // succeeded above.
+    try { await sb.rpc('mj_admin_set_initial_points', {p_id: mjId, p_category: 'traditional', p_points: 500}); } catch (e2) {}
     toast(name + ' added to Green Mahjong Circle as ' + code);
     return true;
   } catch (e) {
