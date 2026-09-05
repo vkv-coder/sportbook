@@ -317,6 +317,17 @@ select option{background:var(--surface);}
           <div class="form-group"><label>Start Time</label><input type="time" id="slot-start"/></div>
           <div class="form-group"><label>End Time</label><input type="time" id="slot-end"/></div>
         </div>
+        <div class="form-group">
+          <label>Game Type</label>
+          <select id="slot-game-type">
+            <option value="asian_beginners">🟢 Asian Beginners</option>
+            <option value="asian_advanced">🔴 Asian Advanced</option>
+            <option value="taiwanese_beginners">🟡 Taiwanese Beginners</option>
+            <option value="taiwanese_advanced">🏆 Taiwanese Advanced</option>
+            <option value="special_game">✨ Special Game</option>
+          </select>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">A time can have more than one slot — add it again with a different game to run two games side by side at the same time.</div>
+        </div>
         <div id="slot-add-msg"></div>
         <button class="btn btn-gold btn-full" onclick="addSlot()">Add Slot</button>
       </div>
@@ -327,8 +338,8 @@ select option{background:var(--surface);}
 
     <!-- BOOKING REQUESTS -->
     <div class="tab-content" id="tab-requests">
-      <div class="section-label">Pending Booking Requests by Category</div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When 4 players of same category request same slot, they are auto-confirmed. You can also manually confirm here.</p>
+      <div class="section-label">Pending Booking Requests by Game</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When 4 players request the same slot, they are auto-confirmed. You can also manually confirm here.</p>
       <div class="form-group">
         <label>Filter by Date</label>
         <input type="date" id="req-date-filter" onchange="loadBookingRequests()" style="width:100%;background:#F5FAF6;border:1px solid #D7E8DA;color:#1B4D2E;padding:11px 14px;border-radius:8px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color-scheme:light;"/>
@@ -368,7 +379,7 @@ select option{background:var(--surface);}
     <!-- FILL ALERTS -->
     <div class="tab-content" id="tab-fillalerts">
       <div class="section-label">⚠️ Slots Needing Players</div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Tables that are still short of players within the next 3 hours. Click Send Alert to notify approved members (via Telegram) who haven't booked this slot.</p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Tables that are still short of players within the next 3 hours. Click Send Alert to get the message on your own Telegram so you can forward it to your club group.</p>
       <div id="fillalerts-loading" class="loading"><div class="spinner"></div>Loading...</div>
       <div id="fillalerts-list"></div>
     </div>
@@ -413,6 +424,38 @@ select option{background:var(--surface);}
 const SB_URL='https://jqqnnkzozjskziaizajg.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxcW5ua3pvempza3ppYWl6YWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5Mjk1ODAsImV4cCI6MjA4ODUwNTU4MH0.sEYeWnm0dvuw8bLSVnQhqmgV8LB-pELjpuVIa3Us1Gg';
 let club=null,allSlots=[];
+
+// The 5 fixed game types an admin assigns per slot (replaces the old
+// free-form player-chosen category). A single time can have more than one
+// slot row - one per game type running in parallel on different tables.
+const GAME_TYPES=[
+  {value:'asian_beginners',label:'Asian Beginners',emoji:'🟢'},
+  {value:'asian_advanced',label:'Asian Advanced',emoji:'🔴'},
+  {value:'taiwanese_beginners',label:'Taiwanese Beginners',emoji:'🟡'},
+  {value:'taiwanese_advanced',label:'Taiwanese Advanced',emoji:'🏆'},
+  {value:'special_game',label:'Special Game',emoji:'✨'}
+];
+const GAME_TYPE_LABEL={};GAME_TYPES.forEach(function(g){GAME_TYPE_LABEL[g.value]=g.emoji+' '+g.label;});
+const GAME_TYPE_SHORT={asian_beginners:'AsB',asian_advanced:'AsA',taiwanese_beginners:'TwB',taiwanese_advanced:'TwA',special_game:'SPL'};
+
+// Two slots can share the same real-world time (same day+start+end) but
+// run different games in parallel on different tables - so "which table
+// numbers are free" must look across every slot sharing that time, not
+// just the one slot_id being booked, or two games could get assigned the
+// same physical table at the same time.
+function dayNameForDate(date){
+  var d=new Date(date+'T00:00:00');
+  return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][d.getDay()];
+}
+function slotDayMatches(s,dayName){
+  return !s.day_of_week||s.day_of_week==='all'||s.day_of_week.toLowerCase()===dayName;
+}
+function siblingSlotIds(allSlotsList,targetSlot,date){
+  var dayName=dayNameForDate(date);
+  return allSlotsList.filter(function(s){
+    return s.start_time===targetSlot.start_time&&s.end_time===targetSlot.end_time&&slotDayMatches(s,dayName);
+  }).map(function(s){return s.id;});
+}
 
 // Organiser's own Telegram connect - tap-to-connect, same pattern as every
 // other Telegram connect in this app, replacing the old "type in your own
@@ -921,8 +964,10 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,c2,c3,c4){
     const codeMap={};codeMembers.forEach(m=>{codeMap[m.member_code]=m.system_id;});
     const pids=[requestedBy,codeMap[c2],codeMap[c3],codeMap[c4]].filter(Boolean);
     if(pids.length<4){alert('Could not find all 4 players. Please check member codes.');return;}
-    const existing=await sb(`mj_bookings?club_id=eq.${club.id}&slot_id=eq.${slotId}&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
-    if(existing.length>0){alert(`Table ${tableNo} already has bookings for this slot. Please choose another table.`);return;}
+    const targetSlot=allSlots.find(s=>s.id===slotId);
+    const siblingIds=targetSlot?siblingSlotIds(allSlots,targetSlot,date):[slotId];
+    const existing=await sb(`mj_bookings?club_id=eq.${club.id}&slot_id=in.(${siblingIds.join(',')})&table_number=eq.${tableNo}&booking_date=eq.${date}&status=eq.confirmed&select=id`);
+    if(existing.length>0){alert(`Table ${tableNo} already has bookings for this time. Please choose another table.`);return;}
     for(const pid of pids){
       await sb('mj_bookings','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,player_id:pid,booking_date:date,status:'confirmed'});
       await sb('rpc/mj_self_adjust_slot_balance','POST',{p_player_id:pid,p_club_id:club.id,p_delta:-1});
@@ -949,10 +994,11 @@ async function addSlot(){
   const day=document.getElementById('slot-day').value;
   const start=document.getElementById('slot-start').value;
   const end=document.getElementById('slot-end').value;
+  const gameType=document.getElementById('slot-game-type').value;
   if(!start||!end){showMsg('slot-add-msg','Enter start and end time.','error');return;}
   showMsg('slot-add-msg','Adding...','info');
   try{
-    await sb('mj_slots','POST',{club_id:club.id,day_of_week:day,start_time:start,end_time:end,is_active:true});
+    await sb('mj_slots','POST',{club_id:club.id,day_of_week:day,start_time:start,end_time:end,game_type:gameType,is_active:true});
     document.getElementById('slot-start').value='';document.getElementById('slot-end').value='';
     showMsg('slot-add-msg','✅ Slot added!','success');
     allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
@@ -971,7 +1017,7 @@ async function loadSlotsAdmin(){
       <div class="slot-item">
         <div>
           <div class="slot-time">${s.start_time} – ${s.end_time}</div>
-          <div class="slot-day">${s.day_of_week==='all'?'Every day (Mon–Sun)':s.day_of_week?s.day_of_week.charAt(0).toUpperCase()+s.day_of_week.slice(1):'Every day'}</div>
+          <div class="slot-day">${GAME_TYPE_LABEL[s.game_type]||s.game_type||'—'} · ${s.day_of_week==='all'?'Every day (Mon–Sun)':s.day_of_week?s.day_of_week.charAt(0).toUpperCase()+s.day_of_week.slice(1):'Every day'}</div>
         </div>
         <button class="btn btn-red btn-sm" onclick="deleteSlot('${s.id}')">Delete</button>
       </div>`).join('');
@@ -1093,7 +1139,7 @@ async function loadBookingRequests(){
       if(!groups[key])groups[key]={category:r.playing_category,slot:sMap[r.slot_id],requests:[]};
       groups[key].requests.push(r);
     });
-    var catLabels={beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'};
+    var catLabels=GAME_TYPE_LABEL;
     var html='';
     Object.keys(groups).forEach(function(key){
       var g=groups[key];
@@ -1132,13 +1178,18 @@ async function manualConfirmRequests(btn){
   try{
     var reqs=await sb('mj_booking_requests?club_id=eq.'+club.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&playing_category=eq.'+category+'&status=eq.pending&select=*&order=created_at.asc');
     var toConfirm=reqs.slice(0,4);
-    var bookings=await sb('mj_bookings?club_id=eq.'+club.id+'&slot_id=eq.'+slotId+'&booking_date=eq.'+date+'&status=eq.confirmed&select=table_number');
-    var tableCount={};bookings.forEach(function(b){tableCount[b.table_number]=(tableCount[b.table_number]||0)+1;});
+    if(!allSlots.length){allSlots=await sb('mj_slots?club_id=eq.'+club.id+'&is_active=eq.true&select=*&order=start_time.asc');}
+    var targetSlot=allSlots.find(function(s){return s.id===slotId;});
+    var siblingIds=targetSlot?siblingSlotIds(allSlots,targetSlot,date):[slotId];
+    // Table numbers are a shared pool across every slot running at this same
+    // real time (siblingIds) - a table already taken by a different game at
+    // the same time must not also be handed to this one.
+    var bookings=await sb('mj_bookings?club_id=eq.'+club.id+'&slot_id=in.('+siblingIds.join(',')+')&booking_date=eq.'+date+'&status=eq.confirmed&select=table_number,slot_id');
+    var tableCount={};bookings.forEach(function(b){tableCount[b.table_number]=(tableCount[b.table_number]||0)+(b.slot_id===slotId?1:4);});
     var assignedTable=null;
     for(var t=1;t<=club.total_tables;t++){if((tableCount[t]||0)<4){assignedTable=t;break;}}
     if(!assignedTable){alert('No free table available!');return;}
-    var slots=await sb('mj_slots?id=eq.'+slotId+'&select=start_time,end_time');
-    var timeLabel=slots[0]?slots[0].start_time+'-'+slots[0].end_time:'';
+    var timeLabel=targetSlot?targetSlot.start_time+'-'+targetSlot.end_time:'';
     for(var i=0;i<toConfirm.length;i++){
       var req=toConfirm[i];
       await sb('mj_bookings','POST',{club_id:club.id,slot_id:slotId,table_number:assignedTable,player_id:req.player_id,booking_date:date,status:'confirmed',playing_category:category});
@@ -1161,14 +1212,16 @@ function closeTablePopup(){
 var manualAlertCtx = null;
 async function showTablePopup(tableNo, slotLabel, date, playerIds, category, count, slotId){
   document.getElementById('table-popup').style.display='flex';
-  var catLabel = {beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'}[category]||category||'—';
+  var catLabel = GAME_TYPE_LABEL[category]||category||'—';
   document.getElementById('popup-title').textContent = 'Table '+tableNo+' · '+slotLabel;
   var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:12px;">'+date+' · '+catLabel+' · '+count+'/4 seats</div>';
-  // Manual, on-demand fill alert - only makes sense once a category is set
-  // (someone has already started this table) and it's not full yet.
-  if(category && count>0 && count<4){
+  // Every slot always has a fixed game type now (admin sets it when creating
+  // the slot), so this no longer needs an existing booking before it knows
+  // what to alert about - it works on a completely empty table too, for
+  // genuine day-ahead notices.
+  if(count<4){
     manualAlertCtx = {clubId:club.id, slotId:slotId, tableNo:tableNo, date:date, category:category, playersNeeded:4-count};
-    html += '<button class="btn btn-orange btn-full btn-sm" id="manual-alert-btn" onclick="sendManualFillAlert()" style="margin-bottom:12px;">📢 Notify: '+(4-count)+' more player'+((4-count)>1?'s':'')+' needed for '+catLabel+'</button>'
+    html += '<button class="btn btn-orange btn-full btn-sm" id="manual-alert-btn" onclick="sendManualFillAlert()" style="margin-bottom:12px;">✉️ Send me alert to forward: '+(4-count)+' more player'+((4-count)>1?'s':'')+' needed for '+catLabel+'</button>'
       +'<div id="manual-alert-msg"></div>';
   }
   if(playerIds.length){
@@ -1209,7 +1262,7 @@ async function sendManualFillAlert(){
   var btn = document.getElementById('manual-alert-btn');
   var msgEl = document.getElementById('manual-alert-msg');
   if(!club.telegram_gas_url){ alert('Your club\'s Telegram bot hasn\'t been set up yet - contact SportBook admin.'); return; }
-  if(!confirm('Send "'+ctx.playersNeeded+' more player(s) needed" to every approved member who hasn\'t booked this slot?')) return;
+  if(!confirm('Send "'+ctx.playersNeeded+' more player(s) needed" to your own Telegram so you can forward it to your group?')) return;
   btn.disabled=true; btn.textContent='Sending...';
   try{
     var alertId = await sb('rpc/mj_create_manual_fill_alert','POST',{
@@ -1242,11 +1295,11 @@ async function sendManualFillAlert(){
       toast('Alert sent!');
     }else{
       msgEl.innerHTML = '<div class="status-box status-warn">Taking longer than expected - check the Fill Alerts tab to confirm before sending again.</div>';
-      btn.disabled=false; btn.textContent='📢 Notify: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
+      btn.disabled=false; btn.textContent='✉️ Send me alert to forward: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
     }
   }catch(e){
     msgEl.innerHTML = '<div class="status-box status-error">Error: '+e.message+'</div>';
-    btn.disabled=false; btn.textContent='📢 Notify: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
+    btn.disabled=false; btn.textContent='✉️ Send me alert to forward: '+ctx.playersNeeded+' more player'+(ctx.playersNeeded>1?'s':'')+' needed';
   }
 }
 
@@ -1268,53 +1321,42 @@ async function loadOverviewMatrix(){
     }
     var html='';
     allSlots.forEach(function(slot){
+      var category = slot.game_type;
+      var catShort = GAME_TYPE_SHORT[category]||'';
+      // Two slots can share the same real time but run different games on
+      // different tables - a table already taken by a sibling slot's game
+      // must show as unavailable here, not as free.
+      var siblingIds = siblingSlotIds(allSlots,slot,date);
       html += '<div class="slot-section">';
-      html += '<div class="slot-label">🕐 '+slot.start_time+' – '+slot.end_time+'</div>';
+      html += '<div class="slot-label">🕐 '+slot.start_time+' – '+slot.end_time+' · '+(GAME_TYPE_LABEL[category]||category)+'</div>';
       html += '<div class="table-grid">';
-      var pendingByCategory = {};
-      requests.filter(function(r){return r.slot_id===slot.id;}).forEach(function(r){
-        if(!pendingByCategory[r.playing_category]) pendingByCategory[r.playing_category]=0;
-        pendingByCategory[r.playing_category]++;
-      });
-      var confirmedTables = [];
-      for(var t=1;t<=club.total_tables;t++){
-        var tb = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
-        if(tb.length > 0) confirmedTables.push(t);
-      }
-      var pendingTableMap = {};
-      var nextTable = 1;
-      Object.keys(pendingByCategory).forEach(function(cat){
-        while(nextTable <= club.total_tables && confirmedTables.indexOf(nextTable) > -1) nextTable++;
-        if(nextTable <= club.total_tables){
-          pendingTableMap[nextTable] = {cat: cat, count: pendingByCategory[cat]};
-          nextTable++;
-        }
-      });
+      var pendingCount = requests.filter(function(r){return r.slot_id===slot.id;}).length;
 
       for(var t=1;t<=club.total_tables;t++){
         var tableBookings = bookings.filter(function(b){return b.slot_id===slot.id && b.table_number===t;});
         var count = tableBookings.length;
-        var category = tableBookings.length ? tableBookings[0].playing_category : '';
-        var isPending = false;
-        if(!count && pendingTableMap[t]){
-          count = pendingTableMap[t].count;
-          category = pendingTableMap[t].cat;
-          isPending = true;
-        }
-        var catLabel = {beginner:'BEG',intermediate:'INT',advanced:'ADV',taiwanese:'TAI'}[category]||'';
-        var cardClass = tableBookings.length>=4?'full':tableBookings.length>0?'partial':isPending?'partial':'empty';
+        var takenBySibling = bookings.some(function(b){return b.slot_id!==slot.id && siblingIds.indexOf(b.slot_id)>-1 && b.table_number===t;});
         var playerIds = tableBookings.map(function(b){return b.player_id;});
         var playerIdsStr = JSON.stringify(playerIds).replace(/"/g,'&quot;');
+        if(takenBySibling){
+          html += '<div class="table-card" style="opacity:0.35;cursor:not-allowed;">'
+            +'<div class="t-num">T'+t+'</div>'
+            +'<div class="t-cat">OTHER GAME</div>'
+            +'<div class="t-count">—</div>'
+            +'<div class="t-dot"></div>'
+            +'</div>';
+          continue;
+        }
+        var cardClass = count>=4?'full':count>0?'partial':'empty';
         html += '<div class="table-card '+cardClass+'" onclick="showTablePopup('+t+',\''+slot.start_time+'-'+slot.end_time+'\',\''+date+'\','+playerIdsStr+',\''+category+'\','+count+',\''+slot.id+'\')">'
           +'<div class="t-num">T'+t+'</div>'
-          +'<div class="t-cat">'+catLabel+(isPending?' ⏳':'')+'</div>'
+          +'<div class="t-cat">'+catShort+'</div>'
           +'<div class="t-count">'+count+'/4</div>'
           +'<div class="t-dot"></div>'
           +'</div>';
       }
-      if(Object.keys(pendingByCategory).length){
-        var pendingStr=Object.keys(pendingByCategory).map(function(c){return pendingByCategory[c]+' '+c;}).join(', ');
-        html+='<div style="grid-column:1/-1;font-size:11px;color:#7D3C98;padding:4px 2px;">⏳ Pending: '+pendingStr+'</div>';
+      if(pendingCount){
+        html+='<div style="grid-column:1/-1;font-size:11px;color:#7D3C98;padding:4px 2px;">⏳ Pending: '+pendingCount+' waiting for a table</div>';
       }
       html += '</div></div>';
     });
@@ -1508,7 +1550,7 @@ async function loadFillAlerts(){
     var slotIds=[...new Set(alerts.map(function(a){return a.slot_id;}))];
     var slots=slotIds.length?await sb('mj_slots?id=in.('+slotIds.join(',')+')'+'&select=id,start_time,end_time'):[];
     var sMap={};slots.forEach(function(s){sMap[s.id]=s;});
-    var catLabels={beginner:'🟢 Beginner',intermediate:'🟡 Intermediate',advanced:'🔴 Advanced',taiwanese:'🏆 Taiwanese'};
+    var catLabels=GAME_TYPE_LABEL;
     document.getElementById('fillalerts-list').innerHTML=alerts.map(function(a){
       var sl=sMap[a.slot_id];
       var slotLabel=sl?(sl.start_time+'-'+sl.end_time):'—';
@@ -1518,11 +1560,11 @@ async function loadFillAlerts(){
         +'<span class="badge '+(isSent?'badge-approved':'badge-pending')+'">'+(isSent?'Sent':'Needs Alert')+'</span></div>'
         +'<div class="member-meta">📅 Date: <span>'+a.booking_date+'</span></div>'
         +'<div class="member-meta">🕐 Time: <span>'+slotLabel+'</span></div>'
-        +'<div class="member-meta">🎮 Category: <span>'+(catLabels[a.playing_category]||a.playing_category)+'</span></div>'
+        +'<div class="member-meta">🎮 Game: <span>'+(catLabels[a.playing_category]||a.playing_category)+'</span></div>'
         +'<div class="member-meta">👥 Players needed: <span>'+a.players_needed+'</span></div>'
         +(isSent
-          ?'<div style="margin-top:8px;font-size:11px;color:var(--muted);">Alert sent'+(a.sent_at?' at '+new Date(a.sent_at).toLocaleTimeString():'')+'</div>'
-          :'<div class="member-actions"><button class="btn btn-orange btn-sm" onclick="sendFillAlertNow(\''+a.id+'\',this)">📢 Send Alert</button></div>')
+          ?'<div style="margin-top:8px;font-size:11px;color:var(--muted);">Sent to you'+(a.sent_at?' at '+new Date(a.sent_at).toLocaleTimeString():'')+' — forward it to your group.</div>'
+          :'<div class="member-actions"><button class="btn btn-orange btn-sm" onclick="sendFillAlertNow(\''+a.id+'\',this)">✉️ Send Alert to Me</button></div>')
         +'</div>';
     }).join('');
   }catch(e){
