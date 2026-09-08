@@ -306,7 +306,7 @@ async function loadMyClubs(){
       document.getElementById('my-clubs-list').innerHTML='<div class="empty-state"><div class="empty-icon">🏯</div><p>Not a member of any club yet.<br/>Go to Discover tab to join a club.</p></div>';
       renderBalanceBar();return;
     }
-    myClubs=await sb('mj_clubs?id=in.('+myClubIds.join(',')+')'+'&status=eq.active&select=*&order=club_name.asc');
+    myClubs=await sb('mj_clubs?id=in.('+myClubIds.join(',')+')'+'&status=eq.active&select=id,club_name,owner_name,email,mobile,city,address,total_tables,gender_condition,status,upi_id,whatsapp_no,created_at,cancellation_policy,cancellation_hours,banner_url,code_prefix,telegram_admin_id,telegram_bot_username,telegram_gas_url,accepting_requests&order=club_name.asc');
     myClubIds=myClubs.map(function(c){return c.id;});
     for(var i=0;i<myClubs.length;i++){
       var slots=await sb('mj_slots?club_id=eq.'+myClubs[i].id+'&is_active=eq.true&select=*&order=start_time.asc');
@@ -728,7 +728,7 @@ async function cancelBookingRequest(id){
 async function loadDiscover(){
   document.getElementById('discover-loading').style.display='block';
   try{
-    var allClubs=await sb('mj_clubs?status=eq.active&select=*&order=club_name.asc');
+    var allClubs=await sb('mj_clubs?status=eq.active&select=id,club_name,owner_name,email,mobile,city,address,total_tables,gender_condition,status,upi_id,whatsapp_no,created_at,cancellation_policy,cancellation_hours,banner_url,code_prefix,telegram_admin_id,telegram_bot_username,telegram_gas_url,accepting_requests&order=club_name.asc');
     var mems=await sb('rpc/mj_members_by_player','POST',{p_player_id:player.id});
     var mMap={};mems.forEach(function(m){mMap[m.club_id]=m.status;});
     document.getElementById('discover-loading').style.display='none';
