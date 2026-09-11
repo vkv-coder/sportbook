@@ -526,6 +526,11 @@ async function tg(msg,clubId){
     await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   }catch(e){}
 }
+async function notifyEmail(to,subject,html){
+  try{
+    await fetch('https://telegram-notify.unigoods2026.workers.dev/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'sendEmail',to:to,subject:subject,html:html,fromName:'SportBook'})});
+  }catch(e){}
+}
 function showMsg(id,msg,type){document.getElementById(id).innerHTML=`<div class="status-box status-${type}">${msg}</div>`;}
 
 function toggleForgot(){
@@ -975,11 +980,19 @@ async function approveGroupRequest(reqId,requestedBy,slotId,date,c2,c3,c4){
     await sb('mj_table_sessions','POST',{club_id:club.id,slot_id:slotId,table_number:tableNo,booking_date:date,player1_id:pids[0],player2_id:pids[1],player3_id:pids[2],player4_id:pids[3],status:'full'});
     await sbPatch(`mj_group_requests?id=eq.${reqId}`,{status:'approved',table_number:tableNo});
     await tg('🀄 <b>Group Request Approved</b>\n\nClub: <b>'+club.club_name+'</b>\nTable: '+tableNo+'\nDate: '+date+'\n\nAll 4 members booked successfully.',club.id);
-    const allPlayerInfo=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=name,whatsapp,mobile');
+    const allPlayerInfo=await sb('sp_members?id=in.('+pids.join(',')+')'+'&select=name,whatsapp,mobile,email');
     let waMsg='Group approved! Table '+tableNo+' assigned on '+date+'.';
     waMsg+='\n\nContact members on WhatsApp:';
     allPlayerInfo.forEach(function(p,i){waMsg+='\n'+(i+1)+'. '+p.name+': '+(p.whatsapp||p.mobile);});
     alert(waMsg);
+    for(const p of allPlayerInfo){
+      if(p.email){
+        await notifyEmail(p.email,'Your Mahjong table is booked!',
+          '<p>Hi '+p.name+',</p>'
+          +'<p>Your group booking has been approved — Table '+tableNo+' on '+date+'.</p>'
+          +'<p>— SportBook</p>');
+      }
+    }
     loadGroupRequests();loadStats();
   }catch(e){alert('Error: '+e.message);}
 }
