@@ -249,7 +249,7 @@ async function notifyEmail(to, subject, html) {
 function enterDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('navRight').innerHTML = 'Admin: Vijay &nbsp; <button class="btn" style="padding:4px 12px;font-size:12px;" onclick="adminLogout()">Logout</button>';
+  document.getElementById('navRight').innerHTML = 'Admin: Vijay &nbsp; <button class="btn" style="width:auto;padding:6px 14px;font-size:12px;background:#111;color:#fff;" onclick="adminLogout()">Logout</button>';
   loadAll();
   loadMjClubs();
   loadSiteMembers();
