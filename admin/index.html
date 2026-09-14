@@ -249,28 +249,31 @@ async function notifyEmail(to, subject, html) {
 function enterDashboard() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('navRight').textContent = 'Admin: Vijay';
+  document.getElementById('navRight').innerHTML = 'Admin: Vijay &nbsp; <button class="btn" style="padding:4px 12px;font-size:12px;" onclick="adminLogout()">Logout</button>';
   loadAll();
   loadMjClubs();
   loadSiteMembers();
 }
 
+function adminLogout() {
+  sessionStorage.removeItem('sb_admin_ok');
+  sessionStorage.removeItem('sb_admin_pw');
+  document.getElementById('adminPin').value = '';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'block';
+}
+
+// Checked server-side by sz_admin_check_password() - see
+// supabase-add-real-password-check.sql. The entered PIN is stored so it
+// can be re-sent with every individual admin action below (each RPC
+// re-verifies it independently, not just once at login).
 async function adminLogin() {
   var pin = document.getElementById('adminPin').value;
   document.getElementById('loginErr').textContent = '';
-  try {
-    var res = await fetch('https://telegram-notify.unigoods2026.workers.dev/', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({action: 'checkPin', pin: pin})
-    });
-    var data = await res.json();
-    if (!data.valid) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
-  } catch(e) {
-    document.getElementById('loginErr').textContent = 'Login check failed. Try again.';
-    return;
-  }
+  var res = await sb.rpc('sz_admin_check_password', {p_password: pin});
+  if (res.error || !res.data) { document.getElementById('loginErr').textContent = 'Incorrect PIN'; return; }
   sessionStorage.setItem('sb_admin_ok', '1');
+  sessionStorage.setItem('sb_admin_pw', pin);
   enterDashboard();
 }
 document.getElementById('adminPin').addEventListener('keypress', function(e) {
@@ -350,7 +353,7 @@ function renderOwners(list, elId, isApproved) {
 }
 
 async function approveOwner(id, venue, ownerName, phone, email) {
-  var res = await sb.rpc('sz_admin_approve_owner', {p_id: id});
+  var res = await sb.rpc('sz_admin_approve_owner', {p_id: id, p_admin_password: sessionStorage.getItem('sb_admin_pw')});
   if (res.error) { toast('⚠️ Could not approve ' + venue + ': ' + res.error.message); return; }
   toast(venue + ' approved!');
   await notifyTelegram('OWNER APPROVED: ' + venue + ' | ' + ownerName + ' | ' + phone);
@@ -365,14 +368,14 @@ async function approveOwner(id, venue, ownerName, phone, email) {
 }
 async function revokeOwner(id) {
   if (!confirm('Revoke access?')) return;
-  var res = await sb.rpc('sz_admin_revoke_owner', {p_id: id});
+  var res = await sb.rpc('sz_admin_revoke_owner', {p_id: id, p_admin_password: sessionStorage.getItem('sb_admin_pw')});
   if (res.error) { toast('⚠️ Could not revoke access: ' + res.error.message); return; }
   toast('Access revoked');
   loadAll();
 }
 async function deleteOwner(id) {
   if (!confirm('Reject and delete?')) return;
-  var res = await sb.rpc('sz_admin_delete_owner', {p_id: id});
+  var res = await sb.rpc('sz_admin_delete_owner', {p_id: id, p_admin_password: sessionStorage.getItem('sb_admin_pw')});
   if (res.error) { toast('⚠️ Could not remove owner: ' + res.error.message); return; }
   toast('Owner removed');
   loadAll();
@@ -388,7 +391,7 @@ async function addOwner() {
   if (phone.length !== 10) { document.getElementById('addErr').textContent='10-digit mobile required'; return; }
   if (pass.length < 6)     { document.getElementById('addErr').textContent='Min 6 char password'; return; }
   document.getElementById('addErr').textContent = '';
-  var oRes = await sb.rpc('sz_admin_add_owner', {p_name:name, p_venue:venue, p_city:city, p_phone:phone, p_email:email, p_password:pass});
+  var oRes = await sb.rpc('sz_admin_add_owner', {p_name:name, p_venue:venue, p_city:city, p_phone:phone, p_email:email, p_password:pass, p_admin_password: sessionStorage.getItem('sb_admin_pw')});
   if (oRes.error) { document.getElementById('addErr').textContent = 'Error: ' + oRes.error.message; return; }
   toast(venue + ' added!');
   ['add-name','add-venue','add-city','add-phone','add-email','add-pass'].forEach(function(id){ document.getElementById(id).value=''; });
