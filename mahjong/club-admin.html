@@ -500,8 +500,14 @@ function pollAdminTgConnect(){
   },3000);
 }
 
+function clubSessionHeaders(extra){
+  var h=Object.assign({'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},extra||{});
+  var tok=localStorage.getItem('mj_club_session_token');
+  if(tok)h['X-Club-Session-Token']=tok;
+  return h;
+}
 async function sb(path,method='GET',body=null){
-  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method,headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method,headers:clubSessionHeaders({'Prefer':method==='POST'?'return=representation':''}),body:body?JSON.stringify(body):null});
   // Void-returning RPCs (e.g. request_club_password_reset) reply 204 with
   // an empty body - res.json() on that throws "Unexpected end of JSON
   // input" even on success, so read as text first and only parse if non-empty.
@@ -511,7 +517,7 @@ async function sb(path,method='GET',body=null){
   return data;
 }
 async function sbPatch(path,body){
-  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const res=await fetch(`${SB_URL}/rest/v1/${path}`,{method:'PATCH',headers:clubSessionHeaders(),body:JSON.stringify(body)});
   if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||'Update failed.');}
   return res;
 }
@@ -580,18 +586,20 @@ async function adminLogin(){
     // falls back to the original single email/password columns on
     // mj_clubs itself - so clubs with just one admin keep working exactly
     // as before, while a club can now also have more than one login.
-    var clubs=await sb('rpc/mj_verify_login_v2','POST',{p_email:email,p_password:password});
-    if(!clubs.length){showMsg('login-msg','Incorrect email or password.','error');return;}
-    if(clubs[0].status==='pending'){showMsg('login-msg','Club approval pending. Please wait for SportBook admin to approve.','warn');return;}
-    if(clubs[0].status==='paused'){showMsg('login-msg','Club is paused. Contact SportBook admin.','warn');return;}
-    club=clubs[0];
+    var resp=await sb('rpc/mj_verify_login_v2','POST',{p_email:email,p_password:password});
+    if(!resp.ok){showMsg('login-msg','Incorrect email or password.','error');return;}
+    if(resp.club.status==='pending'){showMsg('login-msg','Club approval pending. Please wait for SportBook admin to approve.','warn');return;}
+    if(resp.club.status==='paused'){showMsg('login-msg','Club is paused. Contact SportBook admin.','warn');return;}
+    club=resp.club;
     localStorage.setItem('mj_admin_club',JSON.stringify(club));
+    localStorage.setItem('mj_club_session_token',resp.token);
     loadDashboard();
   }catch(e){showMsg('login-msg','Error: '+e.message,'error');}
 }
 
 function adminLogout(){
   localStorage.removeItem('mj_admin_club');
+  localStorage.removeItem('mj_club_session_token');
   club=null;
   document.getElementById('login-screen').style.display='block';
   document.getElementById('dashboard-screen').style.display='none';
@@ -1040,7 +1048,7 @@ async function loadSlotsAdmin(){
 async function deleteSlot(slotId){
   if(!confirm('Delete this slot?'))return;
   try{
-    await fetch(`${SB_URL}/rest/v1/mj_slots?id=eq.${slotId}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+    await fetch(`${SB_URL}/rest/v1/mj_slots?id=eq.${slotId}`,{method:'DELETE',headers:clubSessionHeaders()});
     allSlots=await sb(`mj_slots?club_id=eq.${club.id}&is_active=eq.true&select=*&order=start_time.asc`);
     loadSlotsAdmin();
   }catch(e){alert('Error: '+e.message);}
@@ -1126,7 +1134,7 @@ async function loadVenueEvents(){
 async function deleteVenueEvent(id){
   if(!confirm('Delete this venue event?'))return;
   try{
-    await fetch(`${SB_URL}/rest/v1/mj_venue_events?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+    await fetch(`${SB_URL}/rest/v1/mj_venue_events?id=eq.${id}`,{method:'DELETE',headers:clubSessionHeaders()});
     loadVenueEvents();
   }catch(e){alert('Error: '+e.message);}
 }
@@ -1642,7 +1650,12 @@ function toast(msg){
 
 window.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('mj_admin_club');
-  if(saved){club=JSON.parse(saved);loadDashboard();return;}
+  const savedToken=localStorage.getItem('mj_club_session_token');
+  // A persisted club object from before this session-token fix has no
+  // matching token - every write would silently fail RLS. Drop it and
+  // fall through to a normal login instead of showing a broken dashboard.
+  if(saved&&savedToken){club=JSON.parse(saved);loadDashboard();return;}
+  if(saved&&!savedToken){localStorage.removeItem('mj_admin_club');}
   // Direct "Try Demo" links (?demo=1) skip straight to the demo login,
   // instead of requiring a second click once this page loads.
   if(new URLSearchParams(location.search).get('demo')==='1')tryDemoLogin();
