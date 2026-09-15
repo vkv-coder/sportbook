@@ -2,7 +2,7 @@
 // SPORTBOOK - Service Worker
 // ==========================================
 
-const CACHE_NAME = 'sportbook-v1';
+const CACHE_NAME = 'sportbook-v2';
 const ASSETS = [
   '/',
   '/index.html',
@@ -30,7 +30,18 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('supabase.co')) return; // Don't cache API calls
+  // Network-first, cache as offline fallback only. The old cache-first
+  // strategy served stale HTML/JS indefinitely after every deploy unless
+  // CACHE_NAME was manually bumped - that's exactly what caused a player
+  // to keep re-running pre-fix login code no matter how many times she
+  // logged in, since her browser never re-fetched select-game.html. This
+  // way a normal (online) load always gets the latest deploy, and the
+  // cache only kicks in if the network request actually fails.
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request).then(res => {
+      const resClone = res.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(e.request, resClone));
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
