@@ -366,12 +366,19 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('games-section').style.display = 'none';
     document.getElementById('player-direct-panel').style.display = 'block';
 
-    // Auto-check if player already logged in and active
+    // Auto-check if player already logged in and active. A player who
+    // logged in before the 2026-09-15 session-token fix has `sp_member`
+    // but no `sp_session_token` - forwarding them in as "logged in" gives
+    // them a session that silently fails every write's RLS check. Treat
+    // that combination as logged out and clear it instead.
     const saved = localStorage.getItem('sp_member');
+    const savedToken = localStorage.getItem('sp_session_token');
     if (saved) {
       const member = JSON.parse(saved);
-      if (member.status === 'active') {
+      if (member.status === 'active' && savedToken) {
         window.location.href = '/mahjong/index.html';
+      } else if (!savedToken) {
+        localStorage.removeItem('sp_member');
       }
     }
   }

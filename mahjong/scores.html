@@ -194,7 +194,12 @@ let player=null, currentRoom=null, currentEntries=[], activeCreateClubId='';
 
 window.addEventListener('DOMContentLoaded', async()=>{
   const saved=localStorage.getItem('sp_member');
-  if(!saved){window.location.href='/select-game.html?role=player';return;}
+  const savedToken=localStorage.getItem('sp_session_token');
+  // Same stale-login guard as mahjong/index.html: sp_member without a
+  // matching sp_session_token predates the 2026-09-15 session fix and
+  // must be treated as logged out, or every write below fails RLS
+  // (created_by = sp_current_member_id() compares against null).
+  if(!saved||!savedToken){localStorage.removeItem('sp_member');window.location.href='/select-game.html?role=player';return;}
   player=JSON.parse(saved);
   document.getElementById('header-sub').textContent=player.name;
   document.getElementById('create-date').value=new Date().toISOString().split('T')[0];
