@@ -264,15 +264,25 @@ window.addEventListener('DOMContentLoaded',async()=>{
   loadGroupRequests();
 });
 
+// X-Session-Token (2026-09-15 security fix): every write is now
+// verified server-side against this token via sp_current_member_id(),
+// not just trusted from whatever player_id the request happens to
+// claim - closes an impersonation hole (see mahjong RLS fix notes).
+function sessionHeaders(extra){
+  const h=Object.assign({},extra);
+  const t=localStorage.getItem('sp_session_token');
+  if(t)h['X-Session-Token']=t;
+  return h;
+}
 async function sb(path,method='GET',body=null){
-  const res=await fetch(SB_URL+'/rest/v1/'+path,{method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''},body:body?JSON.stringify(body):null});
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{method,headers:sessionHeaders({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'return=representation':''}),body:body?JSON.stringify(body):null});
   const text=await res.text();
   const data=text?JSON.parse(text):null;
   if(!res.ok){throw new Error((data&&data.message)||'Request failed.');}
   return data;
 }
 async function sbPatch(path,body){
-  return fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:sessionHeaders({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}),body:JSON.stringify(body)});
 }
 async function tg(msg,clubId){
   try{
@@ -929,7 +939,7 @@ async function loadDiscoverVenueEvents(clubs){
 }
 
 function confirmLogout(){if(confirm('This will require OTP again next time. Logout?')){logout();}}
-function logout(){localStorage.removeItem('sp_member');localStorage.removeItem('mj_active_club');window.location.href='/select-game.html?role=player';}
+function logout(){localStorage.removeItem('sp_member');localStorage.removeItem('sp_session_token');localStorage.removeItem('mj_active_club');window.location.href='/select-game.html?role=player';}
 
 </script>
 </body>
