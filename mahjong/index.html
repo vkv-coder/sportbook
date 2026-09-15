@@ -249,7 +249,13 @@ function siblingSlotIds(allSlotsList,targetSlot,date){
 
 window.addEventListener('DOMContentLoaded',async()=>{
   const saved=localStorage.getItem('sp_member');
-  if(!saved){window.location.href='/select-game.html?role=player';return;}
+  const savedToken=localStorage.getItem('sp_session_token');
+  // A stale pre-session-token login (sp_member with no matching
+  // sp_session_token) must be treated as logged out, not silently let
+  // through - every write below would otherwise fail RLS with no
+  // explanation, since sp_current_member_id() resolves to null with no
+  // token to check.
+  if(!saved||!savedToken){localStorage.removeItem('sp_member');window.location.href='/select-game.html?role=player';return;}
   player=JSON.parse(saved);
   if(player.status!=='active'){window.location.href='/select-game.html?role=player';return;}
   document.getElementById('header-player-name').textContent=player.name;
