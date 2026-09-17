@@ -1,0 +1,19 @@
+name: Sportbook mahjong flow smoke test
+
+on:
+  schedule:
+    # Every 4 hours - exercises the real create-match -> confirm flow
+    # end to end through the live anon-key REST API, same as a real
+    # customer's phone. Alerts to Telegram on any failure.
+    - cron: '17 */4 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node smoke-test-mahjong-flow.mjs
