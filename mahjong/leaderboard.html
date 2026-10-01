@@ -201,9 +201,10 @@ async function loadLeaderboard(){
     }
 
     // Add initial points - both columns count toward the same combined total.
-    // Uses mj_leaderboard_points_by_club (any logged-in player), not
-    // mj_members_by_club (club-admin only, used by club-admin.html) - this
-    // page is read by regular players, not club admins.
+    // Uses mj_leaderboard_points_by_club (public, no session required -
+    // this page has an anonymous "Public View" mode, see DOMContentLoaded
+    // above), not mj_members_by_club (club-admin only, used by
+    // club-admin.html).
     var members=await sb('rpc/mj_leaderboard_points_by_club','POST',{p_club_id:clubId});
     var codeMap={};members.forEach(function(m){codeMap[m.player_id]=m.member_code;});
     members.forEach(function(m){
