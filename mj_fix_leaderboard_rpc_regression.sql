@@ -47,6 +47,20 @@
 --   with no session still gets zero (original vulnerability stays closed);
 --   a player can read their own mj_members_by_id row but not another
 --   player's.
+--
+-- CORRECTION (same day, follow-up): the first version of this fix gated
+-- mj_leaderboard_points_by_club on "any valid player session"
+-- (sp_current_member_id() is not null). That was still too strict --
+-- leaderboard.html has an explicit anonymous "Public View" mode (shown
+-- when no sp_member is in localStorage at all, see its DOMContentLoaded
+-- handler) and its own sb() helper never sent X-Session-Token in the
+-- first place, so a real logged-in player got zero rows too, not just
+-- anonymous visitors. Confirmed this page was never session-gated before
+-- today's incident. Dropped the session check entirely -- the function
+-- still only exposes non-sensitive columns (no telegram_id), so this is
+-- safe and matches the exact original public behavior. Verified via a
+-- real HTTP call to the live REST endpoint with the page's own anon key,
+-- no session headers at all: 95/95 rows returned.
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.mj_leaderboard_points_by_club(p_club_id uuid)
@@ -58,8 +72,7 @@ AS $function$
   select mm.player_id, mm.member_code, mm.initial_points, mm.initial_points_taiwanese
   from mj_members mm
   where mm.club_id = p_club_id
-    and mm.status = 'approved'
-    and sp_current_member_id() is not null;
+    and mm.status = 'approved';
 $function$;
 
 GRANT EXECUTE ON FUNCTION public.mj_leaderboard_points_by_club(uuid) TO anon, authenticated;
