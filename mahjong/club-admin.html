@@ -140,10 +140,13 @@ select option{background:var(--surface);}
         <button onclick="toggleForgot()" style="background:none;border:none;color:var(--gold);font-size:13px;cursor:pointer;text-decoration:underline;font-family:Inter,sans-serif;">Forgot Password?</button>
       </div>
 
-      <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);text-align:center;">
+      <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);text-align:center;" id="demo-gate">
         <div style="font-size:11px;color:#E65100;font-weight:700;margin-bottom:4px;">🧪 Just looking? See the full club dashboard</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Sample club with members, sessions and requests already in it — no signup needed.</div>
-        <button class="btn btn-full" onclick="tryDemoLogin()" style="background:#455A64;color:#fff;">Try Demo Club Dashboard</button>
+        <div class="form-group" style="text-align:left;"><label>Your Name</label><input type="text" id="demo-name"/></div>
+        <div class="form-group" style="text-align:left;"><label>Your Phone Number</label><input type="tel" id="demo-phone" maxlength="10" placeholder="10-digit mobile number"/></div>
+        <button class="btn btn-full" id="demo-btn" onclick="enterDemoGated()" style="background:#455A64;color:#fff;">Try Demo Club Dashboard</button>
+        <div id="demo-gate-msg" style="font-size:11px;color:#D32F2F;margin-top:6px;"></div>
         <div style="font-size:11px;color:var(--muted);margin-top:10px;">Like what you see? Email <a href="mailto:vkvcoder.support@gmail.com" style="color:var(--gold);">vkvcoder.support@gmail.com</a> to get your own club set up.</div>
       </div>
 
@@ -567,13 +570,31 @@ function toggleHowItWorks(){
   const p=document.getElementById('how-it-works-panel');
   p.style.display=p.style.display==='none'?'block':'none';
 }
-function tryDemoLogin(){
+async function enterDemoGated(){
+  const name=document.getElementById('demo-name').value.trim();
+  const phone=document.getElementById('demo-phone').value.trim();
+  const msgEl=document.getElementById('demo-gate-msg');
+  msgEl.textContent='';
+  if(!name){msgEl.textContent='Please enter your name.';return;}
+  if(phone.length!==10||!/^\d{10}$/.test(phone)){msgEl.textContent='Enter a valid 10-digit phone number.';return;}
+  const btn=document.getElementById('demo-btn');
+  btn.disabled=true;btn.textContent='Loading...';
+  // Plain fetch, not sb() - sb() always sends Prefer:return=representation,
+  // which makes PostgREST RETURNING the inserted row, and that's blocked by
+  // RLS since there's deliberately no SELECT policy for anon on this table.
+  // return=minimal skips the RETURNING and the insert succeeds.
+  try{await fetch(`${SB_URL}/rest/v1/mj_demo_visitors`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name,phone})});}catch(e){}
+  await tryDemoLogin(name,phone);
+  btn.disabled=false;btn.textContent='Try Demo Club Dashboard';
+}
+function tryDemoLogin(name,phone){
   // Reuses the exact real login path with known public demo credentials,
   // scoped to the seeded demo club - same pattern as the other apps'
   // Try Demo buttons.
   document.getElementById('login-email').value='demo.club@anyapps.in';
   document.getElementById('login-password').value='SportDemo-2026x!';
-  tg('🀄 Someone opened the SportBook club-admin demo dashboard.'); // no clubId - falls back to the owner's default chat
+  const who=name?` — ${name} (${phone})`:''; // no clubId - falls back to the owner's default chat
+  tg('🀄 Someone opened the SportBook club-admin demo dashboard'+who+'.');
   adminLogin();
 }
 async function adminLogin(){
@@ -1656,9 +1677,12 @@ window.addEventListener('DOMContentLoaded',()=>{
   // fall through to a normal login instead of showing a broken dashboard.
   if(saved&&savedToken){club=JSON.parse(saved);loadDashboard();return;}
   if(saved&&!savedToken){localStorage.removeItem('mj_admin_club');}
-  // Direct "Try Demo" links (?demo=1) skip straight to the demo login,
-  // instead of requiring a second click once this page loads.
-  if(new URLSearchParams(location.search).get('demo')==='1')tryDemoLogin();
+  // Direct "Try Demo" links (?demo=1) land on the gated demo card below -
+  // the visitor still enters name+phone via enterDemoGated() first.
+  if(new URLSearchParams(location.search).get('demo')==='1'){
+    document.getElementById('demo-gate')?.scrollIntoView();
+    document.getElementById('demo-name')?.focus();
+  }
 });
 </script>
 </body>
