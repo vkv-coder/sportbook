@@ -1669,13 +1669,25 @@ function toast(msg){
   t.textContent=msg;t.style.opacity='1';setTimeout(()=>{t.style.opacity='0';},2500);
 }
 
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',async()=>{
   const saved=localStorage.getItem('mj_admin_club');
   const savedToken=localStorage.getItem('mj_club_session_token');
   // A persisted club object from before this session-token fix has no
   // matching token - every write would silently fail RLS. Drop it and
   // fall through to a normal login instead of showing a broken dashboard.
-  if(saved&&savedToken){club=JSON.parse(saved);loadDashboard();return;}
+  if(saved&&savedToken){
+    // The token itself can have quietly expired (30 days) since last login -
+    // mj_members_by_club etc. would then return empty with no error at all,
+    // making the dashboard look like it has zero members instead of saying
+    // the session expired. Verify server-side before trusting it.
+    var stillValid=null;
+    try{stillValid=await sb('rpc/mj_club_session_check','POST',{});}catch(e){}
+    if(stillValid){club=JSON.parse(saved);loadDashboard();return;}
+    localStorage.removeItem('mj_admin_club');
+    localStorage.removeItem('mj_club_session_token');
+    showMsg('login-msg','Your session expired. Please log in again.','warn');
+    return;
+  }
   if(saved&&!savedToken){localStorage.removeItem('mj_admin_club');}
   // Direct "Try Demo" links (?demo=1) land on the gated demo card below -
   // the visitor still enters name+phone via enterDemoGated() first.

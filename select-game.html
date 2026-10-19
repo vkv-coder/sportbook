@@ -381,6 +381,15 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('sp_member');
       }
     }
+
+    // Landed here from mahjong/index.html or scores.html after their own
+    // session-freshness check found a quietly-expired login - tell the
+    // player why they're back at the login screen instead of leaving them
+    // to guess.
+    if (params.get('expired') === '1') {
+      switchPlayerTab('returning');
+      showMsg('p-login-msg', 'Your session expired. Please log in again.', 'warn');
+    }
   }
 });
 

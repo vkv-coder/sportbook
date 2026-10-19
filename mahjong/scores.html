@@ -200,6 +200,20 @@ window.addEventListener('DOMContentLoaded', async()=>{
   // must be treated as logged out, or every write below fails RLS
   // (created_by = sp_current_member_id() compares against null).
   if(!saved||!savedToken){localStorage.removeItem('sp_member');window.location.href='/select-game.html?role=player';return;}
+  // The token itself can have quietly expired (30 days) since last login -
+  // sp_current_member_id() then resolves to null and every write below
+  // (including confirming a score) silently fails RLS with no error shown,
+  // which is exactly what happened to a real player here. Verify server-side
+  // before trusting the cached login.
+  var stillValid=null;
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/rpc/sp_session_check',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','X-Session-Token':savedToken},body:'{}'});
+    stillValid=await r.json();
+  }catch(e){}
+  if(!stillValid){
+    localStorage.removeItem('sp_member');localStorage.removeItem('sp_session_token');
+    window.location.href='/select-game.html?role=player&expired=1';return;
+  }
   player=JSON.parse(saved);
   document.getElementById('header-sub').textContent=player.name;
   document.getElementById('create-date').value=new Date().toISOString().split('T')[0];
@@ -225,7 +239,17 @@ async function sb(path,method='GET',body=null){
   return data;
 }
 async function sbPatch(path,body){
-  return fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:sessionHeaders({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}),body:JSON.stringify(body)});
+  // Prefer:return=representation + checking the returned rows is required
+  // here, not just res.ok - a PATCH blocked by RLS (e.g. an expired session
+  // token) still replies 200/204 with zero rows changed, not an HTTP error.
+  // Silently ignoring that is what let confirmScores() show a false
+  // "confirmed" success message while the row actually stayed 'pending'.
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{method:'PATCH',headers:sessionHeaders({'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'}),body:JSON.stringify(body)});
+  const text=await res.text();
+  const data=text?JSON.parse(text):[];
+  if(!res.ok){throw new Error((data&&data.message)||'Update failed.');}
+  if(Array.isArray(data)&&data.length===0){throw new Error('Update was blocked - your session may have expired. Please log in again.');}
+  return data;
 }
 function showMsg(id,msg,type){document.getElementById(id).innerHTML='<div class="status-box status-'+type+'">'+msg+'</div>';}
 

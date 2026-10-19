@@ -256,6 +256,18 @@ window.addEventListener('DOMContentLoaded',async()=>{
   // explanation, since sp_current_member_id() resolves to null with no
   // token to check.
   if(!saved||!savedToken){localStorage.removeItem('sp_member');window.location.href='/select-game.html?role=player';return;}
+  // Same expired-but-still-cached-token check as scores.html - without this,
+  // a 30-day-old session silently fails every write (RLS) with no signal to
+  // the player that they need to log in again.
+  var stillValid=null;
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/rpc/sp_session_check',{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','X-Session-Token':savedToken},body:'{}'});
+    stillValid=await r.json();
+  }catch(e){}
+  if(!stillValid){
+    localStorage.removeItem('sp_member');localStorage.removeItem('sp_session_token');
+    window.location.href='/select-game.html?role=player&expired=1';return;
+  }
   player=JSON.parse(saved);
   if(player.status!=='active'){window.location.href='/select-game.html?role=player';return;}
   document.getElementById('header-player-name').textContent=player.name;
