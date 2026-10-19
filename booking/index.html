@@ -530,7 +530,8 @@ async function confirmBooking() {
   if (error) { toast('Error saving booking: '+error.message); console.error(error); return; }
 
   // Mark slot as pending
-  await sb.from('sz_slots').update({status:'pending'}).eq('id',slot.id);
+  const { error: slotErr } = await sb.from('sz_slots').update({status:'pending'}).eq('id',slot.id);
+  if (slotErr) console.error('Booking saved but slot status update failed — slot may still show as available:', slotErr);
 
   // Show success
   document.getElementById('successQR').textContent = qrToken;
