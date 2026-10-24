@@ -84,6 +84,11 @@ main{padding:24px;max-width:700px;margin:0 auto;}
 .section-header-icon{font-size:24px;}
 .section-header-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--text);}
 .section-header-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+.lb-btn{background:#DBEAFE;color:#1E40AF;}
+.lb-btn:hover{background:var(--blue);color:white;}
+.lb-row{font-size:13px;padding:4px 0;border-bottom:1px solid var(--border);}
+.lb-textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:monospace;font-size:13px;outline:none;resize:vertical;}
+.lb-textarea:focus{border-color:var(--blue);}
 </style>
 </head>
 <body>
@@ -160,7 +165,32 @@ main{padding:24px;max-width:700px;margin:0 auto;}
         <button class="tab" onclick="showMjTab('mj-paused')">Paused</button>
       </div>
       <div class="screen active" id="mj-pending"><div id="mj-pending-list"><div class="loader">Loading...</div></div></div>
-      <div class="screen" id="mj-active"><div id="mj-active-list"><div class="loader">Loading...</div></div></div>
+      <div class="screen" id="mj-active">
+        <div id="mj-active-list"><div class="loader">Loading...</div></div>
+        <div id="lb-panel" style="display:none;" class="form-card">
+          <div class="form-label" style="font-size:16px;" id="lb-title">Update Leaderboard</div>
+          <div class="form-label">Session Date</div>
+          <div class="form-row"><input type="date" id="lb-date"></div>
+          <div class="form-label">Category</div>
+          <div class="form-row">
+            <select id="lb-category">
+              <option value="traditional">🀄 Traditional</option>
+              <option value="taiwanese">🏆 Taiwanese</option>
+            </select>
+          </div>
+          <div class="form-label">Paste codes + ranks from WhatsApp (one pair per line, e.g. "GM012 1")</div>
+          <div class="form-row"><textarea id="lb-paste" rows="10" class="lb-textarea" placeholder="GM012 1&#10;GM045 2&#10;GM078 3&#10;GM091 4"></textarea></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-blue" style="width:auto;padding:11px 20px;" onclick="previewLbBatch()">Preview</button>
+            <button class="btn btn-gold" style="width:auto;padding:11px 20px;display:none;" id="lb-confirm-btn" onclick="confirmLbBatch()">✅ Confirm &amp; Save</button>
+            <button class="btn" style="width:auto;padding:11px 20px;background:#F3F4F6;color:var(--text);" onclick="closeLbPanel()">Cancel</button>
+          </div>
+          <div id="lb-preview" style="margin-top:14px;"></div>
+          <div id="lb-undo-wrap" style="margin-top:14px;display:none;">
+            <button class="btn btn-red" style="width:auto;padding:9px 18px;" onclick="undoLbBatch()">↩️ Undo Last Batch</button>
+          </div>
+        </div>
+      </div>
       <div class="screen" id="mj-paused"><div id="mj-paused-list"><div class="loader">Loading...</div></div></div>
     </div>
 
@@ -439,7 +469,9 @@ function renderMjClubs(list, elId, status) {
       actions = '<button class="action-btn approve-btn" onclick="updateMjClub(\'' + c.id + '\',\'active\',\'' + cName + '\',\'' + (c.owner_name||'') + '\',\'' + (c.whatsapp_no||'') + '\')">Approve</button>'
               + '<button class="action-btn reject-btn" onclick="updateMjClub(\'' + c.id + '\',\'deleted\',\'' + cName + '\',\'\',\'\')">Reject</button>';
     } else if (status === 'active') {
+      var cPrefix = (c.code_prefix||'GM').replace(/'/g,"\\'");
       actions = '<span class="approved-badge">Active</span>'
+              + '<button class="action-btn lb-btn" onclick="openLbPanel(\'' + c.id + '\',\'' + cName + '\',\'' + cPrefix + '\')">📋 Leaderboard</button>'
               + '<button class="action-btn pause-btn" onclick="updateMjClub(\'' + c.id + '\',\'paused\',\'' + cName + '\',\'\',\'\')">Pause</button>'
               + '<button class="action-btn reject-btn" onclick="updateMjClub(\'' + c.id + '\',\'deleted\',\'' + cName + '\',\'\',\'\')">Delete</button>';
     } else {
@@ -500,6 +532,169 @@ async function notifyClubOwnerApproved(clubId, clubName) {
       await notifyTelegram('🎉 Your club "' + clubName + '" has been approved on SportBook! You can now log in to your Club Admin Dashboard.', club.telegram_admin_id);
     }
   } catch(e) {}
+}
+
+// UPDATE LEADERBOARD (bulk rank-entry paste box)
+//
+// Lets the site owner paste "code, rank" pairs copied straight from the
+// club's WhatsApp group and commit them as already-confirmed matches - no
+// per-player confirmation needed. See mj_leaderboard_rank_batch.sql for the
+// server side. lbState holds the currently-open club + the last previewed
+// (and code-validated) rows; confirmLbBatch() only ever sends rows that
+// came back clean from previewLbBatch(), never raw textarea content.
+var lbState = null;
+
+function openLbPanel(clubId, clubName, codePrefix) {
+  lbState = {clubId: clubId, clubName: clubName, codePrefix: codePrefix || 'GM', rows: null};
+  document.getElementById('lb-title').textContent = '📋 Update Leaderboard — ' + clubName;
+  document.getElementById('lb-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('lb-category').value = 'traditional';
+  document.getElementById('lb-paste').value = '';
+  document.getElementById('lb-preview').innerHTML = '';
+  document.getElementById('lb-confirm-btn').style.display = 'none';
+  var savedBatch = sessionStorage.getItem('lb_last_batch_' + clubId);
+  document.getElementById('lb-undo-wrap').style.display = savedBatch ? 'block' : 'none';
+  var panel = document.getElementById('lb-panel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function closeLbPanel() {
+  document.getElementById('lb-panel').style.display = 'none';
+  lbState = null;
+}
+
+// Normalizes however the organiser typed a code (gm17, GM17, gm017...) to
+// the real zero-padded format member codes are actually stored in
+// (e.g. GM017) - without this, a perfectly valid code the organiser typed
+// slightly differently would be wrongly flagged as "not found."
+function normalizeLbCode(raw, prefix) {
+  var s = (raw || '').trim().toUpperCase();
+  var p = (prefix || 'GM').toUpperCase();
+  var m = s.match(/^([A-Z]+)0*([0-9]+)$/);
+  if (!m) return s;
+  var letters = m[1], digits = m[2];
+  if (letters !== p) return s; // different prefix - let the lookup fail honestly, don't silently rewrite it
+  while (digits.length < 3) digits = '0' + digits;
+  return p + digits;
+}
+
+// Accepts "CODE RANK" separated by space/comma/dash/colon, with an optional
+// st/nd/rd/th suffix on the rank (1st, 2nd...). Anything that doesn't match
+// is reported by line number rather than silently skipped.
+function parseLbText(text, prefix) {
+  var lines = text.split('\n');
+  var rows = [], errors = [];
+  lines.forEach(function(line, idx) {
+    var t = line.trim();
+    if (!t) return;
+    var m = t.match(/^([A-Za-z0-9]+)[\s,;:\-]+([1-4])(?:st|nd|rd|th)?$/i);
+    if (!m) { errors.push('Line ' + (idx + 1) + ': could not read "' + t + '" (expected a code then rank 1-4)'); return; }
+    rows.push({code: normalizeLbCode(m[1], prefix), rank: parseInt(m[2], 10)});
+  });
+  return {rows: rows, errors: errors};
+}
+
+async function previewLbBatch() {
+  var parsed = parseLbText(document.getElementById('lb-paste').value, lbState.codePrefix);
+  var preview = document.getElementById('lb-preview');
+  document.getElementById('lb-confirm-btn').style.display = 'none';
+  lbState.rows = null;
+
+  if (parsed.errors.length) {
+    preview.innerHTML = '<div class="err" style="text-align:left;">' + parsed.errors.map(function(e){ return '❌ ' + e; }).join('<br>') + '</div>';
+    return;
+  }
+  if (!parsed.rows.length) {
+    preview.innerHTML = '<div class="err" style="text-align:left;">❌ Nothing to preview — paste some code/rank lines first.</div>';
+    return;
+  }
+  if (parsed.rows.length % 4 !== 0) {
+    preview.innerHTML = '<div class="err" style="text-align:left;">❌ ' + parsed.rows.length + ' entries found — total must be a multiple of 4. Nothing saved until this is fixed.</div>';
+    return;
+  }
+
+  preview.innerHTML = '<div class="loader">Checking member codes...</div>';
+  var uniqueCodes = Array.from(new Set(parsed.rows.map(function(r){ return r.code; })));
+  var nameMap = {};
+  try {
+    var found = await sb.rpc('mj_members_lookup_by_code', {p_club_id: lbState.clubId, p_codes: uniqueCodes});
+    if (found.error) throw new Error(found.error.message);
+    (found.data || []).forEach(function(m){ nameMap[m.member_code] = m.name; });
+  } catch (e) {
+    preview.innerHTML = '<div class="err" style="text-align:left;">❌ Could not check member codes — ' + e.message + '</div>';
+    return;
+  }
+
+  var unknown = uniqueCodes.filter(function(c){ return !nameMap[c]; });
+  var pointsMap = {1: 100, 2: 75, 3: 50, 4: 25};
+  var listHtml = parsed.rows.map(function(r) {
+    var ok = !!nameMap[r.code];
+    return '<div class="lb-row">' + (ok ? '✅' : '❌') + ' ' + r.code + ' '
+      + (ok ? '(' + nameMap[r.code] + ')' : '<span style="color:var(--red);">not found in this club</span>')
+      + ' — Rank ' + r.rank + (ok ? ' — +' + pointsMap[r.rank] + ' pts' : '') + '</div>';
+  }).join('');
+
+  if (unknown.length) {
+    preview.innerHTML = '<div class="err" style="text-align:left;margin-bottom:10px;">❌ ' + unknown.length + ' code(s) not found: ' + unknown.join(', ') + ' — nothing saved until fixed.</div>' + listHtml;
+    return;
+  }
+
+  var gameCount = parsed.rows.length / 4;
+  preview.innerHTML = '<div style="color:var(--green);font-weight:700;margin-bottom:10px;">✅ ' + parsed.rows.length + ' entries (' + gameCount + ' game' + (gameCount > 1 ? 's' : '') + ') — all codes valid. Review below, then Confirm.</div>' + listHtml;
+  lbState.rows = parsed.rows;
+  document.getElementById('lb-confirm-btn').style.display = 'inline-block';
+}
+
+async function confirmLbBatch() {
+  if (!lbState || !lbState.rows || !lbState.rows.length) return;
+  var date = document.getElementById('lb-date').value;
+  if (!date) { toast('⚠️ Pick a date first.'); return; }
+  var category = document.getElementById('lb-category').value;
+  var btn = document.getElementById('lb-confirm-btn');
+  btn.disabled = true;
+  try {
+    var res = await sb.rpc('mj_site_admin_log_rank_batch', {
+      p_club_id: lbState.clubId,
+      p_session_date: date,
+      p_codes: lbState.rows.map(function(r){ return r.code; }),
+      p_ranks: lbState.rows.map(function(r){ return r.rank; }),
+      p_category: category,
+      p_admin_password: sessionStorage.getItem('sb_admin_pw')
+    });
+    if (res.error) throw new Error(res.error.message);
+    var row = res.data && res.data[0];
+    sessionStorage.setItem('lb_last_batch_' + lbState.clubId, JSON.stringify(row ? row.room_ids : []));
+    toast('✅ Leaderboard updated — ' + lbState.rows.length + ' entries logged.');
+    document.getElementById('lb-paste').value = '';
+    document.getElementById('lb-preview').innerHTML = '';
+    document.getElementById('lb-confirm-btn').style.display = 'none';
+    document.getElementById('lb-undo-wrap').style.display = 'block';
+    lbState.rows = null;
+  } catch (e) {
+    toast('⚠️ Could not save — ' + e.message);
+  }
+  btn.disabled = false;
+}
+
+async function undoLbBatch() {
+  if (!lbState) return;
+  var key = 'lb_last_batch_' + lbState.clubId;
+  var saved = sessionStorage.getItem(key);
+  if (!saved) return;
+  if (!confirm('Undo the last batch you saved for ' + lbState.clubName + '? This removes those matches from the leaderboard.')) return;
+  try {
+    var res = await sb.rpc('mj_site_admin_undo_rank_batch', {
+      p_room_ids: JSON.parse(saved),
+      p_admin_password: sessionStorage.getItem('sb_admin_pw')
+    });
+    if (res.error) throw new Error(res.error.message);
+    toast('↩️ Last batch undone (' + res.data + ' row(s) removed).');
+    sessionStorage.removeItem(key);
+    document.getElementById('lb-undo-wrap').style.display = 'none';
+  } catch (e) {
+    toast('⚠️ Could not undo — ' + e.message);
+  }
 }
 
 // SITE MEMBERS
