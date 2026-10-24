@@ -178,8 +178,8 @@ main{padding:24px;max-width:700px;margin:0 auto;}
               <option value="taiwanese">🏆 Taiwanese</option>
             </select>
           </div>
-          <div class="form-label">Paste codes + ranks from WhatsApp (one pair per line, e.g. "GM012 1")</div>
-          <div class="form-row"><textarea id="lb-paste" rows="10" class="lb-textarea" placeholder="GM012 1&#10;GM045 2&#10;GM078 3&#10;GM091 4"></textarea></div>
+          <div class="form-label">Paste from WhatsApp — one line per rank, codes comma-separated (same count on every line)</div>
+          <div class="form-row"><textarea id="lb-paste" rows="6" class="lb-textarea" placeholder="1- 12,25,67,79&#10;2- 45,76,91,45&#10;3- 33,88,20,56&#10;4- 40,22,78,91"></textarea></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-blue" style="width:auto;padding:11px 20px;" onclick="previewLbBatch()">Preview</button>
             <button class="btn btn-gold" style="width:auto;padding:11px 20px;display:none;" id="lb-confirm-btn" onclick="confirmLbBatch()">✅ Confirm &amp; Save</button>
@@ -564,13 +564,20 @@ function closeLbPanel() {
   lbState = null;
 }
 
-// Normalizes however the organiser typed a code (gm17, GM17, gm017...) to
-// the real zero-padded format member codes are actually stored in
-// (e.g. GM017) - without this, a perfectly valid code the organiser typed
-// slightly differently would be wrongly flagged as "not found."
+// Normalizes however the organiser typed a code (a bare number like "12",
+// or gm17, GM17, gm017...) to the real zero-padded format member codes are
+// actually stored in (e.g. GM017) - without this, a perfectly valid code
+// the organiser typed slightly differently would be wrongly flagged as
+// "not found." A bare number is assumed to belong to this club's own
+// prefix, since the organiser no longer types the prefix at all.
 function normalizeLbCode(raw, prefix) {
   var s = (raw || '').trim().toUpperCase();
   var p = (prefix || 'GM').toUpperCase();
+  if (/^[0-9]+$/.test(s)) {
+    var padded = s;
+    while (padded.length < 3) padded = '0' + padded;
+    return p + padded;
+  }
   var m = s.match(/^([A-Z]+)0*([0-9]+)$/);
   if (!m) return s;
   var letters = m[1], digits = m[2];
@@ -579,20 +586,45 @@ function normalizeLbCode(raw, prefix) {
   return p + digits;
 }
 
-// Accepts "CODE RANK" separated by space/comma/dash/colon, with an optional
-// st/nd/rd/th suffix on the rank (1st, 2nd...). Anything that doesn't match
-// is reported by line number rather than silently skipped.
+// Format: one line per rank (1st through 4th), each a comma-separated list
+// of that rank's codes across however many games were played that day -
+// e.g. "1- 12,25,67,79" / "2- 45,76,91,45" / ... All four lines must list
+// the same count of codes (that count = how many games were played); the
+// Nth code on each line is paired up positionally to rebuild game N.
 function parseLbText(text, prefix) {
-  var lines = text.split('\n');
-  var rows = [], errors = [];
+  var lines = text.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+  var byRank = {};
+  var errors = [];
+
   lines.forEach(function(line, idx) {
-    var t = line.trim();
-    if (!t) return;
-    var m = t.match(/^([A-Za-z0-9]+)[\s,;:\-]+([1-4])(?:st|nd|rd|th)?$/i);
-    if (!m) { errors.push('Line ' + (idx + 1) + ': could not read "' + t + '" (expected a code then rank 1-4)'); return; }
-    rows.push({code: normalizeLbCode(m[1], prefix), rank: parseInt(m[2], 10)});
+    var m = line.match(/^([1-4])\s*[-:.\)]\s*(.+)$/);
+    if (!m) { errors.push('Line ' + (idx + 1) + ': could not read "' + line + '" (expected to start with a rank 1-4, e.g. "1- 12,25,67,79")'); return; }
+    var rank = parseInt(m[1], 10);
+    if (byRank[rank]) { errors.push('Rank ' + rank + ' appears on more than one line - combine it into a single line.'); return; }
+    var codes = m[2].split(',').map(function(c){ return c.trim(); }).filter(Boolean);
+    if (!codes.length) { errors.push('Line ' + (idx + 1) + ': rank ' + rank + ' has no codes listed.'); return; }
+    byRank[rank] = codes.map(function(c){ return normalizeLbCode(c, prefix); });
   });
-  return {rows: rows, errors: errors};
+
+  if (errors.length) return {rows: [], errors: errors};
+
+  var missingRanks = [1, 2, 3, 4].filter(function(r){ return !byRank[r]; });
+  if (missingRanks.length) {
+    return {rows: [], errors: ['Missing line for rank ' + missingRanks.join(', ') + ' - need all 4 ranks (1st through 4th).']};
+  }
+
+  var n = byRank[1].length;
+  var mismatched = [2, 3, 4].filter(function(r){ return byRank[r].length !== n; });
+  if (mismatched.length) {
+    var counts = [1, 2, 3, 4].map(function(r){ return 'rank ' + r + '=' + byRank[r].length; }).join(', ');
+    return {rows: [], errors: ['Ranks don\'t all have the same count of codes (' + counts + '). Every rank needs exactly one code per game.']};
+  }
+
+  var rows = [];
+  for (var i = 0; i < n; i++) {
+    for (var r = 1; r <= 4; r++) rows.push({code: byRank[r][i], rank: r});
+  }
+  return {rows: rows, errors: []};
 }
 
 async function previewLbBatch() {
