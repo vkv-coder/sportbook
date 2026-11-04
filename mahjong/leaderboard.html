@@ -51,19 +51,22 @@ select option{background:var(--surface);}
 .podium-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;line-height:1.3;}
 .podium-id{font-size:9px;color:var(--muted);margin-bottom:2px;}
 .podium-points{font-size:13px;font-weight:700;color:var(--gold);}
+.podium-date{font-size:9px;color:var(--muted);margin-top:1px;}
 .podium-base{border-radius:8px 8px 0 0;width:100%;margin-top:8px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif Display',serif;font-size:20px;font-weight:700;}
 .podium-base.gold{background:linear-gradient(135deg,#f1c40f33,#e67e2222);border:1px solid #f1c40f44;height:64px;color:#B7950B;}
 .podium-base.silver{background:linear-gradient(135deg,#bdc3c733,#95a5a622);border:1px solid #bdc3c744;height:48px;color:#707B7C;}
 .podium-base.bronze{background:linear-gradient(135deg,#e67e2233,#d3540022);border:1px solid #e67e2244;height:36px;color:#e67e22;}
-.rank-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:grid;grid-template-columns:24px 1fr 56px 64px;align-items:center;column-gap:8px;}
+.rank-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:6px;display:grid;grid-template-columns:22px 1fr 44px 42px 58px;align-items:center;column-gap:6px;}
 .rank-card.me{border-color:var(--gold);background:rgba(201,168,76,0.08);}
 .rank-num{font-size:12px;font-weight:700;color:var(--muted);text-align:center;}
 .rank-name{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;padding-left:6px;}
 .rank-id{font-size:11px;color:var(--muted);white-space:nowrap;text-align:right;}
+.rank-date{font-size:10px;color:var(--muted);white-space:nowrap;text-align:right;}
 .rank-points{font-size:13px;font-weight:700;color:var(--gold);white-space:nowrap;text-align:right;}
 .rank-header{background:transparent;border:none;padding:0 12px;margin-bottom:8px;}
-.rank-header .rank-num,.rank-header .rank-name,.rank-header .rank-id,.rank-header .rank-points{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;text-align:left;}
-.rank-header .rank-id,.rank-header .rank-points{text-align:right;}
+.rank-header .rank-num,.rank-header .rank-name,.rank-header .rank-id,.rank-header .rank-date,.rank-header .rank-points{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;text-align:left;}
+.rank-header .rank-id,.rank-header .rank-date,.rank-header .rank-points{text-align:right;}
+.lb-last-date{text-align:center;font-size:11px;color:var(--muted);margin:-6px 0 16px;}
 .you-badge{background:rgba(201,168,76,0.2);color:var(--gold);font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;margin-left:6px;vertical-align:middle;}
 .section-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:12px;}
 </style>
@@ -89,11 +92,13 @@ select option{background:var(--surface);}
       <div class="stat-card"><div class="stat-number" id="stat-top">-</div><div class="stat-label">Top Points</div></div>
     </div>
     <div id="podium-section"></div>
+    <div id="lb-last-date" class="lb-last-date"></div>
     <div class="section-label" id="rest-label">All Players</div>
     <div class="rank-card rank-header">
       <div class="rank-num">Rank</div>
       <div class="rank-name">Name</div>
       <div class="rank-id">ID</div>
+      <div class="rank-date">Date</div>
       <div class="rank-points">Points</div>
     </div>
     <div id="rest-section"></div>
@@ -142,6 +147,20 @@ function assignRanks(list){
   return ranks;
 }
 
+var MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// session_date comes back from PostgREST as a plain 'YYYY-MM-DD' string -
+// split instead of parsing as a Date to avoid any timezone shifting.
+function formatDateShort(iso){
+  if(!iso)return '—';
+  var parts=iso.split('-');
+  return parts[2]+'/'+parts[1];
+}
+function formatDateFull(iso){
+  if(!iso)return '';
+  var parts=iso.split('-');
+  return parseInt(parts[2],10)+' '+MONTHS_SHORT[parseInt(parts[1],10)-1]+' '+parts[0];
+}
+
 async function sb(path,method='GET',body=null){
   var res=await fetch(SB_URL+'/rest/v1/'+path,{method:method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body:body?JSON.stringify(body):null});
   if(!res.ok){var e=await res.json();throw new Error(e.message);}
@@ -187,18 +206,27 @@ async function loadLeaderboard(){
     // what a match's scores must sum to (140,000 or 2,040), not which
     // pool a player's rank points land in. Every confirmed game counts
     // toward the same total regardless of category.
-    var rooms=await sb('mj_score_rooms?club_id=eq.'+clubId+'&status=eq.confirmed&select=id');
+    var rooms=await sb('mj_score_rooms?club_id=eq.'+clubId+'&status=eq.confirmed&select=id,session_date');
     var stats={};
+    var clubLastDate=null;
 
     if(rooms.length){
+      var roomDateMap={};
+      rooms.forEach(function(r){
+        roomDateMap[r.id]=r.session_date;
+        if(!clubLastDate||r.session_date>clubLastDate) clubLastDate=r.session_date;
+      });
       var roomIds=rooms.map(function(r){return r.id;});
-      var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points');
+      var entries=await sb('mj_score_entries?room_id=in.('+roomIds.join(',')+')'+'&select=player_id,rank_points,room_id');
       entries.forEach(function(e){
-        if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0};}
+        if(!stats[e.player_id]){stats[e.player_id]={rankPoints:0,games:0,lastDate:null};}
         stats[e.player_id].rankPoints+=(e.rank_points||0);
         stats[e.player_id].games+=1;
+        var d=roomDateMap[e.room_id];
+        if(d&&(!stats[e.player_id].lastDate||d>stats[e.player_id].lastDate)) stats[e.player_id].lastDate=d;
       });
     }
+    document.getElementById('lb-last-date').textContent=clubLastDate?('Last score entered: '+formatDateFull(clubLastDate)):'';
 
     // Add initial points - both columns count toward the same combined total.
     // Uses mj_leaderboard_points_by_club (public, no session required -
@@ -210,7 +238,7 @@ async function loadLeaderboard(){
     members.forEach(function(m){
       var pts=(m.initial_points||0)+(m.initial_points_taiwanese||0);
       if(pts>0){
-        if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0};}
+        if(!stats[m.player_id]){stats[m.player_id]={rankPoints:0,games:0,lastDate:null};}
         stats[m.player_id].rankPoints+=pts;
       }
     });
@@ -233,6 +261,7 @@ async function loadLeaderboard(){
         code:codeMap[pid]||'—',
         rankPoints:stats[pid].rankPoints,
         games:stats[pid].games,
+        lastDate:stats[pid].lastDate,
         isMe:pid===(player?player.id:'')
       };
     }).filter(function(p){return p.rankPoints>0;})
@@ -264,6 +293,7 @@ async function loadLeaderboard(){
           +'<div class="rank-num"></div>'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
           +'<div class="rank-id">'+p.code+'</div>'
+          +'<div class="rank-date">'+formatDateShort(p.lastDate)+'</div>'
           +'<div class="rank-points">'+p.rankPoints+' pts</div>'
           +'</div>';
       }).join('');
@@ -316,6 +346,7 @@ async function loadLeaderboard(){
             +'<div class="podium-name">'+p.name+(p.isMe?' (You)':'')+'</div>'
             +'<div class="podium-id">'+p.code+'</div>'
             +'<div class="podium-points">'+p.rankPoints+' pts</div>'
+            +'<div class="podium-date">'+formatDateShort(p.lastDate)+'</div>'
             +'<div class="podium-base '+style.base+'">'+style.label+'</div>'
             +'</div>';
         });
@@ -330,7 +361,7 @@ async function loadLeaderboard(){
             +'<span class="rank-group-points">'+g.points+' pts</span>'
             +'</div>'
             +'<div class="rank-group-names">'
-            +g.players.map(function(p){return '<span class="rank-group-name'+(p.isMe?' me':'')+'">'+p.name+(p.isMe?' (You)':'')+'</span>';}).join('')
+            +g.players.map(function(p){return '<span class="rank-group-name'+(p.isMe?' me':'')+'">'+p.name+(p.isMe?' (You)':'')+' · '+formatDateShort(p.lastDate)+'</span>';}).join('')
             +'</div></div>';
         }).join('');
       }
@@ -345,6 +376,7 @@ async function loadLeaderboard(){
           +'<div class="rank-num">'+ordinal(restRanks[i])+'</div>'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
           +'<div class="rank-id">'+p.code+'</div>'
+          +'<div class="rank-date">'+formatDateShort(p.lastDate)+'</div>'
           +'<div class="rank-points">'+p.rankPoints+' pts</div>'
           +'</div>';
       }).join('');
@@ -353,6 +385,7 @@ async function loadLeaderboard(){
           +'<div class="rank-num"></div>'
           +'<div class="rank-name">'+p.name+(p.isMe?'<span class="you-badge">YOU</span>':'')+'</div>'
           +'<div class="rank-id">'+p.code+'</div>'
+          +'<div class="rank-date">'+formatDateShort(p.lastDate)+'</div>'
           +'<div class="rank-points">'+p.rankPoints+' pts</div>'
           +'</div>';
       }).join('');
