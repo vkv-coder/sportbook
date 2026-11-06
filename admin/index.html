@@ -851,7 +851,7 @@ async function approveMember(btn) {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
       method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({p_id: id, p_status: 'active'})
+      body: JSON.stringify({p_id: id, p_status: 'active', p_admin_password: sessionStorage.getItem('sb_admin_pw')})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
@@ -901,7 +901,7 @@ async function approveIntoGreenMahjong(playerId, name) {
     var insertRes = await sb.rpc('mj_request_membership', {p_club_id: GREEN_MAHJONG_CLUB_ID, p_player_id: playerId});
     if (insertRes.error) throw new Error(insertRes.error.message);
 
-    var approveRes = await sb.rpc('mj_site_admin_approve_green_mahjong', {p_player_id: playerId});
+    var approveRes = await sb.rpc('mj_site_admin_approve_green_mahjong', {p_player_id: playerId, p_admin_password: sessionStorage.getItem('sb_admin_pw')});
     if (approveRes.error || !approveRes.data) throw new Error(approveRes.error ? approveRes.error.message : 'approve step failed');
     var code = approveRes.data;
     toast(name + ' added to Green Mahjong Circle as ' + code);
@@ -960,7 +960,7 @@ async function pauseSiteMember(btn) {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
       method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({p_id: id, p_status: 'paused'})
+      body: JSON.stringify({p_id: id, p_status: 'paused', p_admin_password: sessionStorage.getItem('sb_admin_pw')})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
@@ -978,7 +978,7 @@ async function unpauseSiteMember(btn) {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/sp_admin_set_member_status', {
       method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({p_id: id, p_status: 'active'})
+      body: JSON.stringify({p_id: id, p_status: 'active', p_admin_password: sessionStorage.getItem('sb_admin_pw')})
     });
     if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
   } catch(e) {
