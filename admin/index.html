@@ -938,7 +938,7 @@ async function rejectPendingMember(btn) {
     var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/admin_reject_pending_member', {
       method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({p_id: id})
+      body: JSON.stringify({p_id: id, p_admin_password: sessionStorage.getItem('sb_admin_pw')})
     });
     if (!resp.ok) { var err = await resp.json().catch(function(){ return {}; }); throw new Error(err.message || ('server rejected the delete (status ' + resp.status + ')')); }
   } catch(e) {
