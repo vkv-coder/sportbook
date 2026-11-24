@@ -494,12 +494,12 @@ async function updateMjClub(id, newStatus, clubName, ownerName, whatsapp) {
   var label = newStatus === 'active' ? 'Approve' : newStatus === 'paused' ? 'Pause' : 'Delete';
   if (!confirm(label + ' "' + clubName + '"?')) return;
   try {
-    var resp = await fetch(SUPABASE_URL + '/rest/v1/mj_clubs?id=eq.' + id, {
-      method: 'PATCH',
+    var resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/mj_site_admin_update_club_status', {
+      method: 'POST',
       headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json'},
-      body: JSON.stringify({status: newStatus})
+      body: JSON.stringify({p_id: id, p_status: newStatus, p_admin_password: sessionStorage.getItem('sb_admin_pw')})
     });
-    if (!resp.ok) throw new Error('server rejected the update (status ' + resp.status + ')');
+    if (!resp.ok) { var err = await resp.json().catch(function(){ return {}; }); throw new Error(err.message || ('server rejected the update (status ' + resp.status + ')')); }
   } catch(e) {
     toast('⚠️ Could not update ' + clubName + ' — ' + e.message);
     return;
