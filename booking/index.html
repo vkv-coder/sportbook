@@ -414,7 +414,11 @@ async function loadSlots() {
   if (state.selectedCourt) query = query.eq('court_id',state.selectedCourt);
   if (state.selectedSport!=='all') query = query.eq('sport',state.selectedSport);
 
-  const { data } = await query;
+  const { data, error } = await query;
+  if (error) {
+    grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">⚠️</div>Could not load slots — please try again</div>';
+    return;
+  }
   if (!data?.length) {
     grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">😔</div>No slots available for this date</div>';
     return;
@@ -555,7 +559,8 @@ async function loadMyBookings() {
   const phone = state.userPhone||localStorage.getItem('sb_phone');
   if (!phone) { list.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Book a court first!</div>'; return; }
   list.innerHTML='<div class="loader">Loading...</div>';
-  const { data } = await sb.from('sz_bookings').select('*,sz_zones(name,address)').eq('player_phone',phone).order('created_at',{ascending:false});
+  const { data, error } = await sb.from('sz_bookings').select('*,sz_zones(name,address)').eq('player_phone',phone).order('created_at',{ascending:false});
+  if (error) { list.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div>Could not load your bookings — please try again</div>'; return; }
   if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">🏸</div>No bookings yet!</div>'; return; }
   list.innerHTML = data.map(b=>{
     const st = b.status||b.booking_status||'pending';
